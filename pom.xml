@@ -95,7 +95,6 @@
             <id>azisaba</id>
             <url>https://repo.azisaba.net/repository/maven-public/</url>
         </repository>
-
     </repositories>
 
     <dependencies>
@@ -130,6 +129,13 @@
             <scope>system</scope>
             <systemPath>${project.basedir}/lib/IslandWorld-8.5.jar</systemPath>
         </dependency>
+        <dependency>
+            <groupId>net.azisaba</groupId>
+            <artifactId>LifeCore</artifactId>
+            <version>6.3.2</version>
+            <scope>provided</scope>
+        </dependency>
+
 
         <!-- Only required for build to succeed ? -->
         <dependency>

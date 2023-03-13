@@ -11,6 +11,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.github.mori01231.lifecore.util.ItemUtil;
 import com.google.gson.JsonPrimitive;
 
 import org.bukkit.Bukkit;
@@ -797,6 +798,8 @@ public class ShopInteractListener implements Listener {
                                     new Replacement(Placeholder.VENDOR, vendorName)));
 
                             plugin.debug(executor.getName() + " successfully bought (#" + shop.getID() + ")");
+                            plugin.getLogger().info("Player " + executor.getName() + " bought item from " + vendorName + " for " + newPrice);
+                            plugin.getLogger().info("  - " + ItemUtil.toString(newProduct.getItemStack()));
 
                             if (shop.getVendor().isOnline() && Config.enableVendorMessages) {
                                 shop.getVendor().getPlayer().sendMessage(LanguageUtils.getMessage(Message.SOMEONE_BOUGHT, new Replacement(Placeholder.AMOUNT, String.valueOf(newAmount)),
@@ -843,6 +846,9 @@ public class ShopInteractListener implements Listener {
                                 new Replacement(Placeholder.ITEM_NAME, newProduct.getLocalizedName()), new Replacement(Placeholder.BUY_PRICE, String.valueOf(newPrice))));
 
                         plugin.debug(executor.getName() + " successfully bought (#" + shop.getID() + ")");
+
+                        plugin.getLogger().info("Player " + executor.getName() + " bought item from admin shop for " + newPrice);
+                        plugin.getLogger().info("  - " + ItemUtil.toString(newProduct.getItemStack()));
                     }
                 } else {
                     plugin.debug("Economy transaction failed (r): " + r.errorMessage + " (#" + shop.getID() + ")");
@@ -965,6 +971,8 @@ public class ShopInteractListener implements Listener {
                                     new Replacement(Placeholder.VENDOR, vendorName)));
 
                             plugin.debug(executor.getName() + " successfully sold (#" + shop.getID() + ")");
+                            plugin.getLogger().info("Player " + executor.getName() + " sold item to " + vendorName + " for " + newPrice);
+                            plugin.getLogger().info("  - " + ItemUtil.toString(newProduct.getItemStack()));
 
                             if (shop.getVendor().isOnline() && Config.enableVendorMessages) {
                                 shop.getVendor().getPlayer().sendMessage(LanguageUtils.getMessage(Message.SOMEONE_SOLD, new Replacement(Placeholder.AMOUNT, String.valueOf(newAmount)),
@@ -1012,6 +1020,8 @@ public class ShopInteractListener implements Listener {
                                 new Replacement(Placeholder.ITEM_NAME, newProduct.getLocalizedName()), new Replacement(Placeholder.SELL_PRICE, String.valueOf(newPrice))));
 
                         plugin.debug(executor.getName() + " successfully sold (#" + shop.getID() + ")");
+                        plugin.getLogger().info("Player " + executor.getName() + " sold item to admin shop for " + newPrice);
+                        plugin.getLogger().info("  - " + ItemUtil.toString(newProduct.getItemStack()));
                     }
 
                 } else {
