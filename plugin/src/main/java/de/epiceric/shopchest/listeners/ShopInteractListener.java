@@ -46,6 +46,30 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.util.*;
 import java.util.function.Consumer;
+import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.config.Config;
+import de.epiceric.shopchest.config.Placeholder;
+import de.epiceric.shopchest.event.ShopBuySellEvent;
+import de.epiceric.shopchest.event.ShopCreateEvent;
+import de.epiceric.shopchest.event.ShopInfoEvent;
+import de.epiceric.shopchest.event.ShopOpenEvent;
+import de.epiceric.shopchest.event.ShopRemoveEvent;
+import de.epiceric.shopchest.language.LanguageUtils;
+import de.epiceric.shopchest.language.Message;
+import de.epiceric.shopchest.language.Replacement;
+import de.epiceric.shopchest.nms.JsonBuilder;
+import de.epiceric.shopchest.shop.Shop;
+import de.epiceric.shopchest.shop.Shop.ShopType;
+import de.epiceric.shopchest.shop.ShopProduct;
+import de.epiceric.shopchest.sql.Database;
+import de.epiceric.shopchest.utils.ClickType;
+import de.epiceric.shopchest.utils.ClickType.CreateClickType;
+import de.epiceric.shopchest.utils.ItemUtils;
+import de.epiceric.shopchest.utils.Permissions;
+import de.epiceric.shopchest.utils.ShopUtils;
+import de.epiceric.shopchest.utils.Utils;
+import net.milkbowl.vault.economy.Economy;
+import net.milkbowl.vault.economy.EconomyResponse;
 
 public class ShopInteractListener implements Listener {
 
@@ -106,9 +130,6 @@ public class ShopInteractListener implements Listener {
             return;
 
         if (ClickType.getPlayerClickType(p).getClickType() != ClickType.EnumClickType.CREATE)
-            return;
-
-        if (Config.enableAuthMeIntegration && plugin.hasAuthMe() && !AuthMeApi.getInstance().isAuthenticated(p))
             return;
 
         if (e.isCancelled() && !p.hasPermission(Permissions.CREATE_PROTECTED)) {
@@ -239,22 +260,7 @@ public class ShopInteractListener implements Listener {
                             // TODO: Outsource shop use external permission
                             boolean externalPluginsAllowed = true;
 
-                            if (plugin.hasPlotSquared() && Config.enablePlotsquaredIntegration) {
-                                try {
-                                    Class.forName("com.plotsquared.core.PlotSquared");
-                                    com.plotsquared.core.location.Location plotLocation =
-                                            com.plotsquared.core.location.Location.at(b.getWorld().getName(), b.getX(), b.getY(), b.getZ());
-                                    com.plotsquared.core.plot.Plot plot = plotLocation.getOwnedPlot();
-                                    externalPluginsAllowed = PlotSquaredShopFlag.isFlagAllowedOnPlot(plot, PlotSquaredShopFlag.USE_SHOP, p);
-                                } catch (ClassNotFoundException ex) {
-                                    com.github.intellectualsites.plotsquared.plot.object.Location plotLocation =
-                                            new com.github.intellectualsites.plotsquared.plot.object.Location(b.getWorld().getName(), b.getX(), b.getY(), b.getZ());
-                                    com.github.intellectualsites.plotsquared.plot.object.Plot plot = plotLocation.getOwnedPlot();
-                                    externalPluginsAllowed = PlotSquaredOldShopFlag.isFlagAllowedOnPlot(plot, PlotSquaredOldShopFlag.USE_SHOP, p);
-                                }
-                            }
-
-                            if (externalPluginsAllowed && plugin.hasWorldGuard() && Config.enableWorldGuardIntegration) {
+                            if (plugin.hasWorldGuard() && Config.enableWorldGuardIntegration) {
                                 String flagName = (shop.getShopType() == ShopType.ADMIN ? "use-admin-shop" : "use-shop");
                                 WorldGuardWrapper wgWrapper = WorldGuardWrapper.getInstance();
                                 Optional<IWrappedFlag<WrappedState>> flag = wgWrapper.getFlag(flagName, WrappedState.class);
@@ -364,22 +370,7 @@ public class ShopInteractListener implements Listener {
                             // TODO: Outsource shop use external permission
                             boolean externalPluginsAllowed = true;
 
-                            if (plugin.hasPlotSquared() && Config.enablePlotsquaredIntegration) {
-                                try {
-                                    Class.forName("com.plotsquared.core.PlotSquared");
-                                    com.plotsquared.core.location.Location plotLocation =
-                                            com.plotsquared.core.location.Location.at(b.getWorld().getName(), b.getX(), b.getY(), b.getZ());
-                                    com.plotsquared.core.plot.Plot plot = plotLocation.getOwnedPlot();
-                                    externalPluginsAllowed = PlotSquaredShopFlag.isFlagAllowedOnPlot(plot, PlotSquaredShopFlag.USE_SHOP, p);
-                                } catch (ClassNotFoundException ex) {
-                                    com.github.intellectualsites.plotsquared.plot.object.Location plotLocation =
-                                            new com.github.intellectualsites.plotsquared.plot.object.Location(b.getWorld().getName(), b.getX(), b.getY(), b.getZ());
-                                    com.github.intellectualsites.plotsquared.plot.object.Plot plot = plotLocation.getOwnedPlot();
-                                    externalPluginsAllowed = PlotSquaredOldShopFlag.isFlagAllowedOnPlot(plot, PlotSquaredOldShopFlag.USE_SHOP, p);
-                                }
-                            }
-
-                            if (externalPluginsAllowed && plugin.hasWorldGuard() && Config.enableWorldGuardIntegration) {
+                            if (plugin.hasWorldGuard() && Config.enableWorldGuardIntegration) {
                                 String flagName = (shop.getShopType() == ShopType.ADMIN ? "use-admin-shop" : "use-shop");
                                 WorldGuardWrapper wgWrapper = WorldGuardWrapper.getInstance();
                                 Optional<IWrappedFlag<WrappedState>> flag = wgWrapper.getFlag(flagName, WrappedState.class);
@@ -451,7 +442,6 @@ public class ShopInteractListener implements Listener {
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent e) {
-        if (Config.enableAuthMeIntegration && plugin.hasAuthMe() && !AuthMeApi.getInstance().isAuthenticated(e.getPlayer())) return;
         handleInteractEvent(e);
     }
 
@@ -989,7 +979,7 @@ public class ShopInteractListener implements Listener {
     /**
      * Adds items to an inventory
      * @param inventory The inventory, to which the items will be added
-     * @param itemStack Items to add
+     * @param product Shop product
      * @return Whether all items were added to the inventory
      */
     private boolean addToInventory(Inventory inventory, ShopProduct product) {
@@ -1048,7 +1038,7 @@ public class ShopInteractListener implements Listener {
     /**
      * Removes items to from an inventory
      * @param inventory The inventory, from which the items will be removed
-     * @param itemStack Items to remove
+     * @param product Shop product
      * @return Whether all items were removed from the inventory
      */
     private boolean removeFromInventory(Inventory inventory, ShopProduct product) {

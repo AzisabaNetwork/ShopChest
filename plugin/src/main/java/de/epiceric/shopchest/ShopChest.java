@@ -1,51 +1,5 @@
 package de.epiceric.shopchest;
 
-import com.palmergames.bukkit.towny.Towny;
-import com.wasteofplastic.askyblock.ASkyBlock;
-import de.epiceric.shopchest.command.ShopCommand;
-import de.epiceric.shopchest.config.Config;
-import de.epiceric.shopchest.config.hologram.HologramFormat;
-import de.epiceric.shopchest.event.ShopInitializedEvent;
-import de.epiceric.shopchest.external.BentoBoxShopFlag;
-import de.epiceric.shopchest.external.PlotSquaredOldShopFlag;
-import de.epiceric.shopchest.external.PlotSquaredShopFlag;
-import de.epiceric.shopchest.external.WorldGuardShopFlag;
-import de.epiceric.shopchest.external.listeners.*;
-import de.epiceric.shopchest.language.LanguageLoader;
-import de.epiceric.shopchest.language.LanguageManager;
-import de.epiceric.shopchest.listeners.BentoBoxListener;
-import de.epiceric.shopchest.listeners.WorldGuardListener;
-import de.epiceric.shopchest.listeners.*;
-import de.epiceric.shopchest.nms.Platform;
-import de.epiceric.shopchest.nms.PlatformLoader;
-import de.epiceric.shopchest.nms.reflection.ShopChestDebug;
-import de.epiceric.shopchest.shop.Shop;
-import de.epiceric.shopchest.shop.Shop.ShopType;
-import de.epiceric.shopchest.sql.Database;
-import de.epiceric.shopchest.sql.MySQL;
-import de.epiceric.shopchest.sql.SQLite;
-import de.epiceric.shopchest.utils.*;
-import de.epiceric.shopchest.utils.UpdateChecker.UpdateCheckerResult;
-import fr.xephi.authme.AuthMe;
-import me.ryanhamshire.GriefPrevention.GriefPrevention;
-import me.wiefferink.areashop.AreaShop;
-import net.milkbowl.vault.economy.Economy;
-import org.bstats.bukkit.Metrics;
-import org.bstats.charts.AdvancedPie;
-import org.bstats.charts.SimplePie;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.codemc.worldguardwrapper.WorldGuardWrapper;
-import pl.islandworld.IslandWorld;
-import us.talabrek.ultimateskyblock.api.uSkyBlockAPI;
-import world.bentobox.bentobox.BentoBox;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -61,13 +15,73 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import com.palmergames.bukkit.towny.Towny;
+import com.wasteofplastic.askyblock.ASkyBlock;
+
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.AdvancedPie;
+import org.bstats.charts.SimplePie;
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.codemc.worldguardwrapper.WorldGuardWrapper;
+
+import de.epiceric.shopchest.command.ShopCommand;
+import de.epiceric.shopchest.config.Config;
+import de.epiceric.shopchest.config.HologramFormat;
+import de.epiceric.shopchest.event.ShopInitializedEvent;
+import de.epiceric.shopchest.external.BentoBoxShopFlag;
+import de.epiceric.shopchest.external.PlotSquaredOldShopFlag;
+import de.epiceric.shopchest.external.PlotSquaredShopFlag;
+import de.epiceric.shopchest.external.WorldGuardShopFlag;
+import de.epiceric.shopchest.external.listeners.ASkyBlockListener;
+import de.epiceric.shopchest.external.listeners.GriefPreventionListener;
+import de.epiceric.shopchest.external.listeners.IslandWorldListener;
+import de.epiceric.shopchest.external.listeners.PlotSquaredListener;
+import de.epiceric.shopchest.external.listeners.TownyListener;
+import de.epiceric.shopchest.external.listeners.USkyBlockListener;
+import de.epiceric.shopchest.language.LanguageUtils;
+import de.epiceric.shopchest.listeners.AreaShopListener;
+import de.epiceric.shopchest.listeners.BentoBoxListener;
+import de.epiceric.shopchest.listeners.BlockExplodeListener;
+import de.epiceric.shopchest.listeners.ChestProtectListener;
+import de.epiceric.shopchest.listeners.CreativeModeListener;
+import de.epiceric.shopchest.listeners.NotifyPlayerOnJoinListener;
+import de.epiceric.shopchest.listeners.ShopInteractListener;
+import de.epiceric.shopchest.listeners.ShopItemListener;
+import de.epiceric.shopchest.listeners.ShopUpdateListener;
+import de.epiceric.shopchest.listeners.WorldGuardListener;
+import de.epiceric.shopchest.shop.Shop;
+import de.epiceric.shopchest.shop.Shop.ShopType;
+import de.epiceric.shopchest.sql.Database;
+import de.epiceric.shopchest.sql.MySQL;
+import de.epiceric.shopchest.sql.SQLite;
+import de.epiceric.shopchest.utils.Callback;
+import de.epiceric.shopchest.utils.ClickType;
+import de.epiceric.shopchest.utils.Permissions;
+import de.epiceric.shopchest.utils.ShopUpdater;
+import de.epiceric.shopchest.utils.ShopUtils;
+import de.epiceric.shopchest.utils.UpdateChecker;
+import de.epiceric.shopchest.utils.UpdateChecker.UpdateCheckerResult;
+import de.epiceric.shopchest.utils.Utils;
+import fr.xephi.authme.AuthMe;
+import me.ryanhamshire.GriefPrevention.GriefPrevention;
+import me.wiefferink.areashop.AreaShop;
+import net.milkbowl.vault.economy.Economy;
+import pl.islandworld.IslandWorld;
+import us.talabrek.ultimateskyblock.api.uSkyBlockAPI;
+import world.bentobox.bentobox.BentoBox;
+
 public class ShopChest extends JavaPlugin {
 
     private static ShopChest instance;
 
     private Config config;
-    private Platform platform;
-    private LanguageManager languageManager;
     private HologramFormat hologramFormat;
     private ShopCommand shopCommand;
     private Economy econ = null;
@@ -79,13 +93,8 @@ public class ShopChest extends JavaPlugin {
     private FileWriter fw;
     private Plugin worldGuard;
     private Towny towny;
-    private AuthMe authMe;
-    private uSkyBlockAPI uSkyBlock;
-    private ASkyBlock aSkyBlock;
     private IslandWorld islandWorld;
     private GriefPrevention griefPrevention;
-    private AreaShop areaShop;
-    private BentoBox bentoBox;
     private ShopUpdater updater;
     private ExecutorService shopCreationThreadPool;
 
@@ -266,21 +275,6 @@ public class ShopChest extends JavaPlugin {
             towny = (Towny) townyPlugin;
         }
 
-        Plugin authMePlugin = Bukkit.getServer().getPluginManager().getPlugin("AuthMe");
-        if (authMePlugin instanceof AuthMe) {
-            authMe = (AuthMe) authMePlugin;
-        }
-
-        Plugin uSkyBlockPlugin = Bukkit.getServer().getPluginManager().getPlugin("uSkyBlock");
-        if (uSkyBlockPlugin instanceof uSkyBlockAPI) {
-            uSkyBlock = (uSkyBlockAPI) uSkyBlockPlugin;
-        }
-
-        Plugin aSkyBlockPlugin = Bukkit.getServer().getPluginManager().getPlugin("ASkyBlock");
-        if (aSkyBlockPlugin instanceof ASkyBlock) {
-            aSkyBlock = (ASkyBlock) aSkyBlockPlugin;
-        }
-
         Plugin islandWorldPlugin = Bukkit.getServer().getPluginManager().getPlugin("IslandWorld");
         if (islandWorldPlugin instanceof IslandWorld) {
             islandWorld = (IslandWorld) islandWorldPlugin;
@@ -291,31 +285,8 @@ public class ShopChest extends JavaPlugin {
             griefPrevention = (GriefPrevention) griefPreventionPlugin;
         }
 
-        Plugin areaShopPlugin = Bukkit.getServer().getPluginManager().getPlugin("AreaShop");
-        if (areaShopPlugin instanceof AreaShop) {
-            areaShop = (AreaShop) areaShopPlugin;
-        }
-
-        Plugin bentoBoxPlugin = getServer().getPluginManager().getPlugin("BentoBox");
-        if (bentoBoxPlugin instanceof BentoBox) {
-            bentoBox = (BentoBox) bentoBoxPlugin;
-        }
-
         if (hasWorldGuard()) {
             WorldGuardWrapper.getInstance().registerEvents(this);
-        }
-
-        if (hasPlotSquared()) {
-            try {
-                Class.forName("com.plotsquared.core.PlotSquared");
-                PlotSquaredShopFlag.register(this);
-            } catch (ClassNotFoundException ex) {
-                PlotSquaredOldShopFlag.register(this);
-            }
-        }
-
-        if (hasBentoBox()) {
-            BentoBoxShopFlag.register(this);
         }
     }
 
@@ -424,34 +395,16 @@ public class ShopChest extends JavaPlugin {
 
         if (hasWorldGuard()) {
             getServer().getPluginManager().registerEvents(new WorldGuardListener(this), this);
-
-            if (hasAreaShop()) {
-                getServer().getPluginManager().registerEvents(new AreaShopListener(this), this);
-            }
-        }
-
-        if (hasBentoBox()) {
-            getServer().getPluginManager().registerEvents(new BentoBoxListener(this), this);
         }
     }
 
     private void registerExternalListeners() {
-        if (hasASkyBlock())
-            getServer().getPluginManager().registerEvents(new ASkyBlockListener(this), this);
         if (hasGriefPrevention())
             getServer().getPluginManager().registerEvents(new GriefPreventionListener(this), this);
-        if (hasIslandWorld())
-            getServer().getPluginManager().registerEvents(new IslandWorldListener(this), this);
-        if (hasPlotSquared())
-            getServer().getPluginManager().registerEvents(new PlotSquaredListener(this), this);
         if (hasTowny())
             getServer().getPluginManager().registerEvents(new TownyListener(this), this);
-        if (hasUSkyBlock())
-            getServer().getPluginManager().registerEvents(new USkyBlockListener(this), this);
         if (hasWorldGuard())
             getServer().getPluginManager().registerEvents(new de.epiceric.shopchest.external.listeners.WorldGuardListener(this), this);
-        if (hasBentoBox())
-            getServer().getPluginManager().registerEvents(new de.epiceric.shopchest.external.listeners.BentoBoxListener(this), this);
     }
 
     /**
@@ -565,13 +518,6 @@ public class ShopChest extends JavaPlugin {
     }
 
     /**
-     * @return Whether the plugin 'AreaShop' is enabled
-     */
-    public boolean hasAreaShop() {
-        return Config.enableAreaShopIntegration && areaShop != null && areaShop.isEnabled();
-    }
-
-    /**
      * @return Whether the plugin 'GriefPrevention' is enabled
      */
     public boolean hasGriefPrevention() {
@@ -586,55 +532,6 @@ public class ShopChest extends JavaPlugin {
     }
 
     /**
-     * @return Whether the plugin 'IslandWorld' is enabled
-     */
-    public boolean hasIslandWorld() {
-        return Config.enableIslandWorldIntegration && islandWorld != null && islandWorld.isEnabled();
-    }
-    /**
-     * @return Whether the plugin 'ASkyBlock' is enabled
-     */
-    public boolean hasASkyBlock() {
-        return Config.enableASkyblockIntegration && aSkyBlock != null && aSkyBlock.isEnabled();
-    }
-
-    /**
-     * @return Whether the plugin 'uSkyBlock' is enabled
-     */
-    public boolean hasUSkyBlock() {
-        return Config.enableUSkyblockIntegration && uSkyBlock != null && uSkyBlock.isEnabled();
-    }
-
-    /**
-     * @return An instance of {@link uSkyBlockAPI} or {@code null} if uSkyBlock is not enabled
-     */
-    public uSkyBlockAPI getUSkyBlock() {
-        return uSkyBlock;
-    }
-
-    /**
-     * @return Whether the plugin 'PlotSquared' is enabled
-     */
-    public boolean hasPlotSquared() {
-        if (!Config.enablePlotsquaredIntegration) {
-            return false;
-        }
-
-        if (Utils.getMajorVersion() < 13) {
-            // Supported PlotSquared versions don't support versions below 1.13
-            return false;
-        }
-        Plugin p = getServer().getPluginManager().getPlugin("PlotSquared");
-        return p != null && p.isEnabled();
-    }
-
-    /**
-     * @return Whether the plugin 'AuthMe' is enabled
-     */
-    public boolean hasAuthMe() {
-        return Config.enableAuthMeIntegration && authMe != null && authMe.isEnabled();
-    }
-    /**
      * @return Whether the plugin 'Towny' is enabled
      */
     public boolean hasTowny() {
@@ -646,13 +543,6 @@ public class ShopChest extends JavaPlugin {
      */
     public boolean hasWorldGuard() {
         return Config.enableWorldGuardIntegration && worldGuard != null && worldGuard.isEnabled();
-    }
-
-    /**
-     * @return Whether the plugin 'WorldGuard' is enabled
-     */
-    public boolean hasBentoBox() {
-        return Config.enableBentoBoxIntegration && bentoBox != null && bentoBox.isEnabled();
     }
 
     /**
