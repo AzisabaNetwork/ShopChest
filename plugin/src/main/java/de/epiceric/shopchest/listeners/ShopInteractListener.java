@@ -161,7 +161,7 @@ public class ShopInteractListener implements Listener {
             double buyPrice = clickType.getBuyPrice();
             double sellPrice = clickType.getSellPrice();
             ShopType shopType = clickType.getShopType();
-    
+
             create(p, b.getLocation(), product, buyPrice, sellPrice, shopType);
         }
 
@@ -183,10 +183,10 @@ public class ShopInteractListener implements Listener {
 
         if (e.getAction() != Action.RIGHT_CLICK_BLOCK && e.getAction() != Action.LEFT_CLICK_BLOCK)
             return;
-        
+
         if (b.getType() != Material.CHEST && b.getType() != Material.TRAPPED_CHEST)
             return;
-        
+
         ClickType clickType = ClickType.getPlayerClickType(p);
         if (clickType != null) {
             if (e.getAction() != Action.RIGHT_CLICK_BLOCK)
@@ -197,7 +197,7 @@ public class ShopInteractListener implements Listener {
                 case CREATE:
                 case SELECT_ITEM:
                     break;
-                default: 
+                default:
                     if (shop == null) {
                         p.sendMessage(messageRegistry.getMessage(Message.CHEST_NO_SHOP));
                         plugin.debug("Chest is not a shop");
@@ -227,7 +227,7 @@ public class ShopInteractListener implements Listener {
                 return;
 
             boolean confirmed = needsConfirmation.containsKey(p.getUniqueId()) && needsConfirmation.get(p.getUniqueId()).contains(shop.getID());
-            
+
             if (e.getAction() == Action.LEFT_CLICK_BLOCK && p.isSneaking() && Utils.hasAxeInHand(p)) {
                 return;
             }
@@ -282,7 +282,7 @@ public class ShopInteractListener implements Listener {
                                 WrappedState state = flag.map(f -> wgWrapper.queryFlag(p, b.getLocation(), f).orElse(WrappedState.DENY)).orElse(WrappedState.DENY);
                                 externalPluginsAllowed = state == WrappedState.ALLOW;
                             }
-                            
+
                             if (shop.getShopType() == ShopType.ADMIN) {
                                 if (externalPluginsAllowed || p.hasPermission(Permissions.BYPASS_EXTERNAL_PLUGIN)) {
                                     if (confirmed || !Config.confirmShopping) {
@@ -649,6 +649,87 @@ public class ShopInteractListener implements Listener {
     }
 
     /**
+     * Create a {@link JsonBuilder} containing the shop info message for the product
+     * in which you can hover the item name to get a preview.
+     * @param product The product of the shop
+     * @return A {@link JsonBuilder} that can send the message via {@link JsonBuilder#sendJson(Player)}
+     */
+    private JsonBuilder getProductJson(ShopProduct product) {
+        // Add spaces at start and end, so there will always be a part before and after
+        // the item name after splitting at Placeholder.ITEM_NAME
+        String productString = " " + LanguageUtils.getMessage(Message.SHOP_INFO_PRODUCT,
+                new Replacement(Placeholder.AMOUNT, String.valueOf(product.getAmount()))) + " ";
+
+        String[] parts = productString.split(Placeholder.ITEM_NAME.toString());
+        String productName = product.getLocalizedName();
+        String jsonItem = "";
+        JsonBuilder jb = new JsonBuilder(plugin);
+        JsonBuilder.PartArray rootArray = new JsonBuilder.PartArray();
+
+        try {
+            OBCClassResolver obcClassResolver = new OBCClassResolver();
+            NMSClassResolver nmsClassResolver = new NMSClassResolver();
+
+            Class<?> craftItemStackClass = obcClassResolver.resolveSilent("inventory.CraftItemStack");
+            Object nmsStack = craftItemStackClass.getMethod("asNMSCopy", ItemStack.class).invoke(null, product.getItemStack());
+            Class<?> nbtTagCompoundClass = nmsClassResolver.resolveSilent("nbt.NBTTagCompound");
+            Object nbtTagCompound = nbtTagCompoundClass.getConstructor().newInstance();
+            nmsStack.getClass().getMethod("save", nbtTagCompoundClass).invoke(nmsStack, nbtTagCompound);
+            jsonItem = new JsonPrimitive(nbtTagCompound.toString()).toString();
+        } catch (Exception e) {
+            plugin.getLogger().severe("Failed to create JSON from item. Product preview will not be available.");
+            plugin.debug("Failed to create JSON from item:");
+            plugin.debug(e);
+            jb.setRootPart(new JsonBuilder.Part(productString.replace(Placeholder.ITEM_NAME.toString(), productName)));
+            return jb;
+        }
+
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
+
+            // Remove spaces at start and end that were added before
+            if (i == 0 && part.startsWith(" ")) {
+                part = part.substring(1);
+            } else if (i == parts.length - 1 && part.endsWith(" ")) {
+                part = part.substring(0, part.length() - 1);
+            }
+
+            String formatPrefix = "";
+
+            // A color code resets all format codes, so only format codes
+            // after the last color code have to be found.
+            int lastColorGroupEndIndex = 0;
+
+            Matcher colorMatcher = COLOR_CODE_PATTERN.matcher(part);
+            if (colorMatcher.find()) {
+                formatPrefix = colorMatcher.group(1);
+                lastColorGroupEndIndex = colorMatcher.end();
+            }
+
+            Matcher formatMatcher = FORMAT_CODE_PATTERN.matcher(part);
+            while (formatMatcher.find(lastColorGroupEndIndex)) {
+                formatPrefix += formatMatcher.group(1);
+            }
+
+            rootArray.addPart(new JsonBuilder.Part(part));
+
+            if (i < parts.length - 1) {
+                JsonBuilder.PartMap hoverEvent = new JsonBuilder.PartMap();
+                hoverEvent.setValue("action", new JsonBuilder.Part("show_item"));
+                hoverEvent.setValue("value", new JsonBuilder.Part(jsonItem, false));
+
+                JsonBuilder.PartMap itemNameMap = JsonBuilder.parse(formatPrefix + productName).toMap();
+                itemNameMap.setValue("hoverEvent", hoverEvent);
+
+                rootArray.addPart(itemNameMap);
+            }
+        }
+
+        jb.setRootPart(rootArray);
+        return jb;
+    }
+
+    /**
      * A player buys from a shop
      * @param executor Player, who executed the command and will buy the product
      * @param shop Shop, from which the player buys
@@ -657,6 +738,7 @@ public class ShopInteractListener implements Listener {
     private void buy(Player executor, final Shop shop, boolean stack) {
         final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
 
+        stack = false;
         plugin.debug(executor.getName() + " is buying (#" + shop.getID() + ")");
 
         ItemStack itemStack = shop.getProduct().getItemStack();
@@ -829,6 +911,7 @@ public class ShopInteractListener implements Listener {
     private void sell(Player executor, final Shop shop, boolean stack) {
         final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
 
+        stack = false;
         plugin.debug(executor.getName() + " is selling (#" + shop.getID() + ")");
 
         ItemStack itemStack = shop.getProduct().getItemStack();
@@ -842,7 +925,7 @@ public class ShopInteractListener implements Listener {
 
         if (shop.getShopType() == ShopType.ADMIN || econ.getBalance(shop.getVendor(), worldName) >= price || Config.autoCalculateItemAmount) {
             int amountForMoney = 1;
-            
+
             if (shop.getShopType() != ShopType.ADMIN) {
                  amountForMoney = (int) (amount / price * econ.getBalance(shop.getVendor(), worldName));
             }
