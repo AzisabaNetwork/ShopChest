@@ -141,7 +141,7 @@ public class ShopInteractListener implements Listener {
             double buyPrice = clickType.getBuyPrice();
             double sellPrice = clickType.getSellPrice();
             ShopType shopType = clickType.getShopType();
-    
+
             create(p, b.getLocation(), product, buyPrice, sellPrice, shopType);
         }
 
@@ -161,10 +161,10 @@ public class ShopInteractListener implements Listener {
 
         if (e.getAction() != Action.RIGHT_CLICK_BLOCK && e.getAction() != Action.LEFT_CLICK_BLOCK)
             return;
-        
+
         if (b.getType() != Material.CHEST && b.getType() != Material.TRAPPED_CHEST)
             return;
-        
+
         ClickType clickType = ClickType.getPlayerClickType(p);
         if (clickType != null) {
             if (e.getAction() != Action.RIGHT_CLICK_BLOCK)
@@ -175,7 +175,7 @@ public class ShopInteractListener implements Listener {
                 case CREATE:
                 case SELECT_ITEM:
                     break;
-                default: 
+                default:
                     if (shop == null) {
                         p.sendMessage(LanguageUtils.getMessage(Message.CHEST_NO_SHOP));
                         plugin.debug("Chest is not a shop");
@@ -205,7 +205,7 @@ public class ShopInteractListener implements Listener {
                 return;
 
             boolean confirmed = needsConfirmation.containsKey(p.getUniqueId()) && needsConfirmation.get(p.getUniqueId()).contains(shop.getID());
-            
+
             if (e.getAction() == Action.LEFT_CLICK_BLOCK && p.isSneaking() && Utils.hasAxeInHand(p)) {
                 return;
             }
@@ -260,7 +260,7 @@ public class ShopInteractListener implements Listener {
                                 WrappedState state = flag.map(f -> wgWrapper.queryFlag(p, b.getLocation(), f).orElse(WrappedState.DENY)).orElse(WrappedState.DENY);
                                 externalPluginsAllowed = state == WrappedState.ALLOW;
                             }
-                            
+
                             if (shop.getShopType() == ShopType.ADMIN) {
                                 if (externalPluginsAllowed || p.hasPermission(Permissions.BYPASS_EXTERNAL_PLUGIN)) {
                                     if (confirmed || !Config.confirmShopping) {
@@ -628,13 +628,13 @@ public class ShopInteractListener implements Listener {
         String jsonItem = "";
         JsonBuilder jb = new JsonBuilder(plugin);
         JsonBuilder.PartArray rootArray = new JsonBuilder.PartArray();
-        
+
         try {
             OBCClassResolver obcClassResolver = new OBCClassResolver();
             NMSClassResolver nmsClassResolver = new NMSClassResolver();
 
-            Class<?> craftItemStackClass = obcClassResolver.resolveSilent("inventory.CraftItemStack");	
-            Object nmsStack = craftItemStackClass.getMethod("asNMSCopy", ItemStack.class).invoke(null, product.getItemStack());	
+            Class<?> craftItemStackClass = obcClassResolver.resolveSilent("inventory.CraftItemStack");
+            Object nmsStack = craftItemStackClass.getMethod("asNMSCopy", ItemStack.class).invoke(null, product.getItemStack());
             Class<?> nbtTagCompoundClass = nmsClassResolver.resolveSilent("nbt.NBTTagCompound");
             Object nbtTagCompound = nbtTagCompoundClass.getConstructor().newInstance();
             nmsStack.getClass().getMethod("save", nbtTagCompoundClass).invoke(nmsStack, nbtTagCompound);
@@ -668,7 +668,7 @@ public class ShopInteractListener implements Listener {
                 formatPrefix = colorMatcher.group(1);
                 lastColorGroupEndIndex = colorMatcher.end();
             }
-            
+
             Matcher formatMatcher = FORMAT_CODE_PATTERN.matcher(part);
             while (formatMatcher.find(lastColorGroupEndIndex)) {
                 formatPrefix += formatMatcher.group(1);
@@ -699,6 +699,7 @@ public class ShopInteractListener implements Listener {
      * @param stack Whether a whole stack should be bought
      */
     private void buy(Player executor, final Shop shop, boolean stack) {
+        stack = false;
         plugin.debug(executor.getName() + " is buying (#" + shop.getID() + ")");
 
         ItemStack itemStack = shop.getProduct().getItemStack();
@@ -869,6 +870,7 @@ public class ShopInteractListener implements Listener {
      * @param shop Shop, to which the player sells
      */
     private void sell(Player executor, final Shop shop, boolean stack) {
+        stack = false;
         plugin.debug(executor.getName() + " is selling (#" + shop.getID() + ")");
 
         ItemStack itemStack = shop.getProduct().getItemStack();
@@ -882,7 +884,7 @@ public class ShopInteractListener implements Listener {
 
         if (shop.getShopType() == ShopType.ADMIN || econ.getBalance(shop.getVendor(), worldName) >= price || Config.autoCalculateItemAmount) {
             int amountForMoney = 1;
-            
+
             if (shop.getShopType() != ShopType.ADMIN) {
                  amountForMoney = (int) (amount / price * econ.getBalance(shop.getVendor(), worldName));
             }
