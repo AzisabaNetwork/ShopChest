@@ -44,10 +44,11 @@ public class SQLite extends Database {
                 return null;
             }
         }
-        
+
         HikariConfig config = new HikariConfig();
         config.setJdbcUrl(String.format("jdbc:sqlite:" + dbFile));
         config.setConnectionTestQuery("SELECT 1");
+        config.setAutoCommit(true);
 
         return new HikariDataSource(config);
     }
