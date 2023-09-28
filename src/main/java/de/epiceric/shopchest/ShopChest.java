@@ -191,7 +191,7 @@ public class ShopChest extends JavaPlugin {
         shopCommand = new ShopCommand(this);
         shopCreationThreadPool = new ThreadPoolExecutor(0, 8,
                 5L, TimeUnit.SECONDS, new LinkedBlockingQueue<>());
-        
+
         loadExternalPlugins();
         loadMetrics();
         initDatabase();
@@ -331,7 +331,7 @@ public class ShopChest extends JavaPlugin {
         if (!Config.enableUpdateChecker) {
             return;
         }
-        
+
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -353,7 +353,7 @@ public class ShopChest extends JavaPlugin {
                             }
                         }
                         break;
-                
+
                     case FALSE:
                         latestVersion = "";
                         downloadLink = "";
@@ -392,8 +392,8 @@ public class ShopChest extends JavaPlugin {
     private void registerExternalListeners() {
         if (hasGriefPrevention())
             getServer().getPluginManager().registerEvents(new GriefPreventionListener(this), this);
-        if (hasTowny())
-            getServer().getPluginManager().registerEvents(new TownyListener(this), this);
+//        if (hasTowny())
+//            getServer().getPluginManager().registerEvents(new TownyListener(this), this);
         if (hasWorldGuard())
             getServer().getPluginManager().registerEvents(new de.epiceric.shopchest.external.listeners.WorldGuardListener(this), this);
     }
@@ -414,7 +414,7 @@ public class ShopChest extends JavaPlugin {
                         getLogger().info("Loaded shop amounts");
                         debug("Loaded shop amounts");
                     }
-                    
+
                     @Override
                     public void onError(Throwable throwable) {
                         getLogger().severe("Failed to load shop amounts. Shop limits will not be working correctly!");

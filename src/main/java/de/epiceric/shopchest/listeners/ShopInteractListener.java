@@ -14,6 +14,9 @@ import java.util.regex.Pattern;
 import com.github.mori01231.lifecore.util.ItemUtil;
 import com.google.gson.JsonPrimitive;
 
+import com.palmergames.bukkit.towny.TownyAPI;
+import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
+import com.palmergames.bukkit.towny.object.TownBlock;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -498,8 +501,15 @@ public class ShopInteractListener implements Listener {
 
         if (shop.getShopType() == ShopType.NORMAL && !executor.getUniqueId().equals(shop.getVendor().getUniqueId())
                 && !executor.hasPermission(Permissions.REMOVE_OTHER)) {
-            executor.sendMessage(LanguageUtils.getMessage(Message.NO_PERMISSION_REMOVE_OTHERS));
-            return;
+            TownBlock townBlock = TownyAPI.getInstance().getTownBlock(shop.getLocation());
+            try {
+                if (townBlock == null || !townBlock.hasTown() || !townBlock.getTown().hasMayor() || !townBlock.getTown().getMayor().getName().equals(executor.getName())) {
+                    executor.sendMessage(LanguageUtils.getMessage(Message.NO_PERMISSION_REMOVE_OTHERS));
+                    return;
+                }
+            } catch (NotRegisteredException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         plugin.debug(executor.getName() + " is removing " + shop.getVendor().getName() + "'s shop (#" + shop.getID() + ")");
