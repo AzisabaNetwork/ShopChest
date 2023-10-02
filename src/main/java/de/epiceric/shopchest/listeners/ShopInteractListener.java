@@ -377,7 +377,7 @@ public class ShopInteractListener implements Listener {
                             ItemStack itemStack = shop.getProduct().getItemStack();
 
                             if (externalPluginsAllowed || p.hasPermission(Permissions.BYPASS_EXTERNAL_PLUGIN)) {
-                                boolean stack = p.isSneaking() && !Utils.hasAxeInHand(p);
+                                boolean stack = false && p.isSneaking() && !Utils.hasAxeInHand(p);
                                 int amount = stack ? itemStack.getMaxStackSize() : shop.getProduct().getAmount();
 
                                 if (Utils.getAmount(p.getInventory(), itemStack) >= amount) {
