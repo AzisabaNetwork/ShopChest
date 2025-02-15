@@ -2,6 +2,20 @@ package de.epiceric.shopchest.utils;
 
 public class FastMath {
 
+    private static final int PRECISION = 512;
+    private static final double MULTIPLIER = PRECISION / 2D;
+
+    // Below is lookup table generation
+    // It is only executed once at initialization
+    private static final double OFFSET = MULTIPLIER + 0.5D; // + 0.5 as cast truncate and don't round
+    private static final double[] acos = new double[PRECISION + 1];
+
+    static {
+        for (int i = 0; i <= PRECISION; i++) {
+            acos[i] = Math.acos(i * (2D / PRECISION) - 1);
+        }
+    }
+
     /**
      * Fast sqrt, 1.57% precision
      *
@@ -23,20 +37,6 @@ public class FastMath {
         while (v > PRECISION) v -= PRECISION;
         while (v < 0) v += PRECISION;
         return acos[v];
-    }
-
-    // Below is lookup table generation
-    // It is only executed once at initialization
-
-    private static final int PRECISION = 512;
-    private static final double MULTIPLIER = PRECISION / 2D;
-    private static final double OFFSET = MULTIPLIER + 0.5D; // + 0.5 as cast truncate and don't round
-    private static final double[] acos = new double[PRECISION + 1];
-
-    static {
-        for (int i = 0; i <= PRECISION; i++) {
-            acos[i] = Math.acos(i * (2D / PRECISION) - 1);
-        }
     }
 
 }

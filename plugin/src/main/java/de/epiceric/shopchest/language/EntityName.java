@@ -4,8 +4,8 @@ import org.bukkit.entity.EntityType;
 
 public class EntityName {
 
-    private String localizedName;
-    private EntityType entityType;
+    private final String localizedName;
+    private final EntityType entityType;
 
     public EntityName(EntityType entityType, String localizedName) {
         this.entityType = entityType;

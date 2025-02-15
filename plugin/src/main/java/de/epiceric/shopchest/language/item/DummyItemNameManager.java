@@ -15,5 +15,5 @@ public class DummyItemNameManager implements ItemNameManager {
         return NOT_CONFIGURED_ITEM_NAME;
     }
 
-    
+
 }

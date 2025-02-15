@@ -1,33 +1,6 @@
 package de.epiceric.shopchest.sql;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
 import com.zaxxer.hikari.HikariDataSource;
-
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
-
 import de.epiceric.shopchest.ShopChest;
 import de.epiceric.shopchest.config.Config;
 import de.epiceric.shopchest.event.ShopBuySellEvent;
@@ -37,19 +10,25 @@ import de.epiceric.shopchest.shop.Shop.ShopType;
 import de.epiceric.shopchest.shop.ShopProduct;
 import de.epiceric.shopchest.utils.Callback;
 import de.epiceric.shopchest.utils.Utils;
+import org.bukkit.*;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public abstract class Database {
     private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-    private boolean initialized;
-
     String tableShops;
     String tableLogs;
     String tableLogouts;
     String tableFields;
-
     ShopChest plugin;
     HikariDataSource dataSource;
+    private boolean initialized;
 
     protected Database(ShopChest plugin) {
         this.plugin = plugin;
@@ -152,7 +131,7 @@ public abstract class Database {
                         int amount = is.getAmount();
                         is.setAmount(1);
                         String product = Utils.encode(is);
-                        
+
                         String insertQuery = "INSERT INTO " + tableShops + " SELECT id,vendor,?,?,world,x,y,z,buyprice,sellprice,shoptype FROM backup_shops WHERE id = ?";
                         try (PreparedStatement ps = con.prepareStatement(insertQuery)) {
                             ps.setString(1, product);
@@ -189,7 +168,7 @@ public abstract class Database {
                         String vendorUuid = vendor.substring(0, 36);
                         String vendorName = vendor.substring(38).replaceAll("\\)( \\(ADMIN\\))?", "");
                         boolean admin = vendor.endsWith("(ADMIN)");
-                        
+
                         String insertQuery = "INSERT INTO " + tableLogs + " SELECT id,-1,timestamp,?,?,?,?,'Unknown',?,?,?,?,world,x,y,z,price,type FROM backup_shop_log WHERE id = ?";
                         try (PreparedStatement ps = con.prepareStatement(insertQuery)) {
                             ps.setLong(1, time);
@@ -217,7 +196,7 @@ public abstract class Database {
 
                 setDatabaseVersion(2);
             }
-            
+
             int databaseVersion = getDatabaseVersion();
 
             if (databaseVersion < 3) {
@@ -235,10 +214,10 @@ public abstract class Database {
 
     /**
      * <p>(Re-)Connects to the the database and initializes it.</p>
-     * 
+     * <p>
      * All tables are created if necessary and if the database
      * structure has to be updated, that is done as well.
-     * 
+     *
      * @param callback Callback that - if succeeded - returns the amount of shops
      *                 that were found (as {@code int})
      */
@@ -311,7 +290,7 @@ public abstract class Database {
                         if (rs.next()) {
                             int count = rs.getInt(1);
                             initialized = true;
-                            
+
                             plugin.debug("Initialized database with " + count + " entries");
 
                             if (callback != null) {
@@ -325,7 +304,7 @@ public abstract class Database {
                     if (callback != null) {
                         callback.callSyncError(e);
                     }
-                    
+
                     plugin.getLogger().severe("Failed to initialize or connect to database");
                     plugin.debug("Failed to initialize or connect to database");
                     plugin.debug(e);
@@ -345,7 +324,7 @@ public abstract class Database {
             @Override
             public void run() {
                 try (Connection con = dataSource.getConnection();
-                        PreparedStatement ps = con.prepareStatement("DELETE FROM " + tableShops + " WHERE id = ?")) {
+                     PreparedStatement ps = con.prepareStatement("DELETE FROM " + tableShops + " WHERE id = ?")) {
                     ps.setInt(1, shop.getID());
                     ps.executeUpdate();
 
@@ -369,15 +348,15 @@ public abstract class Database {
 
     /**
      * Get shop amounts for each player
-     * 
+     *
      * @param callback Callback that returns a map of each player's shop amount
      */
     public void getShopAmounts(final Callback<Map<UUID, Integer>> callback) {
-        new BukkitRunnable(){
+        new BukkitRunnable() {
             @Override
             public void run() {
                 try (Connection con = dataSource.getConnection();
-                        Statement s = con.createStatement()) {
+                     Statement s = con.createStatement()) {
                     ResultSet rs = s.executeQuery("SELECT vendor, COUNT(*) AS count FROM " + tableShops + " WHERE shoptype = 'NORMAL' GROUP BY vendor");
 
                     plugin.debug("Getting shop amounts from database");
@@ -399,22 +378,22 @@ public abstract class Database {
                     plugin.getLogger().severe("Failed to get shop amounts from database");
                     plugin.debug("Failed to get shop amounts from database");
                     plugin.debug(ex);
-                }        
+                }
             }
         }.runTaskAsynchronously(plugin);
     }
 
     /**
      * Get all shops of a player, including admin shops
-     * 
+     *
      * @param callback Callback that returns a set of shops of the given player
      */
     public void getShops(UUID playerUuid, final Callback<Collection<Shop>> callback) {
-        new BukkitRunnable(){
+        new BukkitRunnable() {
             @Override
             public void run() {
                 try (Connection con = dataSource.getConnection();
-                        PreparedStatement ps = con.prepareStatement("SELECT * FROM " + tableShops + " WHERE vendor = ?")) {
+                     PreparedStatement ps = con.prepareStatement("SELECT * FROM " + tableShops + " WHERE vendor = ?")) {
                     ps.setString(1, playerUuid.toString());
                     ResultSet rs = ps.executeQuery();
 
@@ -456,15 +435,15 @@ public abstract class Database {
                     plugin.getLogger().severe("Failed to get player's shops from database");
                     plugin.debug("Failed to get player's shops from database");
                     plugin.debug(ex);
-                }        
+                }
             }
         }.runTaskAsynchronously(plugin);
     }
 
     /**
      * Get all shops from the database that are located in the given chunks
-     * 
-     * @param chunks Shops in these chunks are retrieved
+     *
+     * @param chunks   Shops in these chunks are retrieved
      * @param callback Callback that returns an immutable collection of shops if succeeded
      */
     public void getShopsInChunks(final Chunk[] chunks, final Callback<Collection<Shop>> callback) {
@@ -479,7 +458,7 @@ public abstract class Database {
             splitChunks[i] = tmp;
         }
 
-        new BukkitRunnable(){
+        new BukkitRunnable() {
             @Override
             public void run() {
                 List<Shop> shops = new ArrayList<>();
@@ -495,7 +474,7 @@ public abstract class Database {
                         chunksForWorld.add(chunk);
                         chunksByWorld.put(world, chunksForWorld);
                     }
-    
+
                     // Create query dynamically
                     String query = "SELECT * FROM " + tableShops + " WHERE ";
                     for (String world : chunksByWorld.keySet()) {
@@ -507,9 +486,9 @@ public abstract class Database {
                         query += "1=0)) OR ";
                     }
                     query += "1=0";
-    
+
                     try (Connection con = dataSource.getConnection();
-                            PreparedStatement ps = con.prepareStatement(query)) {
+                         PreparedStatement ps = con.prepareStatement(query)) {
                         int index = 0;
                         for (String world : chunksByWorld.keySet()) {
                             ps.setString(++index, world);
@@ -522,17 +501,17 @@ public abstract class Database {
                                 ps.setInt(++index, minZ + 15);
                             }
                         }
-    
+
                         ResultSet rs = ps.executeQuery();
                         while (rs.next()) {
                             int id = rs.getInt("id");
-    
+
                             plugin.debug("Getting Shop... (#" + id + ")");
-    
+
                             int x = rs.getInt("x");
                             int y = rs.getInt("y");
                             int z = rs.getInt("z");
-    
+
                             World world = plugin.getServer().getWorld(rs.getString("world"));
                             Location location = new Location(world, x, y, z);
                             OfflinePlayer vendor = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("vendor")));
@@ -542,16 +521,16 @@ public abstract class Database {
                             double buyPrice = rs.getDouble("buyprice");
                             double sellPrice = rs.getDouble("sellprice");
                             ShopType shopType = ShopType.valueOf(rs.getString("shoptype"));
-    
+
                             plugin.debug("Initializing new shop... (#" + id + ")");
-    
+
                             shops.add(new Shop(id, plugin, vendor, product, location, buyPrice, sellPrice, shopType));
                         }
                     } catch (SQLException ex) {
                         if (callback != null) {
                             callback.callSyncError(ex);
                         }
-    
+
                         plugin.getLogger().severe("Failed to get shops from database");
                         plugin.debug("Failed to get shops");
                         plugin.debug(ex);
@@ -559,17 +538,18 @@ public abstract class Database {
                         return;
                     }
                 }
-    
+
                 if (callback != null) {
                     callback.callSyncResult(Collections.unmodifiableCollection(shops));
                 }
-            };
+            }
+
         }.runTaskAsynchronously(plugin);
     }
 
     /**
      * Adds a shop to the database
-     * 
+     *
      * @param shop     Shop to add
      * @param callback Callback that - if succeeded - returns the ID the shop was
      *                 given (as {@code int})
@@ -584,23 +564,23 @@ public abstract class Database {
                 String query = shop.hasId() ? queryWithId : queryNoId;
 
                 try (Connection con = dataSource.getConnection();
-                        PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
+                     PreparedStatement ps = con.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
                     int i = 0;
                     if (shop.hasId()) {
                         i = 1;
                         ps.setInt(1, shop.getID());
                     }
 
-                    ps.setString(i+1, shop.getVendor().getUniqueId().toString());
-                    ps.setString(i+2, Utils.encode(shop.getProduct().getItemStack()));
-                    ps.setInt(i+3, shop.getProduct().getAmount());
-                    ps.setString(i+4, shop.getLocation().getWorld().getName());
-                    ps.setInt(i+5, shop.getLocation().getBlockX());
-                    ps.setInt(i+6, shop.getLocation().getBlockY());
-                    ps.setInt(i+7, shop.getLocation().getBlockZ());
-                    ps.setDouble(i+8, shop.getBuyPrice());
-                    ps.setDouble(i+9, shop.getSellPrice());
-                    ps.setString(i+10, shop.getShopType().toString());
+                    ps.setString(i + 1, shop.getVendor().getUniqueId().toString());
+                    ps.setString(i + 2, Utils.encode(shop.getProduct().getItemStack()));
+                    ps.setInt(i + 3, shop.getProduct().getAmount());
+                    ps.setString(i + 4, shop.getLocation().getWorld().getName());
+                    ps.setInt(i + 5, shop.getLocation().getBlockX());
+                    ps.setInt(i + 6, shop.getLocation().getBlockY());
+                    ps.setInt(i + 7, shop.getLocation().getBlockZ());
+                    ps.setDouble(i + 8, shop.getBuyPrice());
+                    ps.setDouble(i + 9, shop.getSellPrice());
+                    ps.setString(i + 10, shop.getShopType().toString());
                     ps.executeUpdate();
 
                     if (!shop.hasId()) {
@@ -633,12 +613,12 @@ public abstract class Database {
 
     /**
      * Log an economy transaction to the database
-     * 
+     *
      * @param executor Player who bought/sold something
-     * @param shop The {@link Shop} the player bought from or sold to
-     * @param product The {@link ItemStack} that was bought/sold
-     * @param price The price the product was bought or sold for
-     * @param type Whether the executor bought or sold
+     * @param shop     The {@link Shop} the player bought from or sold to
+     * @param product  The {@link ItemStack} that was bought/sold
+     * @param price    The price the product was bought or sold for
+     * @param type     Whether the executor bought or sold
      * @param callback Callback that - if succeeded - returns {@code null}
      */
     public void logEconomy(final Player executor, Shop shop, ShopProduct product, double price, Type type, final Callback<Void> callback) {
@@ -650,7 +630,7 @@ public abstract class Database {
                 @Override
                 public void run() {
                     try (Connection con = dataSource.getConnection();
-                            PreparedStatement ps = con.prepareStatement(query)) {
+                         PreparedStatement ps = con.prepareStatement(query)) {
 
                         long millis = System.currentTimeMillis();
 
@@ -698,7 +678,7 @@ public abstract class Database {
 
     /**
      * Cleans up the economy log to reduce file size
-     * 
+     *
      * @param async Whether the call should be executed asynchronously
      */
     public void cleanUpEconomy(boolean async) {
@@ -710,8 +690,8 @@ public abstract class Database {
                 String queryCleanUpPlayers = "DELETE FROM " + tableLogouts + " WHERE time < " + time;
 
                 try (Connection con = dataSource.getConnection();
-                        Statement s = con.createStatement();
-                        Statement s2 = con.createStatement()) {
+                     Statement s = con.createStatement();
+                     Statement s2 = con.createStatement()) {
                     s.executeUpdate(queryCleanUpLog);
                     s2.executeUpdate(queryCleanUpPlayers);
 
@@ -734,7 +714,7 @@ public abstract class Database {
 
     /**
      * Get the revenue a player got while he was offline
-     * 
+     *
      * @param player     Player whose revenue to get
      * @param logoutTime Time in milliseconds when he logged out the last time
      * @param callback   Callback that - if succeeded - returns the revenue the
@@ -747,7 +727,7 @@ public abstract class Database {
                 double revenue = 0;
 
                 try (Connection con = dataSource.getConnection();
-                        PreparedStatement ps = con.prepareStatement("SELECT * FROM " + tableLogs + " WHERE vendor_uuid = ?")) {
+                     PreparedStatement ps = con.prepareStatement("SELECT * FROM " + tableLogs + " WHERE vendor_uuid = ?")) {
                     ps.setString(1, player.getUniqueId().toString());
                     ResultSet rs = ps.executeQuery();
 
@@ -783,16 +763,16 @@ public abstract class Database {
 
     /**
      * Log a logout to the database
-     * 
-     * @param player    Player who logged out
-     * @param callback  Callback that - if succeeded - returns {@code null}
+     *
+     * @param player   Player who logged out
+     * @param callback Callback that - if succeeded - returns {@code null}
      */
     public void logLogout(final Player player, final Callback<Void> callback) {
         new BukkitRunnable() {
             @Override
             public void run() {
                 try (Connection con = dataSource.getConnection();
-                        PreparedStatement ps = con.prepareStatement("REPLACE INTO " + tableLogouts + " (player,time) VALUES(?,?)")) {
+                     PreparedStatement ps = con.prepareStatement("REPLACE INTO " + tableLogouts + " (player,time) VALUES(?,?)")) {
                     ps.setString(1, player.getUniqueId().toString());
                     ps.setLong(2, System.currentTimeMillis());
                     ps.executeUpdate();
@@ -817,7 +797,7 @@ public abstract class Database {
 
     /**
      * Get the last logout of a player
-     * 
+     *
      * @param player   Player who logged out
      * @param callback Callback that - if succeeded - returns the time in
      *                 milliseconds the player logged out (as {@code long})
@@ -828,7 +808,7 @@ public abstract class Database {
             @Override
             public void run() {
                 try (Connection con = dataSource.getConnection();
-                        PreparedStatement ps = con.prepareStatement("SELECT * FROM " + tableLogouts + " WHERE player = ?")) {
+                     PreparedStatement ps = con.prepareStatement("SELECT * FROM " + tableLogouts + " WHERE player = ?")) {
                     ps.setString(1, player.getUniqueId().toString());
                     ResultSet rs = ps.executeQuery();
 

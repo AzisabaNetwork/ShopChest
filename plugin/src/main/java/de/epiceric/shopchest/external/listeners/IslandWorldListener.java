@@ -1,20 +1,19 @@
 package de.epiceric.shopchest.external.listeners;
 
-import java.util.Set;
-
+import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.config.Config;
+import de.epiceric.shopchest.event.ShopCreateEvent;
+import de.epiceric.shopchest.event.ShopExtendEvent;
+import de.epiceric.shopchest.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-
-import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.config.Config;
-import de.epiceric.shopchest.event.ShopCreateEvent;
-import de.epiceric.shopchest.event.ShopExtendEvent;
-import de.epiceric.shopchest.utils.Utils;
 import pl.islandworld.api.IslandWorldApi;
+
+import java.util.Set;
 
 public class IslandWorldListener implements Listener {
     private final ShopChest plugin;
@@ -44,7 +43,7 @@ public class IslandWorldListener implements Listener {
     }
 
     private boolean handleForLocation(Player player, Location loc, Cancellable e) {
-        if (!loc.getWorld().getName().equals(IslandWorldApi.getIslandWorld().getName())) 
+        if (!loc.getWorld().getName().equals(IslandWorldApi.getIslandWorld().getName()))
             return false;
 
         if (!IslandWorldApi.canBuildOnLocation(player, loc, true)) {
@@ -55,5 +54,5 @@ public class IslandWorldListener implements Listener {
 
         return false;
     }
-    
+
 }

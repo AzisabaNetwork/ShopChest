@@ -1,8 +1,7 @@
 package de.epiceric.shopchest.language;
 
-import org.jetbrains.annotations.NotNull;
-
 import de.epiceric.shopchest.language.item.ItemNameManager;
+import org.jetbrains.annotations.NotNull;
 
 public class LanguageManager {
 

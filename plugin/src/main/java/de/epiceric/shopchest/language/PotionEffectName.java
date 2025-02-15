@@ -4,8 +4,8 @@ import org.bukkit.potion.PotionEffectType;
 
 public class PotionEffectName {
 
-    private PotionEffectType effect;
-    private String localizedName;
+    private final PotionEffectType effect;
+    private final String localizedName;
 
     public PotionEffectName(PotionEffectType effect, String localizedName) {
         this.effect = effect;

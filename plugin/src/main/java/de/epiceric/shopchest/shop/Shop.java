@@ -31,23 +31,6 @@ import java.util.Map;
 
 public class Shop {
 
-    public enum ShopType {
-        NORMAL,
-        ADMIN,
-    }
-
-    private static class PreCreateResult {
-        private final Inventory inventory;
-        private final Chest[] chests;
-        private final BlockFace face;
-
-        private PreCreateResult(Inventory inventory, Chest[] chests, BlockFace face) {
-            this.inventory = inventory;
-            this.chests = chests;
-            this.face = face;
-        }
-    }
-
     private final ShopChest plugin;
     private final OfflinePlayer vendor;
     private final ShopProduct product;
@@ -55,13 +38,11 @@ public class Shop {
     private final double buyPrice;
     private final double sellPrice;
     private final ShopType shopType;
-
     private boolean created;
     private int id;
     private Hologram hologram;
     private Location holoLocation;
     private ShopItem item;
-
     public Shop(int id, ShopChest plugin, OfflinePlayer vendor, ShopProduct product, Location location, double buyPrice, double sellPrice, ShopType shopType) {
         this.id = id;
         this.plugin = plugin;
@@ -72,7 +53,6 @@ public class Shop {
         this.sellPrice = sellPrice;
         this.shopType = shopType;
     }
-
     public Shop(ShopChest plugin, OfflinePlayer vendor, ShopProduct product, Location location, double buyPrice, double sellPrice, ShopType shopType) {
         this(-1, plugin, vendor, product, location, buyPrice, sellPrice, shopType);
     }
@@ -186,7 +166,7 @@ public class Shop {
     }
 
     /**
-     * Runs everything that needs to be called synchronously in order 
+     * Runs everything that needs to be called synchronously in order
      * to prepare creating the hologram.
      */
     private PreCreateResult preCreateHologram() {
@@ -226,7 +206,7 @@ public class Shop {
         String[] holoText = getHologramText(preResult.inventory);
         holoLocation = getHologramLocation(preResult.chests, preResult.face);
 
-        new BukkitRunnable(){
+        new BukkitRunnable() {
             @Override
             public void run() {
                 hologram = new Hologram(plugin, holoText, holoLocation);
@@ -334,7 +314,7 @@ public class Shop {
     private Location getHologramLocation(Chest[] chests, BlockFace face) {
         World w = location.getWorld();
         int x = location.getBlockX();
-        int y  = location.getBlockY();
+        int y = location.getBlockY();
         int z = location.getBlockZ();
 
         Location holoLocation = new Location(w, x, y, z);
@@ -383,6 +363,7 @@ public class Shop {
     /**
      * <p>Assign an ID to the shop.</p>
      * Only works for the first time!
+     *
      * @param id ID to set for this shop
      */
     public void setId(int id) {
@@ -481,6 +462,23 @@ public class Shop {
         }
 
         return null;
+    }
+
+    public enum ShopType {
+        NORMAL,
+        ADMIN,
+    }
+
+    private static class PreCreateResult {
+        private final Inventory inventory;
+        private final Chest[] chests;
+        private final BlockFace face;
+
+        private PreCreateResult(Inventory inventory, Chest[] chests, BlockFace face) {
+            this.inventory = inventory;
+            this.chests = chests;
+            this.face = face;
+        }
     }
 
 }

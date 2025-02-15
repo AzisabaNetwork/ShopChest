@@ -1,18 +1,17 @@
 package de.epiceric.shopchest.language;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Map;
-import java.util.logging.Logger;
-
-import org.jetbrains.annotations.NotNull;
-
 import de.epiceric.shopchest.ShopChest;
 import de.epiceric.shopchest.config.FileLoader;
 import de.epiceric.shopchest.config.LanguageConfigurationLoader;
 import de.epiceric.shopchest.language.item.DummyItemNameManager;
 import de.epiceric.shopchest.language.item.ItemNameManager;
 import de.epiceric.shopchest.language.item.LocalizedItemNameManager;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+import java.util.logging.Logger;
 
 public class LanguageLoader {
 

@@ -1,8 +1,5 @@
 package de.epiceric.shopchest.utils;
 
-import java.util.Arrays;
-import java.util.Map;
-
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
@@ -10,6 +7,9 @@ import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.Potion;
 import org.bukkit.potion.PotionType;
+
+import java.util.Arrays;
+import java.util.Map;
 
 public class ItemUtils {
 
@@ -23,13 +23,13 @@ public class ItemUtils {
     }
 
     public static PotionType getPotionEffect(ItemStack itemStack) {
-        if (itemStack.getItemMeta() instanceof PotionMeta) {    
+        if (itemStack.getItemMeta() instanceof PotionMeta) {
             if (Utils.getMajorVersion() < 9) {
                 return Potion.fromItemStack(itemStack).getType();
             } else {
                 // TODO Maybe save reimplement the old version
                 //return ((PotionMeta) itemStack.getItemMeta()).getBasePotionData().getType();
-                return ((PotionMeta)itemStack.getItemMeta()).getBasePotionType();
+                return ((PotionMeta) itemStack.getItemMeta()).getBasePotionType();
             }
         }
 
@@ -60,6 +60,7 @@ public class ItemUtils {
 
     /**
      * Get the {@link ItemStack} from a String
+     *
      * @param item Serialized ItemStack e.g. {@code "STONE"} or {@code "STONE:1"}
      * @return The de-serialized ItemStack or {@code null} if the serialized item is invalid
      */

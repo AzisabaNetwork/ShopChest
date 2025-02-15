@@ -2,7 +2,10 @@ package de.epiceric.shopchest.listeners;
 
 import de.epiceric.shopchest.ShopChest;
 import de.epiceric.shopchest.config.Placeholder;
-import de.epiceric.shopchest.language.*;
+import de.epiceric.shopchest.language.LanguageManager;
+import de.epiceric.shopchest.language.Message;
+import de.epiceric.shopchest.language.MessageRegistry;
+import de.epiceric.shopchest.language.Replacement;
 import de.epiceric.shopchest.language.item.ItemNameManager;
 import de.epiceric.shopchest.utils.ClickType;
 import de.epiceric.shopchest.utils.ClickType.SelectClickType;
@@ -24,7 +27,7 @@ import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.player.*;
 
 public class CreativeModeListener implements Listener {
-    private ShopChest plugin;
+    private final ShopChest plugin;
 
     public CreativeModeListener(ShopChest plugin) {
         this.plugin = plugin;
@@ -75,7 +78,7 @@ public class CreativeModeListener implements Listener {
         final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
         p.sendMessage(messageRegistry.getMessage(Message.CREATION_CANCELLED));
     }
-    
+
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent e) {
         // Reset game mode on quit if SelectClickType is set

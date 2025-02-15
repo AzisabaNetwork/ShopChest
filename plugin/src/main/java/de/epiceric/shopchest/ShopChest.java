@@ -1,5 +1,36 @@
 package de.epiceric.shopchest;
 
+import com.palmergames.bukkit.towny.Towny;
+import de.epiceric.shopchest.command.ShopCommand;
+import de.epiceric.shopchest.config.Config;
+import de.epiceric.shopchest.config.HologramFormat;
+import de.epiceric.shopchest.event.ShopInitializedEvent;
+import de.epiceric.shopchest.external.WorldGuardShopFlag;
+import de.epiceric.shopchest.external.listeners.GriefPreventionListener;
+import de.epiceric.shopchest.listeners.*;
+import de.epiceric.shopchest.shop.Shop;
+import de.epiceric.shopchest.shop.Shop.ShopType;
+import de.epiceric.shopchest.sql.Database;
+import de.epiceric.shopchest.sql.MySQL;
+import de.epiceric.shopchest.sql.SQLite;
+import de.epiceric.shopchest.utils.*;
+import de.epiceric.shopchest.utils.UpdateChecker.UpdateCheckerResult;
+import me.ryanhamshire.GriefPrevention.GriefPrevention;
+import net.milkbowl.vault.economy.Economy;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.AdvancedPie;
+import org.bstats.charts.SimplePie;
+import org.bukkit.Bukkit;
+import org.bukkit.Chunk;
+import org.bukkit.World;
+import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.codemc.worldguardwrapper.WorldGuardWrapper;
+import pl.islandworld.IslandWorld;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -14,68 +45,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
-
-import com.palmergames.bukkit.towny.Towny;
-import com.wasteofplastic.askyblock.ASkyBlock;
-
-import org.bstats.bukkit.Metrics;
-import org.bstats.charts.AdvancedPie;
-import org.bstats.charts.SimplePie;
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.World;
-import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.codemc.worldguardwrapper.WorldGuardWrapper;
-
-import de.epiceric.shopchest.command.ShopCommand;
-import de.epiceric.shopchest.config.Config;
-import de.epiceric.shopchest.config.HologramFormat;
-import de.epiceric.shopchest.event.ShopInitializedEvent;
-import de.epiceric.shopchest.external.BentoBoxShopFlag;
-import de.epiceric.shopchest.external.PlotSquaredOldShopFlag;
-import de.epiceric.shopchest.external.PlotSquaredShopFlag;
-import de.epiceric.shopchest.external.WorldGuardShopFlag;
-import de.epiceric.shopchest.external.listeners.ASkyBlockListener;
-import de.epiceric.shopchest.external.listeners.GriefPreventionListener;
-import de.epiceric.shopchest.external.listeners.IslandWorldListener;
-import de.epiceric.shopchest.external.listeners.PlotSquaredListener;
-import de.epiceric.shopchest.external.listeners.TownyListener;
-import de.epiceric.shopchest.external.listeners.USkyBlockListener;
-import de.epiceric.shopchest.language.LanguageUtils;
-import de.epiceric.shopchest.listeners.AreaShopListener;
-import de.epiceric.shopchest.listeners.BentoBoxListener;
-import de.epiceric.shopchest.listeners.BlockExplodeListener;
-import de.epiceric.shopchest.listeners.ChestProtectListener;
-import de.epiceric.shopchest.listeners.CreativeModeListener;
-import de.epiceric.shopchest.listeners.NotifyPlayerOnJoinListener;
-import de.epiceric.shopchest.listeners.ShopInteractListener;
-import de.epiceric.shopchest.listeners.ShopItemListener;
-import de.epiceric.shopchest.listeners.ShopUpdateListener;
-import de.epiceric.shopchest.listeners.WorldGuardListener;
-import de.epiceric.shopchest.shop.Shop;
-import de.epiceric.shopchest.shop.Shop.ShopType;
-import de.epiceric.shopchest.sql.Database;
-import de.epiceric.shopchest.sql.MySQL;
-import de.epiceric.shopchest.sql.SQLite;
-import de.epiceric.shopchest.utils.Callback;
-import de.epiceric.shopchest.utils.ClickType;
-import de.epiceric.shopchest.utils.Permissions;
-import de.epiceric.shopchest.utils.ShopUpdater;
-import de.epiceric.shopchest.utils.ShopUtils;
-import de.epiceric.shopchest.utils.UpdateChecker;
-import de.epiceric.shopchest.utils.UpdateChecker.UpdateCheckerResult;
-import de.epiceric.shopchest.utils.Utils;
-import fr.xephi.authme.AuthMe;
-import me.ryanhamshire.GriefPrevention.GriefPrevention;
-import me.wiefferink.areashop.AreaShop;
-import net.milkbowl.vault.economy.Economy;
-import pl.islandworld.IslandWorld;
-import us.talabrek.ultimateskyblock.api.uSkyBlockAPI;
-import world.bentobox.bentobox.BentoBox;
 
 public class ShopChest extends JavaPlugin {
 
@@ -107,6 +76,7 @@ public class ShopChest extends JavaPlugin {
 
     /**
      * Sets up the economy of Vault
+     *
      * @return Whether an economy plugin has been registered
      */
     private boolean setupEconomy() {
@@ -297,20 +267,20 @@ public class ShopChest extends JavaPlugin {
         metrics.addCustomChart(new SimplePie("creative_setting", () -> Config.creativeSelectItem ? "Enabled" : "Disabled"));
         metrics.addCustomChart(new SimplePie("database_type", () -> Config.databaseType.toString()));
         metrics.addCustomChart(new AdvancedPie("shop_type", () -> {
-                int normal = 0;
-                int admin = 0;
+            int normal = 0;
+            int admin = 0;
 
-                for (Shop shop : shopUtils.getShops()) {
-                    if (shop.getShopType() == ShopType.NORMAL) normal++;
-                    else if (shop.getShopType() == ShopType.ADMIN) admin++;
-                }
+            for (Shop shop : shopUtils.getShops()) {
+                if (shop.getShopType() == ShopType.NORMAL) normal++;
+                else if (shop.getShopType() == ShopType.ADMIN) admin++;
+            }
 
-                Map<String, Integer> result = new HashMap<>();
+            Map<String, Integer> result = new HashMap<>();
 
-                result.put("Admin", admin);
-                result.put("Normal", normal);
+            result.put("Admin", admin);
+            result.put("Normal", normal);
 
-                return result;
+            return result;
         }));
     }
 
@@ -417,7 +387,7 @@ public class ShopChest extends JavaPlugin {
                 Chunk[] loadedChunks = getServer().getWorlds().stream().map(World::getLoadedChunks)
                         .flatMap(Stream::of).toArray(Chunk[]::new);
 
-                shopUtils.loadShopAmounts(new Callback<Map<UUID,Integer>>(ShopChest.this) {
+                shopUtils.loadShopAmounts(new Callback<Map<UUID, Integer>>(ShopChest.this) {
                     @Override
                     public void onResult(Map<UUID, Integer> result) {
                         getLogger().info("Loaded shop amounts");
@@ -459,6 +429,7 @@ public class ShopChest extends JavaPlugin {
 
     /**
      * Print a message to the <i>/plugins/ShopChest/debug.txt</i> file
+     *
      * @param message Message to print
      */
     public void debug(String message) {
@@ -477,6 +448,7 @@ public class ShopChest extends JavaPlugin {
 
     /**
      * Print a {@link Throwable}'s stacktrace to the <i>/plugins/ShopChest/debug.txt</i> file
+     *
      * @param throwable {@link Throwable} whose stacktrace will be printed
      */
     public void debug(Throwable throwable) {
@@ -575,6 +547,7 @@ public class ShopChest extends JavaPlugin {
 
     /**
      * Set whether an update is needed
+     *
      * @param isUpdateNeeded Whether an update should be needed
      */
     public void setUpdateNeeded(boolean isUpdateNeeded) {
@@ -590,6 +563,7 @@ public class ShopChest extends JavaPlugin {
 
     /**
      * Set the latest version
+     *
      * @param latestVersion Version to set as latest version
      */
     public void setLatestVersion(String latestVersion) {
@@ -605,6 +579,7 @@ public class ShopChest extends JavaPlugin {
 
     /**
      * Set the download Link of the latest version (will return null if not checked or if no update is available)
+     *
      * @param downloadLink Link to set as Download Link
      */
     public void setDownloadLink(String downloadLink) {

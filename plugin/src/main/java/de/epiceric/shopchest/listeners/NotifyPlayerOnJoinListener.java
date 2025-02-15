@@ -17,7 +17,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class NotifyPlayerOnJoinListener implements Listener {
 
-    private ShopChest plugin;
+    private final ShopChest plugin;
 
     public NotifyPlayerOnJoinListener(ShopChest plugin) {
         this.plugin = plugin;

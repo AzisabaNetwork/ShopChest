@@ -1,22 +1,18 @@
 package de.epiceric.shopchest.command;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.config.Config;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
-import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.config.Config;
+import java.util.*;
+import java.util.stream.Collectors;
 
 class ShopTabCompleter implements TabCompleter {
-    private ShopChest plugin;
+    private final ShopChest plugin;
 
     ShopTabCompleter(ShopChest plugin) {
         this.plugin = plugin;
@@ -26,7 +22,7 @@ class ShopTabCompleter implements TabCompleter {
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         if (command.getName().equalsIgnoreCase(Config.mainCommandName)) {
 
-            List<String> createSubCommands = Arrays.asList("admin");
+            List<String> createSubCommands = Collections.singletonList("admin");
             List<String> configSubCommands = Arrays.asList("add", "remove", "set");
             List<String> areaShopRemoveEvents = Arrays.asList("DELETE", "RESELL", "SELL", "UNRENT");
             List<String> townyShopPlots = Arrays.asList("ARENA", "COMMERCIAL", "EMBASSY", "FARM", "INN", "JAIL", "RESIDENTIAL", "SPLEEF", "WILDS");

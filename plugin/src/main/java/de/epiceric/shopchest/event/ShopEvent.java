@@ -1,20 +1,23 @@
 package de.epiceric.shopchest.event;
 
+import de.epiceric.shopchest.shop.Shop;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-import de.epiceric.shopchest.shop.Shop;
-
 public abstract class ShopEvent extends Event {
 
     private static final HandlerList handlers = new HandlerList();
-    private Shop shop;
-    private Player player;
+    private final Shop shop;
+    private final Player player;
 
     public ShopEvent(Player player, Shop shop) {
         this.player = player;
         this.shop = shop;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**
@@ -29,10 +32,6 @@ public abstract class ShopEvent extends Event {
      */
     public Player getPlayer() {
         return player;
-    }
-
-    public static HandlerList getHandlerList() {
-        return handlers;
     }
 
     @Override

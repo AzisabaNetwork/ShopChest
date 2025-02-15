@@ -11,11 +11,15 @@ import org.bukkit.event.HandlerList;
 public class ShopReloadEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
 
-    private CommandSender sender;
+    private final CommandSender sender;
     private boolean cancelled;
 
     public ShopReloadEvent(CommandSender sender) {
         this.sender = sender;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**
@@ -33,10 +37,6 @@ public class ShopReloadEvent extends Event implements Cancellable {
     @Override
     public boolean isCancelled() {
         return cancelled;
-    }
-
-    public static HandlerList getHandlerList() {
-        return handlers;
     }
 
     @Override

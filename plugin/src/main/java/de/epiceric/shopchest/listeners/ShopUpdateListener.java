@@ -1,8 +1,8 @@
 package de.epiceric.shopchest.listeners;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.shop.Shop;
+import de.epiceric.shopchest.utils.Callback;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.block.Chest;
@@ -19,9 +19,8 @@ import org.bukkit.event.world.ChunkLoadEvent;
 import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.shop.Shop;
-import de.epiceric.shopchest.utils.Callback;
+import java.util.HashSet;
+import java.util.Set;
 
 public class ShopUpdateListener implements Listener {
 
@@ -39,13 +38,13 @@ public class ShopUpdateListener implements Listener {
         Location loc = null;
 
         if (e.getSource().getHolder() instanceof Chest) {
-            loc =  ((Chest) e.getSource().getHolder()).getLocation();
+            loc = ((Chest) e.getSource().getHolder()).getLocation();
         } else if (e.getSource().getHolder() instanceof DoubleChest) {
-            loc =  ((DoubleChest) e.getSource().getHolder()).getLocation();
+            loc = ((DoubleChest) e.getSource().getHolder()).getLocation();
         } else if (e.getDestination().getHolder() instanceof Chest) {
-            loc =  ((Chest) e.getDestination().getHolder()).getLocation();
+            loc = ((Chest) e.getDestination().getHolder()).getLocation();
         } else if (e.getDestination().getHolder() instanceof DoubleChest) {
-            loc =  ((DoubleChest) e.getDestination().getHolder()).getLocation();
+            loc = ((DoubleChest) e.getDestination().getHolder()).getLocation();
         }
 
         if (loc != null) {
@@ -59,7 +58,7 @@ public class ShopUpdateListener implements Listener {
         // If done without delay, Bukkit#getOnlinePlayers() would still
         // contain the player even though he left, so the shop updater
         // would show the shop again.
-        new BukkitRunnable(){
+        new BukkitRunnable() {
             @Override
             public void run() {
                 for (Shop shop : plugin.getShopUtils().getShops()) {
@@ -70,7 +69,7 @@ public class ShopUpdateListener implements Listener {
                         shop.getHologram().resetVisible(e.getPlayer());
                     }
                 }
-        
+
                 plugin.getShopUtils().resetPlayerLocation(e.getPlayer());
             }
         }.runTaskLater(plugin, 1L);
@@ -123,7 +122,7 @@ public class ShopUpdateListener implements Listener {
         // chunk loads can be handled at the same time without having to
         // send a database request for each chunk.
         if (newLoadedChunks.isEmpty()) {
-            new BukkitRunnable(){
+            new BukkitRunnable() {
                 @Override
                 public void run() {
                     int chunkCount = newLoadedChunks.size();
@@ -135,7 +134,7 @@ public class ShopUpdateListener implements Listener {
                             }
                             plugin.debug("Loaded " + result + " shops in " + chunkCount + " chunks");
                         }
-            
+
                         @Override
                         public void onError(Throwable throwable) {
                             // Database connection probably failed => disable plugin to prevent more errors

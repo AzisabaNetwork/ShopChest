@@ -155,7 +155,7 @@ public class Config {
 
     /**
      * <p>Sets the time limit for cleaning up the economy log in days</p>
-     * 
+     * <p>
      * If this equals to {@code 0}, the economy log will not be cleaned.
      **/
     public static int cleanupEconomyLogDays;
@@ -299,7 +299,7 @@ public class Config {
      **/
     public static String languageFile;
 
-    private ShopChest plugin;
+    private final ShopChest plugin;
 
     public Config(ShopChest plugin) {
         this.plugin = plugin;
@@ -429,8 +429,9 @@ public class Config {
 
     /**
      * Reload the configuration values from config.yml
-     * @param firstLoad Whether the config values have not been loaded before
-     * @param langReload Whether the language configuration should be reloaded
+     *
+     * @param firstLoad    Whether the config values have not been loaded before
+     * @param langReload   Whether the language configuration should be reloaded
      * @param showMessages Whether console (error) messages should be shown
      */
     public void reload(boolean firstLoad, boolean langReload, boolean showMessages) {

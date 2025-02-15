@@ -1,18 +1,17 @@
 package de.epiceric.shopchest.nms;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-
+import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.config.Config;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Player;
 
-import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.config.Config;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Hologram {
     // concurrent since update task is in async thread
@@ -84,7 +83,7 @@ public class Hologram {
     }
 
     /**
-     * @param p Player to which the hologram should be shown
+     * @param p     Player to which the hologram should be shown
      * @param force Whether to force showing the hologram
      */
     public void showPlayer(Player p, boolean force) {
@@ -101,7 +100,7 @@ public class Hologram {
     }
 
     /**
-     * @param p Player from which the hologram should be hidden
+     * @param p     Player from which the hologram should be hidden
      * @param force Whether to force hiding the hologram
      */
     public void hidePlayer(Player p, boolean force) {
@@ -112,7 +111,7 @@ public class Hologram {
 
     /**
      * <p>Removes the hologram.</p>
-     * 
+     * <p>
      * Hologram will be hidden from all players and all
      * ArmorStand entities will be killed.
      */
@@ -130,6 +129,7 @@ public class Hologram {
     /**
      * Remove the player from the list of viewers. The hologram is
      * then counted as hidden, but no packets are sent to the player.
+     *
      * @param p Player whose visibility status will be reset
      */
     public void resetVisible(Player p) {
@@ -212,7 +212,7 @@ public class Hologram {
      * @param text text to display
      */
     public void setLine(int line, String text) {
-        if (text == null ||text.isEmpty()) {
+        if (text == null || text.isEmpty()) {
             removeLine(line);
             return;
         }

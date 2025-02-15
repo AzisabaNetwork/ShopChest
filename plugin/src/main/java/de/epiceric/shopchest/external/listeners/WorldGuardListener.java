@@ -1,8 +1,10 @@
 package de.epiceric.shopchest.external.listeners;
 
-import java.util.Optional;
-import java.util.Set;
-
+import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.config.Config;
+import de.epiceric.shopchest.event.ShopCreateEvent;
+import de.epiceric.shopchest.event.ShopExtendEvent;
+import de.epiceric.shopchest.utils.Utils;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
@@ -13,11 +15,8 @@ import org.codemc.worldguardwrapper.WorldGuardWrapper;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
 
-import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.config.Config;
-import de.epiceric.shopchest.event.ShopCreateEvent;
-import de.epiceric.shopchest.event.ShopExtendEvent;
-import de.epiceric.shopchest.utils.Utils;
+import java.util.Optional;
+import java.util.Set;
 
 public class WorldGuardListener implements Listener {
 
@@ -93,5 +92,5 @@ public class WorldGuardListener implements Listener {
         }
         return flagOptional.get();
     }
-    
+
 }

@@ -4,8 +4,8 @@ import de.epiceric.shopchest.nms.CustomBookMeta;
 
 public class BookGenerationName {
 
-    private String localizedName;
-    private CustomBookMeta.Generation generation;
+    private final String localizedName;
+    private final CustomBookMeta.Generation generation;
 
     public BookGenerationName(CustomBookMeta.Generation generation, String localizedName) {
         this.generation = generation;

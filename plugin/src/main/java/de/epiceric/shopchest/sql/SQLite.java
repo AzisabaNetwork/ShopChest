@@ -1,17 +1,16 @@
 package de.epiceric.shopchest.sql;
 
-import java.io.File;
-import java.io.IOException;
-import java.sql.*;
-
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-
 import de.epiceric.shopchest.ShopChest;
 import de.epiceric.shopchest.shop.Shop;
 import de.epiceric.shopchest.utils.Callback;
 import de.epiceric.shopchest.utils.Utils;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import java.io.File;
+import java.io.IOException;
+import java.sql.*;
 
 public class SQLite extends Database {
 
@@ -58,7 +57,7 @@ public class SQLite extends Database {
      */
     public void vacuum() {
         try (Connection con = dataSource.getConnection();
-                Statement s = con.createStatement()) {
+             Statement s = con.createStatement()) {
             s.executeUpdate("VACUUM");
 
             plugin.debug("Vacuumed SQLite database");
@@ -72,54 +71,54 @@ public class SQLite extends Database {
     @Override
     String getQueryCreateTableShops() {
         return "CREATE TABLE IF NOT EXISTS " + tableShops + " ("
-            + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-            + "vendor TINYTEXT NOT NULL,"
-            + "product TEXT NOT NULL,"
-            + "amount INTEGER NOT NULL,"
-            + "world TINYTEXT NOT NULL,"
-            + "x INTEGER NOT NULL,"
-            + "y INTEGER NOT NULL,"
-            + "z INTEGER NOT NULL,"
-            + "buyprice FLOAT NOT NULL,"
-            + "sellprice FLOAT NOT NULL,"
-            + "shoptype TINYTEXT NOT NULL)";
+                + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "vendor TINYTEXT NOT NULL,"
+                + "product TEXT NOT NULL,"
+                + "amount INTEGER NOT NULL,"
+                + "world TINYTEXT NOT NULL,"
+                + "x INTEGER NOT NULL,"
+                + "y INTEGER NOT NULL,"
+                + "z INTEGER NOT NULL,"
+                + "buyprice FLOAT NOT NULL,"
+                + "sellprice FLOAT NOT NULL,"
+                + "shoptype TINYTEXT NOT NULL)";
     }
 
     @Override
     String getQueryCreateTableLog() {
         return "CREATE TABLE IF NOT EXISTS " + tableLogs + " ("
-            + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
-            + "shop_id INTEGER NOT NULL,"
-            + "timestamp TINYTEXT NOT NULL,"
-            + "time LONG NOT NULL,"
-            + "player_name TINYTEXT NOT NULL,"
-            + "player_uuid TINYTEXT NOT NULL,"
-            + "product_name TINYTEXT NOT NULL,"
-            + "product TEXT NOT NULL,"
-            + "amount INTEGER NOT NULL,"
-            + "vendor_name TINYTEXT NOT NULL,"
-            + "vendor_uuid TINYTEXT NOT NULL,"
-            + "admin BIT NOT NULL,"
-            + "world TINYTEXT NOT NULL,"
-            + "x INTEGER NOT NULL,"
-            + "y INTEGER NOT NULL,"
-            + "z INTEGER NOT NULL,"
-            + "price FLOAT NOT NULL,"
-            + "type TINYTEXT NOT NULL)";
+                + "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+                + "shop_id INTEGER NOT NULL,"
+                + "timestamp TINYTEXT NOT NULL,"
+                + "time LONG NOT NULL,"
+                + "player_name TINYTEXT NOT NULL,"
+                + "player_uuid TINYTEXT NOT NULL,"
+                + "product_name TINYTEXT NOT NULL,"
+                + "product TEXT NOT NULL,"
+                + "amount INTEGER NOT NULL,"
+                + "vendor_name TINYTEXT NOT NULL,"
+                + "vendor_uuid TINYTEXT NOT NULL,"
+                + "admin BIT NOT NULL,"
+                + "world TINYTEXT NOT NULL,"
+                + "x INTEGER NOT NULL,"
+                + "y INTEGER NOT NULL,"
+                + "z INTEGER NOT NULL,"
+                + "price FLOAT NOT NULL,"
+                + "type TINYTEXT NOT NULL)";
     }
 
     @Override
     String getQueryCreateTableLogout() {
         return "CREATE TABLE IF NOT EXISTS " + tableLogouts + " ("
-            + "player VARCHAR(36) PRIMARY KEY NOT NULL,"
-            + "time LONG NOT NULL)";
+                + "player VARCHAR(36) PRIMARY KEY NOT NULL,"
+                + "time LONG NOT NULL)";
     }
 
     @Override
     String getQueryCreateTableFields() {
         return "CREATE TABLE IF NOT EXISTS " + tableFields + " ("
-            + "field VARCHAR(32) PRIMARY KEY NOT NULL,"
-            + "value INTEGER NOT NULL)";
+                + "field VARCHAR(32) PRIMARY KEY NOT NULL,"
+                + "value INTEGER NOT NULL)";
     }
 
     @Override
@@ -145,16 +144,16 @@ public class SQLite extends Database {
                         ps.setInt(1, shop.getID());
                     }
 
-                    ps.setString(i+1, shop.getVendor().getUniqueId().toString());
-                    ps.setString(i+2, Utils.encode(shop.getProduct().getItemStack()));
-                    ps.setInt(i+3, shop.getProduct().getAmount());
-                    ps.setString(i+4, shop.getLocation().getWorld().getName());
-                    ps.setInt(i+5, shop.getLocation().getBlockX());
-                    ps.setInt(i+6, shop.getLocation().getBlockY());
-                    ps.setInt(i+7, shop.getLocation().getBlockZ());
-                    ps.setDouble(i+8, shop.getBuyPrice());
-                    ps.setDouble(i+9, shop.getSellPrice());
-                    ps.setString(i+10, shop.getShopType().toString());
+                    ps.setString(i + 1, shop.getVendor().getUniqueId().toString());
+                    ps.setString(i + 2, Utils.encode(shop.getProduct().getItemStack()));
+                    ps.setInt(i + 3, shop.getProduct().getAmount());
+                    ps.setString(i + 4, shop.getLocation().getWorld().getName());
+                    ps.setInt(i + 5, shop.getLocation().getBlockX());
+                    ps.setInt(i + 6, shop.getLocation().getBlockY());
+                    ps.setInt(i + 7, shop.getLocation().getBlockZ());
+                    ps.setDouble(i + 8, shop.getBuyPrice());
+                    ps.setDouble(i + 9, shop.getSellPrice());
+                    ps.setString(i + 10, shop.getShopType().toString());
 
                     if (!shop.hasId()) {
                         int shopId = -1;

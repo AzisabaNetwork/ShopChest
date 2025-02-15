@@ -1,27 +1,30 @@
 package de.epiceric.shopchest.event;
 
-import java.util.List;
-
+import de.epiceric.shopchest.shop.Shop;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 
-import de.epiceric.shopchest.shop.Shop;
+import java.util.List;
 
 public class ShopRemoveAllEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
 
-    private CommandSender sender;
-    private OfflinePlayer vendor;
-    private List<Shop> shops;
+    private final CommandSender sender;
+    private final OfflinePlayer vendor;
+    private final List<Shop> shops;
     private boolean cancelled;
 
     public ShopRemoveAllEvent(CommandSender sender, OfflinePlayer vendor, List<Shop> shops) {
         this.sender = sender;
         this.vendor = vendor;
         this.shops = shops;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     public CommandSender getSender() {
@@ -44,10 +47,6 @@ public class ShopRemoveAllEvent extends Event implements Cancellable {
     @Override
     public boolean isCancelled() {
         return cancelled;
-    }
-
-    public static HandlerList getHandlerList() {
-        return handlers;
     }
 
     @Override

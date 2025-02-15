@@ -34,8 +34,8 @@ import java.util.ArrayList;
 
 public class ChestProtectListener implements Listener {
 
-    private ShopChest plugin;
-    private ShopUtils shopUtils;
+    private final ShopChest plugin;
+    private final ShopUtils shopUtils;
 
     public ChestProtectListener(ShopChest plugin) {
         this.plugin = plugin;
@@ -75,7 +75,7 @@ public class ChestProtectListener implements Listener {
                 }
             } else {
                 p.sendMessage(messageRegistry.getMessage(Message.SHOP_REMOVED));
-            }   
+            }
 
             shopUtils.removeShop(shop, true);
             plugin.debug(String.format("%s broke %s's shop (#%d)", p.getName(), shop.getVendor().getName(), shop.getID()));
@@ -134,7 +134,7 @@ public class ChestProtectListener implements Listener {
         if (!b.getType().equals(Material.CHEST) && !b.getType().equals(Material.TRAPPED_CHEST)) {
             return;
         }
-        
+
         Chest c = (Chest) b.getState();
         Block b2;
 

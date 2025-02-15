@@ -4,9 +4,9 @@ import org.bukkit.potion.PotionType;
 
 public class PotionName {
 
-    private String localizedName;
-    private PotionItemType potionItemType;
-    private PotionType potionType;
+    private final String localizedName;
+    private final PotionItemType potionItemType;
+    private final PotionType potionType;
 
     public PotionName(PotionItemType potionItemType, PotionType potionType, String localizedName) {
         this.potionItemType = potionItemType;

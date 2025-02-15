@@ -1,18 +1,18 @@
 package de.epiceric.shopchest.command;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class ShopSubCommand {
-    private String name;
-    private boolean playerCommand;
-    private CommandExecutor executor;
-    private TabCompleter tabCompleter;
+    private final String name;
+    private final boolean playerCommand;
+    private final CommandExecutor executor;
+    private final TabCompleter tabCompleter;
 
     public ShopSubCommand(String name, boolean playerCommand, CommandExecutor executor, TabCompleter tabCompleter) {
         this.name = name;
@@ -34,10 +34,11 @@ public abstract class ShopSubCommand {
 
     /**
      * Execute the sub command
-     * @param sender Sender of the command
+     *
+     * @param sender  Sender of the command
      * @param command Command which was executed
-     * @param label Alias of the command which was used
-     * @param args Arguments of the command ({@code args[0]} is the sub command's name)
+     * @param label   Alias of the command which was used
+     * @param args    Arguments of the command ({@code args[0]} is the sub command's name)
      * @return Whether the sender should be sent the help message
      */
     public boolean execute(CommandSender sender, Command command, String label, String[] args) {
@@ -45,10 +46,10 @@ public abstract class ShopSubCommand {
     }
 
     /**
-     * @param sender Sender of the command
+     * @param sender  Sender of the command
      * @param command Command which was executed
-     * @param label Alias of the command which was used
-     * @param args Arguments of the command ({@code args[0]} is the sub command's name)
+     * @param label   Alias of the command which was used
+     * @param args    Arguments of the command ({@code args[0]} is the sub command's name)
      * @return A list of tab completions for the sub command (may be an empty list)
      */
     public List<String> getTabCompletions(CommandSender sender, Command command, String label, String[] args) {

@@ -55,7 +55,7 @@ public class ShopItem {
     }
 
     /**
-     * @param p Player to which the item should be shown
+     * @param p     Player to which the item should be shown
      * @param force whether to force or not
      */
     public void showPlayer(Player p, boolean force) {
@@ -75,7 +75,7 @@ public class ShopItem {
     }
 
     /**
-     * @param p Player from which the item should be hidden
+     * @param p     Player from which the item should be hidden
      * @param force whether to force or not
      */
     public void hidePlayer(Player p, boolean force) {
@@ -104,6 +104,7 @@ public class ShopItem {
 
     /**
      * Respawns the item at the set location for a player
+     *
      * @param p Player, for which the item should be reset
      */
     public void resetForPlayer(Player p) {

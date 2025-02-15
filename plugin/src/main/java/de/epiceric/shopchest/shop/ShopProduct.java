@@ -39,5 +39,5 @@ public class ShopProduct {
     public int getAmount() {
         return amount;
     }
-    
+
 }

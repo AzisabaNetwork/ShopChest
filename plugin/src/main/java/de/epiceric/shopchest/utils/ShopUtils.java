@@ -1,9 +1,10 @@
 package de.epiceric.shopchest.utils;
 
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
-
+import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.config.Config;
+import de.epiceric.shopchest.event.ShopsLoadedEvent;
+import de.epiceric.shopchest.shop.Shop;
+import de.epiceric.shopchest.shop.Shop.ShopType;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -15,11 +16,9 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.permissions.PermissionAttachmentInfo;
 import org.bukkit.util.Vector;
 
-import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.config.Config;
-import de.epiceric.shopchest.event.ShopsLoadedEvent;
-import de.epiceric.shopchest.shop.Shop;
-import de.epiceric.shopchest.shop.Shop.ShopType;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 public class ShopUtils {
 
@@ -50,6 +49,7 @@ public class ShopUtils {
 
     /**
      * Checks whether there is a shop at a given location
+     *
      * @param location Location to check
      * @return Whether there is a shop at the given location
      */
@@ -71,8 +71,8 @@ public class ShopUtils {
     /**
      * Get all shops
      *
-     * @see #getShops()
      * @return Copy of collection of all shops, may contain duplicates
+     * @see #getShops()
      * @deprecated Use {@link #getShops()} instead
      */
     @Deprecated
@@ -82,9 +82,10 @@ public class ShopUtils {
 
     /**
      * Add a shop
-     * @param shop Shop to add
+     *
+     * @param shop          Shop to add
      * @param addToDatabase Whether the shop should also be added to the database
-     * @param callback Callback that - if succeeded - returns the ID the shop had or was given (as {@code int})
+     * @param callback      Callback that - if succeeded - returns the ID the shop had or was given (as {@code int})
      */
     public void addShop(Shop shop, boolean addToDatabase, Callback<Integer> callback) {
         InventoryHolder ih = shop.getInventoryHolder();
@@ -118,7 +119,8 @@ public class ShopUtils {
 
     /**
      * Add a shop
-     * @param shop Shop to add
+     *
+     * @param shop          Shop to add
      * @param addToDatabase Whether the shop should also be added to the database
      */
     public void addShop(Shop shop, boolean addToDatabase) {
@@ -139,10 +141,12 @@ public class ShopUtils {
         shopLocation.clear();
     }
 
-    /** Remove a shop. May not work properly if double chest doesn't exist!
-     * @param shop Shop to remove
+    /**
+     * Remove a shop. May not work properly if double chest doesn't exist!
+     *
+     * @param shop               Shop to remove
      * @param removeFromDatabase Whether the shop should also be removed from the database
-     * @param callback Callback that - if succeeded - returns null
+     * @param callback           Callback that - if succeeded - returns null
      * @see ShopUtils#removeShopById(int, boolean, Callback)
      */
     public void removeShop(Shop shop, boolean removeFromDatabase, Callback<Void> callback) {
@@ -178,7 +182,8 @@ public class ShopUtils {
 
     /**
      * Remove a shop. May not work properly if double chest doesn't exist!
-     * @param shop Shop to remove
+     *
+     * @param shop               Shop to remove
      * @param removeFromDatabase Whether the shop should also be removed from the database
      * @see ShopUtils#removeShopById(int, boolean)
      */
@@ -188,9 +193,10 @@ public class ShopUtils {
 
     /**
      * Remove a shop by its ID
-     * @param shopId ID of the shop to remove
+     *
+     * @param shopId             ID of the shop to remove
      * @param removeFromDatabase Whether the shop should also be removed from the database
-     * @param callback Callback that - if succeeded - returns null
+     * @param callback           Callback that - if succeeded - returns null
      */
     public void removeShopById(int shopId, boolean removeFromDatabase, Callback<Void> callback) {
         Map<Location, Shop> toRemove = shopLocation.entrySet().stream()
@@ -228,7 +234,8 @@ public class ShopUtils {
 
     /**
      * Remove a shop by its ID
-     * @param shopId ID of the shop to remove
+     *
+     * @param shopId             ID of the shop to remove
      * @param removeFromDatabase Whether the shop should also be removed from the database
      */
     public void removeShopById(int shopId, boolean removeFromDatabase) {
@@ -237,6 +244,7 @@ public class ShopUtils {
 
     /**
      * Get the shop limits of a player
+     *
      * @param p Player, whose shop limits should be returned
      * @return The shop limits of the given player
      */
@@ -273,11 +281,12 @@ public class ShopUtils {
         }
 
         if (limit < -1) limit = -1;
-        return (useDefault ?Config.defaultLimit : limit);
+        return (useDefault ? Config.defaultLimit : limit);
     }
 
     /**
      * Get the amount of shops of a player
+     *
      * @param p Player, whose shops should be counted
      * @return The amount of a shops a player has (admin shops won't be counted)
      */
@@ -287,7 +296,8 @@ public class ShopUtils {
 
     /**
      * Get all shops of a player from the database without loading them
-     * @param p Player, whose shops should be get
+     *
+     * @param p        Player, whose shops should be get
      * @param callback Callback that returns a collection of the given player's shops
      */
     public void getShops(OfflinePlayer p, Callback<Collection<Shop>> callback) {
@@ -315,10 +325,11 @@ public class ShopUtils {
 
     /**
      * Loads the amount of shops for each player
+     *
      * @param callback Callback that returns the amount of shops for each player
      */
     public void loadShopAmounts(final Callback<Map<UUID, Integer>> callback) {
-        plugin.getShopDatabase().getShopAmounts(new Callback<Map<UUID,Integer>>(plugin) {
+        plugin.getShopDatabase().getShopAmounts(new Callback<Map<UUID, Integer>>(plugin) {
             @Override
             public void onResult(Map<UUID, Integer> result) {
                 playerShopAmount.clear();
@@ -335,17 +346,19 @@ public class ShopUtils {
 
     /**
      * Gets all shops in the given chunk from the database and adds them to the server
-     * @param chunk The chunk to load shops from
+     *
+     * @param chunk    The chunk to load shops from
      * @param callback Callback that returns the amount of shops added if succeeded
      * @see ShopUtils#loadShops(Chunk[], Callback)
      */
     public void loadShops(final Chunk chunk, final Callback<Integer> callback) {
-        loadShops(new Chunk[] {chunk}, callback);
+        loadShops(new Chunk[]{chunk}, callback);
     }
 
     /**
      * Gets all shops in the given chunks from the database and adds them to the server
-     * @param chunks The chunks to load shops from
+     *
+     * @param chunks   The chunks to load shops from
      * @param callback Callback that returns the amount of shops added if succeeded
      */
     public void loadShops(final Chunk[] chunks, final Callback<Integer> callback) {
@@ -364,7 +377,7 @@ public class ShopUtils {
 
                     int x = loc.getBlockX() / 16;
                     int z = loc.getBlockZ() / 16;
-                    
+
                     // Don't add shop if chunk is no longer loaded
                     if (!loc.getWorld().isChunkLoaded(x, z)) {
                         continue;
@@ -390,6 +403,7 @@ public class ShopUtils {
 
     /**
      * Update hologram and item of all shops for a player
+     *
      * @param player Player to show the updates
      */
     public void updateShops(Player player) {
@@ -398,8 +412,9 @@ public class ShopUtils {
 
     /**
      * Update hologram and item of all shops for a player
+     *
      * @param player Player to show the updates
-     * @param force Whether update should be forced even if player has not moved
+     * @param force  Whether update should be forced even if player has not moved
      */
     public void updateShops(Player player, boolean force) {
         if (!force && player.getLocation().equals(playerLocation.get(player.getUniqueId()))) {
@@ -420,6 +435,7 @@ public class ShopUtils {
      * Remove a saved location of a player to force a recalculation
      * of whether the hologram should be visible.
      * This should only be called when really needed
+     *
      * @param player Player whose saved location will be reset
      */
     public void resetPlayerLocation(Player player) {
@@ -441,7 +457,7 @@ public class ShopUtils {
             Location loc = pLoc.clone();
             Vector dir = pDir.clone();
             double factor = Math.min(i, maxDist);
-            
+
             loc.add(dir.multiply(factor));
             Location locBelow = loc.clone().subtract(0, 1, 0);
 
@@ -516,6 +532,7 @@ public class ShopUtils {
 
     /**
      * Removes all shops from the given chunk from the server
+     *
      * @param chunk The chunk containing the shops to unload
      * @return The amount of shops that were unloaded
      */

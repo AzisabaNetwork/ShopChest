@@ -40,10 +40,10 @@
             <groupId>com.github.TechFortress</groupId>
             <artifactId>GriefPrevention</artifactId>
         </dependency>
-        <dependency>
-            <groupId>me.wiefferink</groupId>
-            <artifactId>areashop</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>me.wiefferink</groupId>-->
+<!--            <artifactId>areashop</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>world.bentobox</groupId>
             <artifactId>bentobox</artifactId>
@@ -56,10 +56,10 @@
             <groupId>com.github.TownyAdvanced</groupId>
             <artifactId>Towny</artifactId>
         </dependency>
-        <dependency>
-            <groupId>pl.gnacik.islandworld</groupId>
-            <artifactId>IslandWorld</artifactId>
-        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>pl.gnacik.islandworld</groupId>-->
+<!--            <artifactId>IslandWorld</artifactId>-->
+<!--        </dependency>-->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>

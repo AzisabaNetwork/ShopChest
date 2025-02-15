@@ -25,23 +25,12 @@ public class ArmorStandWrapper {
 
     public void setVisible(Player player, boolean visible) {
         final List<Player> receiver = Collections.singletonList(player);
-        if(visible){
+        if (visible) {
             fakeArmorStand.spawn(uuid, location, receiver);
             fakeArmorStand.sendData(customName, receiver);
-        }
-        else if(fakeArmorStand.getEntityId() != -1){
+        } else if (fakeArmorStand.getEntityId() != -1) {
             fakeArmorStand.remove(receiver);
         }
-    }
-
-    public void setLocation(Location location) {
-        this.location = location;
-        fakeArmorStand.setLocation(location, Objects.requireNonNull(location.getWorld()).getPlayers());
-    }
-
-    public void setCustomName(String customName) {
-        this.customName = customName;
-        fakeArmorStand.sendData(customName, Objects.requireNonNull(location.getWorld()).getPlayers());
     }
 
     public void remove() {
@@ -62,7 +51,17 @@ public class ArmorStandWrapper {
         return location.clone();
     }
 
+    public void setLocation(Location location) {
+        this.location = location;
+        fakeArmorStand.setLocation(location, Objects.requireNonNull(location.getWorld()).getPlayers());
+    }
+
     public String getCustomName() {
         return customName;
+    }
+
+    public void setCustomName(String customName) {
+        this.customName = customName;
+        fakeArmorStand.sendData(customName, Objects.requireNonNull(location.getWorld()).getPlayers());
     }
 }

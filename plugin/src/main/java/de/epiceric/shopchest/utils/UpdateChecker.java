@@ -1,18 +1,17 @@
 package de.epiceric.shopchest.utils;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import de.epiceric.shopchest.ShopChest;
+
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
-import de.epiceric.shopchest.ShopChest;
-
 public class UpdateChecker {
 
-    private ShopChest plugin;
+    private final ShopChest plugin;
     private String version;
     private String link;
 
@@ -24,8 +23,8 @@ public class UpdateChecker {
      * Check if an update is needed
      *
      * @return {@link UpdateCheckerResult#TRUE} if an update is available,
-     *         {@link UpdateCheckerResult#FALSE} if no update is needed or
-     *         {@link UpdateCheckerResult#ERROR} if an error occurred
+     * {@link UpdateCheckerResult#FALSE} if no update is needed or
+     * {@link UpdateCheckerResult#ERROR} if an error occurred
      */
     public UpdateCheckerResult check() {
         try {
@@ -45,7 +44,7 @@ public class UpdateChecker {
                 link = "https://www.spigotmc.org/resources/shopchest.11431/download?version=" + id;
             } else {
                 plugin.debug("Failed to check for updates");
-                plugin.debug("Result: " + element.toString());
+                plugin.debug("Result: " + element);
                 return UpdateCheckerResult.ERROR;
             }
 

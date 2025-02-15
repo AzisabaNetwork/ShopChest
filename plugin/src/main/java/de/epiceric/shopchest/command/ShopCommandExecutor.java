@@ -29,9 +29,9 @@ import java.util.stream.Stream;
 
 class ShopCommandExecutor implements CommandExecutor {
 
-    private ShopChest plugin;
-    private ShopUtils shopUtils;
     private final Enchantment UNBREAKING_ENCHANT;
+    private final ShopChest plugin;
+    private final ShopUtils shopUtils;
 
     ShopCommandExecutor(ShopChest plugin) {
         this.plugin = plugin;
@@ -147,6 +147,7 @@ class ShopCommandExecutor implements CommandExecutor {
 
     /**
      * A given player checks for updates
+     *
      * @param sender The command executor
      */
     private void checkUpdates(CommandSender sender) {
@@ -185,6 +186,7 @@ class ShopCommandExecutor implements CommandExecutor {
 
     /**
      * A given player reloads the shops
+     *
      * @param sender The command executor
      */
     private void reload(final CommandSender sender) {
@@ -223,7 +225,7 @@ class ShopCommandExecutor implements CommandExecutor {
                                 new Replacement(Placeholder.AMOUNT, String.valueOf(result))));
                         plugin.debug(sender.getName() + " has reloaded " + result + " shops");
                     }
-        
+
                     @Override
                     public void onError(Throwable throwable) {
                         sender.sendMessage(messageRegistry.getMessage(Message.ERROR_OCCURRED,
@@ -248,9 +250,10 @@ class ShopCommandExecutor implements CommandExecutor {
 
     /**
      * A given player creates a shop
-     * @param args Arguments of the entered command
+     *
+     * @param args     Arguments of the entered command
      * @param shopType The {@link Shop.ShopType}, the shop will have
-     * @param p The command executor
+     * @param p        The command executor
      */
     private void create(String[] args, Shop.ShopType shopType, final Player p) {
         final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
@@ -350,7 +353,7 @@ class ShopCommandExecutor implements CommandExecutor {
         ShopType shopType = selectClickType.getShopType();
 
         // Check if item on blacklist
-        for (String item :Config.blacklist) {
+        for (String item : Config.blacklist) {
             ItemStack is = ItemUtils.getItemStack(item);
 
             if (is == null) {
@@ -367,7 +370,7 @@ class ShopCommandExecutor implements CommandExecutor {
         }
 
         // Check if prices lower than minimum price
-        for (String key :Config.minimumPrices) {
+        for (String key : Config.minimumPrices) {
             ItemStack is = ItemUtils.getItemStack(key);
             double minPrice = plugin.getConfig().getDouble("minimum-prices." + key);
 
@@ -397,7 +400,7 @@ class ShopCommandExecutor implements CommandExecutor {
         }
 
         // Check if prices higher than maximum price
-        for (String key :Config.maximumPrices) {
+        for (String key : Config.maximumPrices) {
             ItemStack is = ItemUtils.getItemStack(key);
             double maxPrice = plugin.getConfig().getDouble("maximum-prices." + key);
 
@@ -445,7 +448,7 @@ class ShopCommandExecutor implements CommandExecutor {
             }
         }
 
-        double creationPrice = (shopType == Shop.ShopType.NORMAL) ?Config.shopCreationPriceNormal :Config.shopCreationPriceAdmin;
+        double creationPrice = (shopType == Shop.ShopType.NORMAL) ? Config.shopCreationPriceNormal : Config.shopCreationPriceAdmin;
         if (creationPrice > 0) {
             if (plugin.getEconomy().getBalance(p, p.getWorld().getName()) < creationPrice) {
                 p.sendMessage(messageRegistry.getMessage(Message.SHOP_CREATE_NOT_ENOUGH_MONEY, new Replacement(Placeholder.CREATION_PRICE, String.valueOf(creationPrice))));
@@ -469,6 +472,7 @@ class ShopCommandExecutor implements CommandExecutor {
 
     /**
      * A given player removes a shop
+     *
      * @param p The command executor
      */
     private void remove(final Player p) {
@@ -490,6 +494,7 @@ class ShopCommandExecutor implements CommandExecutor {
 
     /**
      * A given player retrieves information about a shop
+     *
      * @param p The command executor
      */
     private void info(final Player p) {
@@ -511,6 +516,7 @@ class ShopCommandExecutor implements CommandExecutor {
 
     /**
      * A given player opens a shop
+     *
      * @param p The command executor
      */
     private void open(final Player p) {
@@ -591,6 +597,6 @@ class ShopCommandExecutor implements CommandExecutor {
             }
         });
 
-        
+
     }
 }

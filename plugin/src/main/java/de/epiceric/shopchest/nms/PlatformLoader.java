@@ -1,13 +1,12 @@
 package de.epiceric.shopchest.nms;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-
-import org.bukkit.Bukkit;
-
 import de.epiceric.shopchest.nms.reflection.PlatformImpl;
 import de.epiceric.shopchest.nms.reflection.ShopChestDebug;
 import de.epiceric.shopchest.utils.Utils;
+import org.bukkit.Bukkit;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 public class PlatformLoader {
 

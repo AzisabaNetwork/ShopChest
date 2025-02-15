@@ -11,11 +11,15 @@ import org.bukkit.event.HandlerList;
 public class ShopPreRemoveEvent extends Event implements Cancellable {
     private static final HandlerList handlers = new HandlerList();
 
-    private Player player;
+    private final Player player;
     private boolean cancelled;
 
     public ShopPreRemoveEvent(Player player) {
         this.player = player;
+    }
+
+    public static HandlerList getHandlerList() {
+        return handlers;
     }
 
     /**
@@ -33,10 +37,6 @@ public class ShopPreRemoveEvent extends Event implements Cancellable {
     @Override
     public void setCancelled(boolean cancel) {
         cancelled = cancel;
-    }
-
-    public static HandlerList getHandlerList() {
-        return handlers;
     }
 
     @Override

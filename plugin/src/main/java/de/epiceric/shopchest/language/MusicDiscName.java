@@ -4,8 +4,8 @@ import org.bukkit.Material;
 
 public class MusicDiscName {
 
-    private Material musicDiscMaterial;
-    private String localizedName;
+    private final Material musicDiscMaterial;
+    private final String localizedName;
 
     public MusicDiscName(Material musicDiscMaterial, String localizedName) {
         this.musicDiscMaterial = musicDiscMaterial;

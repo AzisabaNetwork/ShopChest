@@ -27,10 +27,52 @@ import java.util.*;
 
 public class Utils {
 
-    private Utils() {}
+    private final static int majorVersion;
+    private final static int revision;
+
+    static {
+        String rawMajorVersion = null;
+        try {
+            final String bukkitVersion = Bukkit.getServer().getBukkitVersion();
+            final String[] minecraftVersion = bukkitVersion.substring(0, bukkitVersion.indexOf('-')).split("\\.");
+            rawMajorVersion = minecraftVersion[1];
+        } catch (Exception e) {
+            try {
+                final String packageName = Bukkit.getServer().getClass().getPackage().getName();
+                final String serverVersion = packageName.substring(packageName.lastIndexOf('.') + 1);
+                rawMajorVersion = serverVersion.split("_")[1];
+            } catch (Exception ex) {
+                if (rawMajorVersion == null) {
+                    throw new RuntimeException("Could not load major version");
+                }
+            }
+        }
+        int parsedMajorVersion = -1;
+        try {
+            parsedMajorVersion = Integer.valueOf(rawMajorVersion);
+        } catch (Exception e) {
+            throw new RuntimeException("Could not parse major version");
+        }
+        int parsedRevision = 0;
+        if (parsedMajorVersion < 17) {
+            try {
+                final String packageName = Bukkit.getServer().getClass().getPackage().getName();
+                final String serverVersion = packageName.substring(packageName.lastIndexOf('.') + 1);
+                final String rawRevision = serverVersion.substring(serverVersion.length() - 1);
+                parsedRevision = Integer.valueOf(rawRevision);
+            } catch (Exception e) {
+            }
+        }
+        majorVersion = parsedMajorVersion;
+        revision = parsedRevision;
+    }
+
+    private Utils() {
+    }
 
     /**
      * Check if two items are similar to each other
+     *
      * @param itemStack1 The first item
      * @param itemStack2 The second item
      * @return {@code true} if the given items are similar or {@code false} if not
@@ -192,7 +234,7 @@ public class Utils {
     /**
      * @param p Player whose item in his hand should be returned
      * @return Item in his main hand, or the item in his off if he doesn't have one in this main hand, or {@code null}
-     *         if he doesn't have one in both hands
+     * if he doesn't have one in both hands
      */
     public static ItemStack getPreferredItemInHand(Player p) {
         if (getMajorVersion() < 9)
@@ -211,7 +253,7 @@ public class Utils {
         List<String> axes;
         if (Utils.getMajorVersion() < 13)
             axes = Arrays.asList("WOOD_AXE", "STONE_AXE", "IRON_AXE", "GOLD_AXE", "DIAMOND_AXE");
-        else 
+        else
             axes = Arrays.asList("WOODEN_AXE", "STONE_AXE", "IRON_AXE", "GOLDEN_AXE", "DIAMOND_AXE");
 
         ItemStack item = getItemInMainHand(p);
@@ -224,24 +266,21 @@ public class Utils {
 
     /**
      * <p>Check if a player is allowed to create a shop that sells or buys the given item.</p>
+     *
      * @param player Player to check
-     * @param item Item to be sold or bought
-     * @param buy Whether buying should be enabled
-     * @param sell Whether selling should be enabled
+     * @param item   Item to be sold or bought
+     * @param buy    Whether buying should be enabled
+     * @param sell   Whether selling should be enabled
      * @return Whether the player is allowed
      */
     public static boolean hasPermissionToCreateShop(Player player, ItemStack item, boolean buy, boolean sell) {
         if (hasPermissionToCreateShop(player, item, Permissions.CREATE)) {
             return true;
-        } else if (!sell && buy && hasPermissionToCreateShop(player, item,Permissions.CREATE_BUY)) {
+        } else if (!sell && buy && hasPermissionToCreateShop(player, item, Permissions.CREATE_BUY)) {
             return true;
         } else if (!buy && sell && hasPermissionToCreateShop(player, item, Permissions.CREATE_SELL)) {
             return true;
-        } else if (buy && sell && hasPermissionToCreateShop(player, item, Permissions.CREATE_BUY, Permissions.CREATE_SELL)) {
-            return true;
-        }
-
-        return false;
+        } else return buy && sell && hasPermissionToCreateShop(player, item, Permissions.CREATE_BUY, Permissions.CREATE_SELL);
     }
 
     private static boolean hasPermissionToCreateShop(Player player, ItemStack item, String... permissions) {
@@ -279,6 +318,7 @@ public class Utils {
 
     /**
      * Get a set for the location(s) of the shop's chest(s)
+     *
      * @param shop The shop
      * @return A set of 1 or 2 locations
      */
@@ -297,8 +337,9 @@ public class Utils {
 
     /**
      * Send a clickable update notification to the given player.
+     *
      * @param plugin An instance of the {@link ShopChest} plugin
-     * @param p The player to receive the notification
+     * @param p      The player to receive the notification
      */
     public static void sendUpdateMessage(ShopChest plugin, Player p) {
         final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
@@ -309,45 +350,6 @@ public class Utils {
                 messageRegistry.getMessage(Message.UPDATE_CLICK_TO_DOWNLOAD),
                 plugin.getDownloadLink()
         );
-    }
-
-    private final static int majorVersion;
-    private final static int revision;
-
-    static {
-        String rawMajorVersion = null;
-        try {
-            final String bukkitVersion = Bukkit.getServer().getBukkitVersion();
-            final String[] minecraftVersion = bukkitVersion.substring(0, bukkitVersion.indexOf('-')).split("\\.");
-            rawMajorVersion = minecraftVersion[1];
-        } catch (Exception e) {
-            try {
-                final String packageName = Bukkit.getServer().getClass().getPackage().getName();
-                final String serverVersion = packageName.substring(packageName.lastIndexOf('.') + 1);
-                rawMajorVersion = serverVersion.split("_")[1];
-            } catch (Exception ex) {
-                if (rawMajorVersion == null) {
-                    throw new RuntimeException("Could not load major version");
-                }
-            }
-        }
-        int parsedMajorVersion = -1;
-        try {
-            parsedMajorVersion = Integer.valueOf(rawMajorVersion);
-        } catch (Exception e) {
-            throw new RuntimeException("Could not parse major version");
-        }
-        int parsedRevision = 0;
-        if (parsedMajorVersion < 17) {
-            try {
-                final String packageName = Bukkit.getServer().getClass().getPackage().getName();
-                final String serverVersion = packageName.substring(packageName.lastIndexOf('.') + 1);
-                final String rawRevision = serverVersion.substring(serverVersion.length() - 1);
-                parsedRevision = Integer.valueOf(rawRevision);
-            } catch (Exception e) {}
-        }
-        majorVersion = parsedMajorVersion;
-        revision = parsedRevision;
     }
 
     /**
@@ -378,6 +380,7 @@ public class Utils {
 
     /**
      * Encodes an {@link ItemStack} in a Base64 String
+     *
      * @param itemStack {@link ItemStack} to encode
      * @return Base64 encoded String
      */
@@ -389,6 +392,7 @@ public class Utils {
 
     /**
      * Decodes an {@link ItemStack} from a Base64 String
+     *
      * @param string Base64 encoded String to decode
      * @return Decoded {@link ItemStack}
      */

@@ -187,7 +187,8 @@ public class ShopCommand {
             cmd.setTabCompleter(new ShopBaseTabCompleter());
 
             return cmd;
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException |
+                 InstantiationException e) {
             plugin.getLogger().severe("Failed to create command");
             plugin.debug("Failed to create plugin command");
             plugin.debug(e);

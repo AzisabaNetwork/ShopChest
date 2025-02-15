@@ -1,40 +1,27 @@
 package de.epiceric.shopchest.listeners;
 
+import com.github.mori01231.lifecore.util.ItemUtil;
+import com.google.gson.JsonPrimitive;
+import com.palmergames.bukkit.towny.TownyAPI;
+import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
+import com.palmergames.bukkit.towny.object.TownBlock;
 import de.epiceric.shopchest.ShopChest;
 import de.epiceric.shopchest.config.Config;
 import de.epiceric.shopchest.config.Placeholder;
 import de.epiceric.shopchest.event.*;
-import de.epiceric.shopchest.external.PlotSquaredOldShopFlag;
-import de.epiceric.shopchest.external.PlotSquaredShopFlag;
+import de.epiceric.shopchest.language.LanguageUtils;
 import de.epiceric.shopchest.language.Message;
 import de.epiceric.shopchest.language.MessageRegistry;
 import de.epiceric.shopchest.language.Replacement;
+import de.epiceric.shopchest.nms.JsonBuilder;
 import de.epiceric.shopchest.shop.Shop;
 import de.epiceric.shopchest.shop.Shop.ShopType;
 import de.epiceric.shopchest.shop.ShopProduct;
 import de.epiceric.shopchest.sql.Database;
 import de.epiceric.shopchest.utils.*;
 import de.epiceric.shopchest.utils.ClickType.CreateClickType;
-import fr.xephi.authme.api.v3.AuthMeApi;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.economy.EconomyResponse;
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import com.github.mori01231.lifecore.util.ItemUtil;
-import com.google.gson.JsonPrimitive;
-
-import com.palmergames.bukkit.towny.TownyAPI;
-import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
-import com.palmergames.bukkit.towny.object.TownBlock;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -63,37 +50,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.util.*;
 import java.util.function.Consumer;
-import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.config.Config;
-import de.epiceric.shopchest.config.Placeholder;
-import de.epiceric.shopchest.event.ShopBuySellEvent;
-import de.epiceric.shopchest.event.ShopCreateEvent;
-import de.epiceric.shopchest.event.ShopInfoEvent;
-import de.epiceric.shopchest.event.ShopOpenEvent;
-import de.epiceric.shopchest.event.ShopRemoveEvent;
-import de.epiceric.shopchest.language.LanguageUtils;
-import de.epiceric.shopchest.language.Message;
-import de.epiceric.shopchest.language.Replacement;
-import de.epiceric.shopchest.nms.JsonBuilder;
-import de.epiceric.shopchest.shop.Shop;
-import de.epiceric.shopchest.shop.Shop.ShopType;
-import de.epiceric.shopchest.shop.ShopProduct;
-import de.epiceric.shopchest.sql.Database;
-import de.epiceric.shopchest.utils.ClickType;
-import de.epiceric.shopchest.utils.ClickType.CreateClickType;
-import de.epiceric.shopchest.utils.ItemUtils;
-import de.epiceric.shopchest.utils.Permissions;
-import de.epiceric.shopchest.utils.ShopUtils;
-import de.epiceric.shopchest.utils.Utils;
-import net.milkbowl.vault.economy.Economy;
-import net.milkbowl.vault.economy.EconomyResponse;
+import java.util.regex.Matcher;
 
 public class ShopInteractListener implements Listener {
 
-    private ShopChest plugin;
-    private Economy econ;
-    private Database database;
-    private ShopUtils shopUtils;
+    private final ShopChest plugin;
+    private final Economy econ;
+    private final Database database;
+    private final ShopUtils shopUtils;
+    private final Map<UUID, Set<Integer>> needsConfirmation = new HashMap<>();
 
     public ShopInteractListener(ShopChest plugin) {
         this.plugin = plugin;
@@ -172,8 +137,6 @@ public class ShopInteractListener implements Listener {
         ClickType.removePlayerClickType(p);
     }
 
-    private Map<UUID, Set<Integer>> needsConfirmation = new HashMap<>();
-
     private void handleInteractEvent(PlayerInteractEvent e) {
         final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
 
@@ -218,7 +181,8 @@ public class ShopInteractListener implements Listener {
                 case OPEN:
                     open(p, shop, true);
                     break;
-                default: return;
+                default:
+                    return;
             }
 
             e.setCancelled(true);
@@ -281,7 +245,8 @@ public class ShopInteractListener implements Listener {
                                 String flagName = (shop.getShopType() == ShopType.ADMIN ? "use-admin-shop" : "use-shop");
                                 WorldGuardWrapper wgWrapper = WorldGuardWrapper.getInstance();
                                 Optional<IWrappedFlag<WrappedState>> flag = wgWrapper.getFlag(flagName, WrappedState.class);
-                                if (!flag.isPresent()) plugin.debug("WorldGuard flag '" + flagName + "' is not present!");
+                                if (!flag.isPresent())
+                                    plugin.debug("WorldGuard flag '" + flagName + "' is not present!");
                                 WrappedState state = flag.map(f -> wgWrapper.queryFlag(p, b.getLocation(), f).orElse(WrappedState.DENY)).orElse(WrappedState.DENY);
                                 externalPluginsAllowed = state == WrappedState.ALLOW;
                             }
@@ -352,7 +317,7 @@ public class ShopInteractListener implements Listener {
                                                 shop.getVendor().getPlayer().sendMessage(messageRegistry.getMessage(Message.VENDOR_OUT_OF_STOCK,
                                                         new Replacement(Placeholder.AMOUNT, String.valueOf(shop.getProduct().getAmount())),
                                                         new Replacement(Placeholder.ITEM_NAME, shop.getProduct().getLocalizedName())));
-                                            } else if(!shop.getVendor().isOnline() && Config.enableVendorBungeeMessages){
+                                            } else if (!shop.getVendor().isOnline() && Config.enableVendorBungeeMessages) {
                                                 String message = messageRegistry.getMessage(Message.VENDOR_OUT_OF_STOCK,
                                                         new Replacement(Placeholder.AMOUNT, String.valueOf(shop.getProduct().getAmount())),
                                                         new Replacement(Placeholder.ITEM_NAME, shop.getProduct().getLocalizedName()));
@@ -391,7 +356,8 @@ public class ShopInteractListener implements Listener {
                                 String flagName = (shop.getShopType() == ShopType.ADMIN ? "use-admin-shop" : "use-shop");
                                 WorldGuardWrapper wgWrapper = WorldGuardWrapper.getInstance();
                                 Optional<IWrappedFlag<WrappedState>> flag = wgWrapper.getFlag(flagName, WrappedState.class);
-                                if (!flag.isPresent()) plugin.debug("WorldGuard flag '" + flagName + "' is not present!");
+                                if (!flag.isPresent())
+                                    plugin.debug("WorldGuard flag '" + flagName + "' is not present!");
                                 WrappedState state = flag.map(f -> wgWrapper.queryFlag(p, b.getLocation(), f).orElse(WrappedState.DENY)).orElse(WrappedState.DENY);
                                 externalPluginsAllowed = state == WrappedState.ALLOW;
                             }
@@ -399,7 +365,7 @@ public class ShopInteractListener implements Listener {
                             ItemStack itemStack = shop.getProduct().getItemStack();
 
                             if (externalPluginsAllowed || p.hasPermission(Permissions.BYPASS_EXTERNAL_PLUGIN)) {
-                                boolean stack = false && p.isSneaking() && !Utils.hasAxeInHand(p);
+                                boolean stack = false;
                                 int amount = stack ? itemStack.getMaxStackSize() : shop.getProduct().getAmount();
 
                                 if (Utils.getAmount(p.getInventory(), itemStack) >= amount) {
@@ -514,8 +480,9 @@ public class ShopInteractListener implements Listener {
 
     /**
      * Remove a shop
+     *
      * @param executor Player, who executed the command and will receive the message
-     * @param shop Shop to be removed
+     * @param shop     Shop to be removed
      */
     private void remove(Player executor, Shop shop) {
         final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
@@ -569,9 +536,10 @@ public class ShopInteractListener implements Listener {
 
     /**
      * Open a shop
+     *
      * @param executor Player, who executed the command and will receive the message
-     * @param shop Shop to be opened
-     * @param message Whether the player should receive the {@link Message#OPENED_SHOP} message
+     * @param shop     Shop to be opened
+     * @param message  Whether the player should receive the {@link Message#OPENED_SHOP} message
      */
     private void open(Player executor, Shop shop, boolean message) {
         final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
@@ -596,9 +564,8 @@ public class ShopInteractListener implements Listener {
     }
 
     /**
-     *
      * @param executor Player, who executed the command and will retrieve the information
-     * @param shop Shop from which the information will be retrieved
+     * @param shop     Shop from which the information will be retrieved
      */
     private void info(Player executor, Shop shop) {
         final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
@@ -661,6 +628,7 @@ public class ShopInteractListener implements Listener {
     /**
      * Create a {@link JsonBuilder} containing the shop info message for the product
      * in which you can hover the item name to get a preview.
+     *
      * @param product The product of the shop
      * @return A {@link JsonBuilder} that can send the message via {@link JsonBuilder#sendJson(Player)}
      */
@@ -741,9 +709,10 @@ public class ShopInteractListener implements Listener {
 
     /**
      * A player buys from a shop
+     *
      * @param executor Player, who executed the command and will buy the product
-     * @param shop Shop, from which the player buys
-     * @param stack Whether a whole stack should be bought
+     * @param shop     Shop, from which the player buys
+     * @param stack    Whether a whole stack should be bought
      */
     private void buy(Player executor, final Shop shop, boolean stack) {
         final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
@@ -855,11 +824,11 @@ public class ShopInteractListener implements Listener {
                                 shop.getVendor().getPlayer().sendMessage(messageRegistry.getMessage(Message.SOMEONE_BOUGHT, new Replacement(Placeholder.AMOUNT, String.valueOf(newAmount)),
                                         new Replacement(Placeholder.ITEM_NAME, newProduct.getLocalizedName()), new Replacement(Placeholder.BUY_PRICE, String.valueOf(newPrice)),
                                         new Replacement(Placeholder.PLAYER, executor.getName())));
-                            } else if(!shop.getVendor().isOnline() && Config.enableVendorBungeeMessages){
+                            } else if (!shop.getVendor().isOnline() && Config.enableVendorBungeeMessages) {
                                 String message = messageRegistry.getMessage(Message.SOMEONE_BOUGHT, new Replacement(Placeholder.AMOUNT, String.valueOf(newAmount)),
                                         new Replacement(Placeholder.ITEM_NAME, newProduct.getLocalizedName()), new Replacement(Placeholder.BUY_PRICE, String.valueOf(newPrice)),
                                         new Replacement(Placeholder.PLAYER, executor.getName()));
-                                sendBungeeMessage(shop.getVendor().getName(),message);
+                                sendBungeeMessage(shop.getVendor().getName(), message);
                             }
 
                         } else {
@@ -915,8 +884,9 @@ public class ShopInteractListener implements Listener {
 
     /**
      * A player sells to a shop
+     *
      * @param executor Player, who executed the command and will sell the product
-     * @param shop Shop, to which the player sells
+     * @param shop     Shop, to which the player sells
      */
     private void sell(Player executor, final Shop shop, boolean stack) {
         final MessageRegistry messageRegistry = plugin.getLanguageManager().getMessageRegistry();
@@ -937,7 +907,7 @@ public class ShopInteractListener implements Listener {
             int amountForMoney = 1;
 
             if (shop.getShopType() != ShopType.ADMIN) {
-                 amountForMoney = (int) (amount / price * econ.getBalance(shop.getVendor(), worldName));
+                amountForMoney = (int) (amount / price * econ.getBalance(shop.getVendor(), worldName));
             }
 
             plugin.debug("Vendor has enough money for " + amountForMoney + " item(s) (#" + shop.getID() + ")");
@@ -1031,11 +1001,11 @@ public class ShopInteractListener implements Listener {
                                 shop.getVendor().getPlayer().sendMessage(messageRegistry.getMessage(Message.SOMEONE_SOLD, new Replacement(Placeholder.AMOUNT, String.valueOf(newAmount)),
                                         new Replacement(Placeholder.ITEM_NAME, newProduct.getLocalizedName()), new Replacement(Placeholder.SELL_PRICE, String.valueOf(newPrice)),
                                         new Replacement(Placeholder.PLAYER, executor.getName())));
-                            } else if(!shop.getVendor().isOnline() && Config.enableVendorBungeeMessages){
+                            } else if (!shop.getVendor().isOnline() && Config.enableVendorBungeeMessages) {
                                 String message = messageRegistry.getMessage(Message.SOMEONE_SOLD, new Replacement(Placeholder.AMOUNT, String.valueOf(newAmount)),
                                         new Replacement(Placeholder.ITEM_NAME, newProduct.getLocalizedName()), new Replacement(Placeholder.SELL_PRICE, String.valueOf(newPrice)),
                                         new Replacement(Placeholder.PLAYER, executor.getName()));
-                                sendBungeeMessage(shop.getVendor().getName(),message);
+                                sendBungeeMessage(shop.getVendor().getName(), message);
                             }
 
                         } else {
@@ -1094,8 +1064,9 @@ public class ShopInteractListener implements Listener {
 
     /**
      * Adds items to an inventory
+     *
      * @param inventory The inventory, to which the items will be added
-     * @param product Shop product
+     * @param product   Shop product
      * @return Whether all items were added to the inventory
      */
     private boolean addToInventory(Inventory inventory, ShopProduct product) {
@@ -1153,8 +1124,9 @@ public class ShopInteractListener implements Listener {
 
     /**
      * Removes items to from an inventory
+     *
      * @param inventory The inventory, from which the items will be removed
-     * @param product Shop product
+     * @param product   Shop product
      * @return Whether all items were removed from the inventory
      */
     private boolean removeFromInventory(Inventory inventory, ShopProduct product) {

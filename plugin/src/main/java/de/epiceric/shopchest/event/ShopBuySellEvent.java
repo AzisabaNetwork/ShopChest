@@ -1,17 +1,16 @@
 package de.epiceric.shopchest.event;
 
+import de.epiceric.shopchest.shop.Shop;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
-
-import de.epiceric.shopchest.shop.Shop;
 
 /**
  * Called when a player buys or sells something from or to a shop
  */
 public class ShopBuySellEvent extends ShopEvent implements Cancellable {
-    private Type type;
-    private int newAmount;
-    private double newPrice;
+    private final Type type;
+    private final int newAmount;
+    private final double newPrice;
     private boolean cancelled;
 
     public ShopBuySellEvent(Player player, Shop shop, Type type, int newAmount, double newPrice) {
@@ -54,6 +53,6 @@ public class ShopBuySellEvent extends ShopEvent implements Cancellable {
 
     public enum Type {
         BUY,
-        SELL;
+        SELL
     }
 }

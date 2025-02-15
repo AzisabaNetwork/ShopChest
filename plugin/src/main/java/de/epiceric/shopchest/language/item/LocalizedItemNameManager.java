@@ -1,9 +1,6 @@
 package de.epiceric.shopchest.language.item;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.logging.Level;
-
+import de.epiceric.shopchest.ShopChest;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -11,7 +8,9 @@ import org.bukkit.inventory.meta.SkullMeta;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import de.epiceric.shopchest.ShopChest;
+import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Level;
 
 public class LocalizedItemNameManager implements ItemNameManager {
 

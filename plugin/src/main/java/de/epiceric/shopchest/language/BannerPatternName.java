@@ -4,8 +4,8 @@ import org.bukkit.Material;
 
 public class BannerPatternName {
 
-    private Material bannerPatternMaterial;
-    private String localizedName;
+    private final Material bannerPatternMaterial;
+    private final String localizedName;
 
     public BannerPatternName(Material bannerPatternMaterial, String localizedName) {
         this.bannerPatternMaterial = bannerPatternMaterial;

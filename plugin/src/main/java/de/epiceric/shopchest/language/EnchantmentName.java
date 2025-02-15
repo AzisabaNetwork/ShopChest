@@ -4,8 +4,8 @@ import org.bukkit.enchantments.Enchantment;
 
 public class EnchantmentName {
 
-    private Enchantment enchantment;
-    private String localizedName;
+    private final Enchantment enchantment;
+    private final String localizedName;
 
     public EnchantmentName(Enchantment enchantment, String localizedName) {
         this.enchantment = enchantment;
@@ -27,8 +27,8 @@ public class EnchantmentName {
     }
 
     public static class EnchantmentLevelName {
-        private int level;
-        private String localizedName;
+        private final int level;
+        private final String localizedName;
 
         public EnchantmentLevelName(int level, String localizedName) {
             this.level = level;

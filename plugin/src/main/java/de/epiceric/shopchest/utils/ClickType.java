@@ -1,10 +1,8 @@
 package de.epiceric.shopchest.utils;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
+import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.shop.Shop.ShopType;
+import de.epiceric.shopchest.shop.ShopProduct;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.OfflinePlayer;
@@ -13,15 +11,16 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
-import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.shop.Shop.ShopType;
-import de.epiceric.shopchest.shop.ShopProduct;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 public class ClickType {
-    private static Map<UUID, ClickType> playerClickType = new HashMap<>();
-    private static Map<UUID, BukkitTask> playerTimers = new HashMap<>();
+    private static final Map<UUID, ClickType> playerClickType = new HashMap<>();
+    private static final Map<UUID, BukkitTask> playerTimers = new HashMap<>();
 
-    private EnumClickType enumClickType;
+    private final EnumClickType enumClickType;
 
     public ClickType(EnumClickType enumClickType) {
         this.enumClickType = enumClickType;
@@ -53,7 +52,7 @@ public class ClickType {
 
     /**
      * Removes the click type from a player and cancels the 15 second timer
-     * 
+     *
      * @param player Player to remove the click type from
      */
     public static void removePlayerClickType(OfflinePlayer player) {
@@ -109,10 +108,10 @@ public class ClickType {
     }
 
     public static class CreateClickType extends ClickType {
-        private ShopProduct product;
-        private double buyPrice;
-        private double sellPrice;
-        private ShopType shopType;
+        private final ShopProduct product;
+        private final double buyPrice;
+        private final double sellPrice;
+        private final ShopType shopType;
 
         public CreateClickType(ShopProduct product, double buyPrice, double sellPrice, ShopType shopType) {
             super(EnumClickType.CREATE);
@@ -153,11 +152,11 @@ public class ClickType {
 
     public static class SelectClickType extends ClickType {
         private ItemStack itemStack;
-        private GameMode gameMode;
-        private int amount;
-        private double buyPrice;
-        private double sellPrice;
-        private ShopType shopType;
+        private final GameMode gameMode;
+        private final int amount;
+        private final double buyPrice;
+        private final double sellPrice;
+        private final ShopType shopType;
 
         public SelectClickType(GameMode gameMode, int amount, double buyPrice, double sellPrice, ShopType shopType) {
             super(EnumClickType.SELECT_ITEM);
@@ -177,6 +176,7 @@ public class ClickType {
 
         /**
          * Sets the selected item
+         *
          * @param itemStack The item to set as selected
          */
         public void setItem(ItemStack itemStack) {

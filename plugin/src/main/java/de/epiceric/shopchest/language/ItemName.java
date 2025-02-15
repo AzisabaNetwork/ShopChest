@@ -4,9 +4,9 @@ import org.bukkit.Material;
 
 public class ItemName {
 
-    private Material material;
-    private int subId;
-    private String localizedName;
+    private final Material material;
+    private final int subId;
+    private final String localizedName;
 
     public ItemName(Material material, String localizedName) {
         this(material, 0, localizedName);

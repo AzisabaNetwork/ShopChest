@@ -1,7 +1,10 @@
 package de.epiceric.shopchest.listeners;
 
-import java.util.Optional;
-
+import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.config.Config;
+import de.epiceric.shopchest.shop.Shop;
+import de.epiceric.shopchest.utils.ClickType;
+import de.epiceric.shopchest.utils.ClickType.EnumClickType;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -18,15 +21,11 @@ import org.codemc.worldguardwrapper.event.WrappedUseBlockEvent;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
 
-import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.config.Config;
-import de.epiceric.shopchest.shop.Shop;
-import de.epiceric.shopchest.utils.ClickType;
-import de.epiceric.shopchest.utils.ClickType.EnumClickType;
+import java.util.Optional;
 
 public class WorldGuardListener implements Listener {
 
-    private ShopChest plugin;
+    private final ShopChest plugin;
 
     public WorldGuardListener(ShopChest plugin) {
         this.plugin = plugin;
@@ -50,14 +49,10 @@ public class WorldGuardListener implements Listener {
 
         Shop shop = plugin.getShopUtils().getShop(location);
 
-        if (shop != null) {
-            // Don't show 'permission denied' messages for any kind of
-            // shop interaction even if block interaction is not
-            // allowed in the region.
-            return true;
-        }
-
-        return false;
+        // Don't show 'permission denied' messages for any kind of
+        // shop interaction even if block interaction is not
+        // allowed in the region.
+        return shop != null;
     }
 
     @EventHandler(priority = EventPriority.LOW)
@@ -68,7 +63,7 @@ public class WorldGuardListener implements Listener {
             if (event.getOriginalEvent() instanceof PlayerInteractEvent) {
                 Block block = event.getBlocks().get(0);
                 Material type = block.getType();
-                
+
                 if (type == Material.CHEST || type == Material.TRAPPED_CHEST) {
                     if (isAllowed(player, block.getLocation())) {
                         event.setResult(Result.ALLOW);
