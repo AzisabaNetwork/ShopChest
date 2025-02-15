@@ -16,6 +16,7 @@ import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import de.epiceric.shopchest.ShopChest;
@@ -149,5 +150,17 @@ public class ShopUpdateListener implements Listener {
         }
 
         newLoadedChunks.add(e.getChunk());
+    }
+
+    @EventHandler
+    public void onChunkUnload(ChunkUnloadEvent e) {
+        if (!plugin.getShopDatabase().isInitialized()) {
+            return;
+        }
+        int num = plugin.getShopUtils().unloadShops(e.getChunk());
+        if (num > 0) {
+            String chunkStr = "[" + e.getChunk().getX() + "; " + e.getChunk().getZ() + "]";
+            plugin.debug("Unloaded " + num + " shops in chunk " + chunkStr);
+        }
     }
 }
