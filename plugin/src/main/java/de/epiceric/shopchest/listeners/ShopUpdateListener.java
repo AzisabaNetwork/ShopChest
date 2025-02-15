@@ -109,7 +109,9 @@ public class ShopUpdateListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent e) {
-        plugin.getUpdater().updateShops(e.getPlayer());
+        if(e.getPlayer().getTicksLived() % 15 == 0) {
+            plugin.getUpdater().updateShops(e.getPlayer());
+        }
     }
 
     @EventHandler
