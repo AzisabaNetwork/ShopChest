@@ -513,16 +513,16 @@ public class ShopUtils {
      * @param chunk The chunk containing the shops to unload
      * @return The amount of shops that were unloaded
      */
-    public int unloadShops(final Chunk chunk) {
-        Set<Shop> unloadedShops = new HashSet<>();
+    public int unloadShops() {
+        int unloadedShopsCount = 0;
         for (Shop shop : getShops()) {
-            if (shop.getLocation().getChunk().equals(chunk)) {
+            if (!shop.getLocation().getChunk().isLoaded()) {
                 removeShop(shop, false);
-                unloadedShops.add(shop);
+                unloadedShopsCount++;
                 plugin.debug("Unloaded shop (#" + shop.getID() + ")");
             }
         }
 
-        return unloadedShops.size();
+        return unloadedShopsCount;
     }
 }

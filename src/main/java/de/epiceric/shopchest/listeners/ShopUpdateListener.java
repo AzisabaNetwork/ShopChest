@@ -156,9 +156,10 @@ public class ShopUpdateListener implements Listener {
     @EventHandler
     public void onChunkUnload(ChunkUnloadEvent e) {
         if (!plugin.getShopDatabase().isInitialized()) {
+            plugin.debug("Shop database wasn't initialized!");
             return;
         }
-        int num = plugin.getShopUtils().unloadShops(e.getChunk());
+        int num = plugin.getShopUtils().unloadShops();
         if (num > 0) {
             String chunkStr = "[" + e.getChunk().getX() + "; " + e.getChunk().getZ() + "]";
             plugin.debug("Unloaded " + num + " shops in chunk " + chunkStr);
