@@ -155,6 +155,13 @@ public class ShopCommand {
             }
         });
 
+        addSubCommand(new ShopSubCommand("list", false, executor, tabCompleter) {
+            @Override
+            public String getHelpMessage(CommandSender sender) {
+                return "no help message";
+            }
+        });
+
         register();
         commandCreated = true;
     }

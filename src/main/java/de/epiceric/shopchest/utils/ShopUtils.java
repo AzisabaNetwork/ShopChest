@@ -516,7 +516,8 @@ public class ShopUtils {
     public int unloadShops() {
         int unloadedShopsCount = 0;
         for (Shop shop : getShops()) {
-            if (!shop.getLocation().getChunk().isLoaded()) {
+            Location location = shop.getLocation();
+            if (!shop.getLocation().getWorld().isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
                 removeShop(shop, false);
                 unloadedShopsCount++;
                 plugin.debug("Unloaded shop (#" + shop.getID() + ")");

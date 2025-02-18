@@ -5,11 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.bukkit.Bukkit;
-import org.bukkit.Chunk;
-import org.bukkit.GameMode;
-import org.bukkit.OfflinePlayer;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -98,6 +94,12 @@ class ShopCommandExecutor implements CommandExecutor {
                     }
                 } else {
                     sender.sendMessage(LanguageUtils.getMessage(Message.NO_PERMISSION_REMOVE_OTHERS));
+                }
+            } else if(subCommand.getName().equalsIgnoreCase("list")) {
+                sender.sendMessage("=== Shop List ===");
+                for(Shop shop: shopUtils.getShops()) {
+                    Location location = shop.getLocation();
+                    sender.sendMessage(String.format("%s: (x:%d / y:%d / z:%d)", shop.getID(), location.getBlockX(), location.getBlockY(), location.getBlockZ()));
                 }
             } else {
                 if (sender instanceof Player) {
