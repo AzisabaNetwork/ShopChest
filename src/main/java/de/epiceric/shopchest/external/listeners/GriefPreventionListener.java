@@ -40,9 +40,6 @@ public class GriefPreventionListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onExtendShop(ShopExtendEvent e) {
-        if (!Config.enableASkyblockIntegration)
-            return;
-
         handleForLocation(e.getPlayer(), e.getNewChestLocation(), e);
     }
 

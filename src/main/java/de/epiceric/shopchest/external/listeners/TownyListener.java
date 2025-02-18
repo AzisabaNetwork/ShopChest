@@ -43,9 +43,6 @@ public class TownyListener implements Listener {
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onExtendShop(ShopExtendEvent e) {
-        if (!Config.enablePlotsquaredIntegration)
-            return;
-
         handleForLocation(e.getPlayer(), e.getNewChestLocation(), e);
     }
 

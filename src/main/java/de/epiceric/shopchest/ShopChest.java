@@ -36,8 +36,6 @@ import de.epiceric.shopchest.config.HologramFormat;
 import de.epiceric.shopchest.event.ShopInitializedEvent;
 import de.epiceric.shopchest.external.WorldGuardShopFlag;
 import de.epiceric.shopchest.external.listeners.GriefPreventionListener;
-import de.epiceric.shopchest.external.listeners.IslandWorldListener;
-import de.epiceric.shopchest.external.listeners.TownyListener;
 import de.epiceric.shopchest.language.LanguageUtils;
 import de.epiceric.shopchest.listeners.BlockExplodeListener;
 import de.epiceric.shopchest.listeners.ChestProtectListener;
@@ -62,7 +60,7 @@ import de.epiceric.shopchest.utils.UpdateChecker.UpdateCheckerResult;
 import de.epiceric.shopchest.utils.Utils;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.milkbowl.vault.economy.Economy;
-import pl.islandworld.IslandWorld;
+import org.jetbrains.annotations.NotNull;
 
 public class ShopChest extends JavaPlugin {
 
@@ -80,7 +78,6 @@ public class ShopChest extends JavaPlugin {
     private FileWriter fw;
     private Plugin worldGuard;
     private Towny towny;
-    private IslandWorld islandWorld;
     private GriefPrevention griefPrevention;
     private ShopUpdater updater;
     private ExecutorService shopCreationThreadPool;
@@ -266,11 +263,6 @@ public class ShopChest extends JavaPlugin {
             towny = (Towny) townyPlugin;
         }
 
-        Plugin islandWorldPlugin = Bukkit.getServer().getPluginManager().getPlugin("IslandWorld");
-        if (islandWorldPlugin instanceof IslandWorld) {
-            islandWorld = (IslandWorld) islandWorldPlugin;
-        }
-
         Plugin griefPreventionPlugin = Bukkit.getServer().getPluginManager().getPlugin("GriefPrevention");
         if (griefPreventionPlugin instanceof GriefPrevention) {
             griefPrevention = (GriefPrevention) griefPreventionPlugin;
@@ -439,10 +431,10 @@ public class ShopChest extends JavaPlugin {
             }
 
             @Override
-            public void onError(Throwable throwable) {
+            public void onError(@NotNull Throwable throwable) {
                 // Database connection probably failed => disable plugin to prevent more errors
                 getLogger().severe("No database access. Disabling ShopChest");
-                if (throwable != null) getLogger().severe(throwable.getMessage());
+                throwable.printStackTrace();
                 getServer().getPluginManager().disablePlugin(ShopChest.this);
             }
         });

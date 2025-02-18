@@ -15,7 +15,6 @@ import com.github.mori01231.lifecore.util.ItemUtil;
 import com.google.gson.JsonPrimitive;
 
 import com.palmergames.bukkit.towny.TownyAPI;
-import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.TownBlock;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -507,8 +506,8 @@ public class ShopInteractListener implements Listener {
                     executor.sendMessage(LanguageUtils.getMessage(Message.NO_PERMISSION_REMOVE_OTHERS));
                     return;
                 }
-            } catch (NotRegisteredException e) {
-                throw new RuntimeException(e);
+            } catch (Exception ignored) {
+//                throw new RuntimeException(e);
             }
         }
 

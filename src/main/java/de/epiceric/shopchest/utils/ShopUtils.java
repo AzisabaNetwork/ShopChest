@@ -1,13 +1,6 @@
 package de.epiceric.shopchest.utils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -64,15 +57,8 @@ public class ShopUtils {
         return getShop(location) != null;
     }
 
-    /**
-     * Get a collection of all loaded shops
-     * <p>
-     * This collection is safe to use for looping over and removing shops.
-     *
-     * @return Read-only collection of all shops, may contain duplicates for double chests
-     */
     public Collection<Shop> getShops() {
-        return Collections.unmodifiableCollection(new ArrayList<>(shopLocationValues));
+        return new ArrayList<>(shopLocationValues);
     }
 
     /**
@@ -520,5 +506,24 @@ public class ShopUtils {
                 }
             }
         }
+    }
+
+    /**
+     * Removes all shops from the given chunk from the server
+     * @param chunk The chunk containing the shops to unload
+     * @return The amount of shops that were unloaded
+     */
+    public int unloadShops() {
+        int unloadedShopsCount = 0;
+        for (Shop shop : getShops()) {
+            Location location = shop.getLocation();
+            if (!shop.getLocation().getWorld().isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
+                removeShop(shop, false);
+                unloadedShopsCount++;
+                plugin.debug("Unloaded shop (#" + shop.getID() + ")");
+            }
+        }
+
+        return unloadedShopsCount;
     }
 }
