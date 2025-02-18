@@ -60,6 +60,7 @@ import de.epiceric.shopchest.utils.UpdateChecker.UpdateCheckerResult;
 import de.epiceric.shopchest.utils.Utils;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.milkbowl.vault.economy.Economy;
+import org.jetbrains.annotations.NotNull;
 
 public class ShopChest extends JavaPlugin {
 
@@ -430,10 +431,10 @@ public class ShopChest extends JavaPlugin {
             }
 
             @Override
-            public void onError(Throwable throwable) {
+            public void onError(@NotNull Throwable throwable) {
                 // Database connection probably failed => disable plugin to prevent more errors
                 getLogger().severe("No database access. Disabling ShopChest");
-                if (throwable != null) getLogger().severe(throwable.getMessage());
+                throwable.printStackTrace();
                 getServer().getPluginManager().disablePlugin(ShopChest.this);
             }
         });
