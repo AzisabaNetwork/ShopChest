@@ -123,16 +123,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>pl.gnacik</groupId>
-            <artifactId>IslandWorld</artifactId>
-            <version>8.5</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/IslandWorld-8.5.jar</systemPath>
-        </dependency>
-        <dependency>
             <groupId>net.azisaba</groupId>
             <artifactId>LifeCore</artifactId>
-            <version>6.3.2</version>
+            <version>6.19.0+1.15.2</version>
             <scope>provided</scope>
         </dependency>
 

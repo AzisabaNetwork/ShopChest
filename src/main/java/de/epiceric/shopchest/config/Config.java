@@ -175,44 +175,9 @@ public class Config {
     public static boolean enableTownyIntegration;
 
     /**
-     * Whether AuthMe integration should be enabled
-     **/
-    public static boolean enableAuthMeIntegration;
-
-    /**
-     * Whether PlotSquared integration should be enabled
-     **/
-    public static boolean enablePlotsquaredIntegration;
-
-    /**
-     * Whether uSkyBlock integration should be enabled
-     **/
-    public static boolean enableUSkyblockIntegration;
-
-    /**
-     * Whether ASkyBlock integration should be enabled
-     **/
-    public static boolean enableASkyblockIntegration;
-
-    /**
-     * Whether BentoBox integration should be enabled
-     **/
-    public static boolean enableBentoBoxIntegration;
-
-    /**
-     * Whether IslandWorld integration should be enabled
-     **/
-    public static boolean enableIslandWorldIntegration;
-
-    /**
      * Whether GriefPrevention integration should be enabled
      **/
     public static boolean enableGriefPreventionIntegration;
-
-    /**
-     * Whether AreaShop integration should be enabled
-     **/
-    public static boolean enableAreaShopIntegration;
 
     /**
      * Whether the vendor of the shop should get messages about buys and sells
@@ -482,14 +447,7 @@ public class Config {
         cleanupEconomyLogDays = plugin.getConfig().getInt("cleanup-economy-log-days");
         enableWorldGuardIntegration = plugin.getConfig().getBoolean("enable-worldguard-integration");
         enableTownyIntegration = plugin.getConfig().getBoolean("enable-towny-integration");
-        enableAuthMeIntegration = plugin.getConfig().getBoolean("enable-authme-integration");
-        enablePlotsquaredIntegration = plugin.getConfig().getBoolean("enable-plotsquared-integration");
-        enableUSkyblockIntegration = plugin.getConfig().getBoolean("enable-uskyblock-integration");
-        enableASkyblockIntegration = plugin.getConfig().getBoolean("enable-askyblock-integration");
-        enableBentoBoxIntegration = plugin.getConfig().getBoolean("enable-bentobox-integration");
-        enableIslandWorldIntegration = plugin.getConfig().getBoolean("enable-islandworld-integration");
         enableGriefPreventionIntegration = plugin.getConfig().getBoolean("enable-griefprevention-integration");
-        enableAreaShopIntegration = plugin.getConfig().getBoolean("enable-areashop-integration");
         enableVendorMessages = plugin.getConfig().getBoolean("enable-vendor-messages");
         enableVendorBungeeMessages = plugin.getConfig().getBoolean("enable-vendor-bungee-messages");
         onlyShowShopsInSight = plugin.getConfig().getBoolean("only-show-shops-in-sight");
