@@ -410,9 +410,10 @@ public class ShopUtils {
      * @param force Whether update should be forced even if player has not moved
      */
     public void updateShops(Player player, boolean force) {
-        if (!force
-                && player.getTicksLived() % 20 != 0 // only every second
-                && player.getLocation().equals(playerLocation.get(player.getUniqueId()))) {
+        if (!force &&
+                (player.getTicksLived() % 20 != 0 // only every second
+                    || player.getLocation().equals(playerLocation.get(player.getUniqueId())))
+        ) {
             // Player has not moved, so don't calculate shops again.
             return;
         }
