@@ -411,7 +411,7 @@ public class ShopUtils {
      */
     public void updateShops(Player player, boolean force) {
         if (!force &&
-                (player.getTicksLived() % 20 != 0 // only every second
+                (player.getTicksLived() % 10 != 0 // only every second
                     || player.getLocation().equals(playerLocation.get(player.getUniqueId())))
         ) {
             // Player has not moved, so don't calculate shops again.
