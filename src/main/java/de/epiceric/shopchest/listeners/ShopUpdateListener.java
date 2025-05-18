@@ -33,8 +33,6 @@ public class ShopUpdateListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryUpdate(InventoryMoveItemEvent e) {
-        if (!plugin.getHologramFormat().isDynamic()) return;
-
         Location loc = null;
 
         if (e.getSource().getHolder() instanceof Chest) {
@@ -49,7 +47,9 @@ public class ShopUpdateListener implements Listener {
 
         if (loc != null) {
             Shop shop = plugin.getShopUtils().getShop(loc);
-            if (shop != null) shop.updateHologramText();
+            if (shop != null && plugin.getHologramFormat().isDynamic()) {
+                shop.updateHologramText();
+            }
         }
     }
 
@@ -109,7 +109,9 @@ public class ShopUpdateListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent e) {
-        plugin.getUpdater().updateShops(e.getPlayer());
+        if (e.getPlayer().getTicksLived() % 10 == 0) { // only every second
+            plugin.getUpdater().updateShops(e.getPlayer());
+        }
     }
 
     @EventHandler
