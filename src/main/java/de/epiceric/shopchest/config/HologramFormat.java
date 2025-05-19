@@ -5,16 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import javax.script.ScriptException;
-
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.utils.Operator;
 
 public class HologramFormat {
 
@@ -30,9 +24,6 @@ public class HologramFormat {
 
     // e.g.: "STONE" == "DIAMOND_SWORD"
     private static final Pattern SIMPLE_STRING_CONDITION = Pattern.compile("^\"([^\"]*)\" ([=!]=) \"([^\"]*)\"$");
-
-    private ScriptEngineManager manager = new ScriptEngineManager();
-    private ScriptEngine engine = manager.getEngineByName("JavaScript");
 
     private ShopChest plugin;
     private File configFile;
@@ -150,56 +141,9 @@ public class HologramFormat {
             return true;
         } else if (cond.equals("false")) {
             return false;
-        } else {
-            char firstChar = cond.charAt(0);
-
-            // numeric cond: first char must be a digit (no variable can be negative)
-            if (firstChar >= '0' && firstChar <= '9') {
-                Matcher matcher = SIMPLE_NUMERIC_CONDITION.matcher(cond);
-
-                if (matcher.find()) {
-                    Double a, b;
-                    Operator operator;
-                    try {
-                        a = Double.valueOf(matcher.group(1));
-                        operator = Operator.from(matcher.group(2));
-                        b = Double.valueOf(matcher.group(3));
-
-                        return operator.compare(a, b);
-                    } catch (IllegalArgumentException ignored) {
-                        // should not happen, since regex checked that there is valid number and valid operator
-                    }
-                }
-            }
-
-            // string cond: first char must be a: "
-            if (firstChar == '"') {
-                Matcher matcher = SIMPLE_STRING_CONDITION.matcher(cond);
-
-                if (matcher.find()) {
-                    String a, b;
-                    Operator operator;
-                    try {
-                        a = matcher.group(1);
-                        operator = Operator.from(matcher.group(2));
-                        b = matcher.group(3);
-
-                        return operator.compare(a, b);
-                    } catch (IllegalArgumentException | UnsupportedOperationException ignored) {
-                        // should not happen, since regex checked that there is valid operator
-                    }
-                }
-            }
-
-            // complex comparison
-            try {
-                return (boolean) engine.eval(cond);
-            } catch (ScriptException e) {
-                plugin.debug("Failed to eval condition: " + condition);
-                plugin.debug(e);
-                return false;
-            }
         }
+
+        return ExpressionEvaluator.evaluate(cond);
     }
 
     /**
@@ -209,37 +153,30 @@ public class HologramFormat {
      * @return Result of the condition
      */
     public String evalPlaceholder(String string, Map<Placeholder, Object> values) {
-        try {
-            Matcher matcher = Pattern.compile("\\{([^}]+)}").matcher(string);
-            String newString = string;
+        Matcher matcher = Pattern.compile("\\{([^}]+)}").matcher(string);
+        String newString = string;
 
-            while (matcher.find()) {
-                String withBrackets = matcher.group();
-                String script = withBrackets.substring(1, withBrackets.length() - 1);
+        while (matcher.find()) {
+            String withBrackets = matcher.group();
+            String script = withBrackets.substring(1, withBrackets.length() - 1);
 
-                for (Placeholder placeholder : values.keySet()) {
-                    if (script.contains(placeholder.toString())) {
-                        Object val = values.get(placeholder);
-                        String sVal = String.valueOf(val);
+            for (Placeholder placeholder : values.keySet()) {
+                if (script.contains(placeholder.toString())) {
+                    Object val = values.get(placeholder);
+                    String sVal = String.valueOf(val);
 
-                        if (val instanceof String && !(sVal.startsWith("\"") && sVal.endsWith("\""))) {
-                            sVal = String.format("\"%s\"", sVal);
-                        }
-
-                        script = script.replace(placeholder.toString(), sVal);
+                    if (val instanceof String && !(sVal.startsWith("\"") && sVal.endsWith("\""))) {
+                        sVal = String.format("\"%s\"", sVal);
                     }
-                }
 
-                String result = String.valueOf(engine.eval(script));
-                newString = newString.replace(withBrackets, result);
+                    script = script.replace(placeholder.toString(), sVal);
+                }
             }
 
-            return newString;
-        } catch (ScriptException e) {
-            plugin.debug("Failed to eval placeholder script in string: " + string);
-            plugin.debug(e);
+            String result = ExpressionEvaluator.evaluateScript(script);
+            newString = newString.replace(withBrackets, result);
         }
 
-        return string;
+        return newString;
     }
 }

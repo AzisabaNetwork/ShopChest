@@ -42,6 +42,8 @@ public class ChestProtectListener implements Listener {
     private ShopChest plugin;
     private ShopUtils shopUtils;
 
+    private ArrayList<Location> isKnownAsNotAShop = new ArrayList<>();
+
     public ChestProtectListener(ShopChest plugin) {
         this.plugin = plugin;
         this.shopUtils = plugin.getShopUtils();
@@ -231,11 +233,20 @@ public class ChestProtectListener implements Listener {
         if ((e.getSource().getType().equals(InventoryType.CHEST)) && (!e.getInitiator().getType().equals(InventoryType.PLAYER))) {
 
             if (e.getSource().getHolder() instanceof DoubleChest) {
+
                 DoubleChest dc = (DoubleChest) e.getSource().getHolder();
+                if (isKnownAsNotAShop.contains(dc.getLocation())) {
+                    return;
+                }
+
                 Chest r = (Chest) dc.getRightSide();
                 Chest l = (Chest) dc.getLeftSide();
 
-                if (shopUtils.isShop(r.getLocation()) || shopUtils.isShop(l.getLocation())) e.setCancelled(true);
+                if (shopUtils.isShop(r.getLocation()) || shopUtils.isShop(l.getLocation())) {
+                    e.setCancelled(true);
+                } else {
+                    isKnownAsNotAShop.add(dc.getLocation());
+                }
 
             } else if (e.getSource().getHolder() instanceof Chest) {
                 Chest c = (Chest) e.getSource().getHolder();
