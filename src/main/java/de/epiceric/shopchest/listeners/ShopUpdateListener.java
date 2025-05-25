@@ -12,6 +12,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -33,6 +34,8 @@ public class ShopUpdateListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onInventoryUpdate(InventoryMoveItemEvent e) {
+        if (e.getSource().getType() != InventoryType.CHEST && e.getDestination().getType() != InventoryType.CHEST) return;
+
         Location loc = null;
 
         if (e.getSource().getHolder() instanceof Chest) {
