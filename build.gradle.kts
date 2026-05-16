@@ -48,10 +48,6 @@ repositories {
     }
 
     maven {
-        url = uri("https://maven.wiefferink.me")
-    }
-
-    maven {
         url = uri("https://repo.inventivetalent.org/content/groups/public/")
     }
 
@@ -66,6 +62,8 @@ repositories {
     maven {
         url = uri("https://repo.azisaba.net/repository/maven-public/")
     }
+
+    maven("https://mvn.lumine.io/repository/maven-public/")
 }
 
 dependencies {
@@ -81,9 +79,9 @@ dependencies {
     compileOnly(libs.org.spigotmc.spigot.api)
     compileOnly(libs.com.github.techfortress.griefprevention)
     compileOnly(libs.com.palmergames.bukkit.towny.towny)
-    compileOnly(libs.net.azisaba.lifecore)
     compileOnly(libs.org.projectlombok.lombok)
     compileOnly(fileTree("libs"))
+    compileOnly("io.lumine:Mythic-Dist:5.12.0")
 }
 
 tasks {

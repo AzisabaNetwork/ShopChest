@@ -1,12 +1,13 @@
 package de.epiceric.shopchest.utils;
 
-import java.util.Arrays;
-import java.util.Map;
+import java.util.*;
 
+import io.lumine.mythic.bukkit.MythicBukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.potion.Potion;
 import org.bukkit.potion.PotionType;
@@ -23,7 +24,7 @@ public class ItemUtils {
     }
 
     public static PotionType getPotionEffect(ItemStack itemStack) {
-        if (itemStack.getItemMeta() instanceof PotionMeta) {    
+        if (itemStack.getItemMeta() instanceof PotionMeta) {
             if (Utils.getMajorVersion() < 9) {
                 return Potion.fromItemStack(itemStack).getType();
             } else {
@@ -71,6 +72,38 @@ public class ItemUtils {
             if (mat == null) return null;
             return new ItemStack(mat, 1);
         }
+    }
+
+    public static String getMythicType(ItemStack itemStack) {
+        if(itemStack == null || itemStack.getType() == Material.AIR) return null;
+        return MythicBukkit.inst().getItemManager().getMythicTypeFromItem(itemStack);
+    }
+
+    // From LifeCore
+    public static String toString(ItemStack stack) {
+        List<String> props = new ArrayList();
+        props.add("[Type: " + stack.getType().name() + "]");
+        props.add("[Amount: " + stack.getAmount() + "]");
+        ItemMeta meta = stack.getItemMeta();
+        if (meta != null) {
+            if (meta.hasDisplayName()) {
+                props.add("[Name: " + meta.getDisplayName() + "]");
+            }
+
+            if (meta.hasLore()) {
+                props.add("[Lore: " + Objects.requireNonNull(meta.getLore()).size() + " entries]");
+            }
+
+            if (meta.hasCustomModelData()) {
+                props.add("[CustomModelData: " + meta.getCustomModelData() + "]");
+            }
+
+            if (getMythicType(stack) != null) {
+                props.add("[MMID: " + getMythicType(stack) + "]");
+            }
+        }
+
+        return String.join("", props);
     }
 
 }

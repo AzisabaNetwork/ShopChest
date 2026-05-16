@@ -7,7 +7,7 @@ author: EpicEric
 website: @url@
 description: Create your own nice-looking chest shops and sell your stuff to other players!
 softdepend: [WorldGuard, Towny, AuthMe, PlotSquared, uSkyBlock, ASkyBlock, GriefPrevention, AreaShop, Multiverse-Core, MultiWorld, BentoBox]
-depend: [Vault]
+depend: [Vault, MythicMobs]
 api-version: 1.13
 
 permissions:
