@@ -15,7 +15,7 @@ java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(21))
 
     withSourcesJar()
-    withJavadocJar()
+//    withJavadocJar()
 }
 
 // paperweight.reobfArtifactConfiguration.set(io.papermc.paperweight.userdev.ReobfArtifactConfiguration.REOBF_PRODUCTION)
