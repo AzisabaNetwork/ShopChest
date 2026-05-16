@@ -36,8 +36,6 @@ import de.epiceric.shopchest.config.HologramFormat;
 import de.epiceric.shopchest.event.ShopInitializedEvent;
 import de.epiceric.shopchest.external.WorldGuardShopFlag;
 import de.epiceric.shopchest.external.listeners.GriefPreventionListener;
-import de.epiceric.shopchest.external.listeners.IslandWorldListener;
-import de.epiceric.shopchest.external.listeners.TownyListener;
 import de.epiceric.shopchest.language.LanguageUtils;
 import de.epiceric.shopchest.listeners.BlockExplodeListener;
 import de.epiceric.shopchest.listeners.ChestProtectListener;
@@ -62,7 +60,6 @@ import de.epiceric.shopchest.utils.UpdateChecker.UpdateCheckerResult;
 import de.epiceric.shopchest.utils.Utils;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.milkbowl.vault.economy.Economy;
-import pl.islandworld.IslandWorld;
 
 public class ShopChest extends JavaPlugin {
 
@@ -80,7 +77,6 @@ public class ShopChest extends JavaPlugin {
     private FileWriter fw;
     private Plugin worldGuard;
     private Towny towny;
-    private IslandWorld islandWorld;
     private GriefPrevention griefPrevention;
     private ShopUpdater updater;
     private ExecutorService shopCreationThreadPool;
@@ -264,11 +260,6 @@ public class ShopChest extends JavaPlugin {
         Plugin townyPlugin = Bukkit.getServer().getPluginManager().getPlugin("Towny");
         if (townyPlugin instanceof Towny) {
             towny = (Towny) townyPlugin;
-        }
-
-        Plugin islandWorldPlugin = Bukkit.getServer().getPluginManager().getPlugin("IslandWorld");
-        if (islandWorldPlugin instanceof IslandWorld) {
-            islandWorld = (IslandWorld) islandWorldPlugin;
         }
 
         Plugin griefPreventionPlugin = Bukkit.getServer().getPluginManager().getPlugin("GriefPrevention");

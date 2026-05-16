@@ -238,7 +238,7 @@ public class Utils {
         List<String> axes;
         if (Utils.getMajorVersion() < 13)
             axes = Arrays.asList("WOOD_AXE", "STONE_AXE", "IRON_AXE", "GOLD_AXE", "DIAMOND_AXE");
-        else 
+        else
             axes = Arrays.asList("WOODEN_AXE", "STONE_AXE", "IRON_AXE", "GOLDEN_AXE", "DIAMOND_AXE");
 
         ItemStack item = getItemInMainHand(p);
@@ -339,10 +339,10 @@ public class Utils {
 
         JsonBuilder.PartMap rootPart = JsonBuilder.parse(LanguageUtils.getMessage(Message.UPDATE_AVAILABLE,
                 new Replacement(Placeholder.VERSION, plugin.getLatestVersion()))).toMap();
-                
+
         rootPart.setValue("hoverEvent", new JsonBuilder.PartMap(hoverEvent));
         rootPart.setValue("clickEvent", new JsonBuilder.PartMap(clickEvent));
-        
+
         jb.setRootPart(rootPart);
         jb.sendJson(p);
     }
@@ -419,13 +419,13 @@ public class Utils {
                 if (majorVersion >= 10) fNoGravity.setAccessible(true);
                 fItem.setAccessible(true);
                 fArmorStandFlags.setAccessible(true);
-                
+
                 register.invoke(dataWatcher, fEntityFlags.get(null), entityFlags);
                 register.invoke(dataWatcher, fAirTicks.get(null), 300);
                 register.invoke(dataWatcher, fNameVisible.get(null), customName != null);
                 register.invoke(dataWatcher, fSilent.get(null), true);
                 if (majorVersion < 13) register.invoke(dataWatcher, fCustomName.get(null), customName != null ? customName : "");
-                
+
                 if (nmsItemStack != null) {
                     register.invoke(dataWatcher, fItem.get(null), majorVersion < 11 ? com.google.common.base.Optional.of(nmsItemStack) : nmsItemStack);
                 } else {
@@ -455,7 +455,7 @@ public class Utils {
 
     /**
      * Get a free entity ID for use in {@link #createPacketSpawnEntity(ShopChest, int, UUID, Location, Vector, EntityType)}
-     * 
+     *
      * @return The id or {@code -1} if a free entity ID could not be retrieved.
      */
     public static int getFreeEntityId() {
@@ -478,7 +478,7 @@ public class Utils {
 
     /**
      * Create a {@code PacketPlayOutSpawnEntity} object.
-     * Only {@link EntityType#ARMOR_STAND} and {@link EntityType#DROPPED_ITEM} are supported! 
+     * Only {@link EntityType#ARMOR_STAND} and {@link EntityType#DROPPED_ITEM} are supported!
      */
     public static Object createPacketSpawnEntity(ShopChest plugin, int id, UUID uuid, Location loc, EntityType type) {
         try {
@@ -505,7 +505,7 @@ public class Utils {
 
                 return c.newInstance(id, uuid, loc.getX(), y, loc.getZ(), 0f, 0f, entityType, 0, vec3d);
             }
-            
+
             Object packet = packetPlayOutSpawnEntityClass.getConstructor().newInstance();
 
             Field[] fields = new Field[12];
@@ -596,12 +596,17 @@ public class Utils {
     }
 
     /**
-     * @return The current server version with revision number (e.g. v1_9_R2, v1_10_R1)
+     * @return The current server version with revision number (e.g. v1_20_R3)
      */
     public static String getServerVersion() {
-        String packageName = Bukkit.getServer().getClass().getPackage().getName();
+        String mcVersion = Bukkit.getBukkitVersion().split("-")[0];
 
-        return packageName.substring(packageName.lastIndexOf('.') + 1);
+        return switch (mcVersion) {
+            case "1.20", "1.20.1" -> "v1_20_R1";
+            case "1.20.2" -> "v1_20_R2";
+            case "1.20.3", "1.20.4" -> "v1_20_R3";
+            default -> "v" + mcVersion.replace('.', '_');
+        };
     }
 
     /**
