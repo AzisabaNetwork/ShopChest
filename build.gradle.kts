@@ -12,7 +12,7 @@ description = "ShopChest"
 val projectUrl: String by project
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(8))
 
     withSourcesJar()
     withJavadocJar()
