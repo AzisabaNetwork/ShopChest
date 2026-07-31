@@ -46,6 +46,7 @@ import de.epiceric.shopchest.listeners.ShopItemListener;
 import de.epiceric.shopchest.listeners.ShopUpdateListener;
 import de.epiceric.shopchest.listeners.WorldGuardListener;
 import de.epiceric.shopchest.shop.Shop;
+import de.epiceric.shopchest.shop.ShopProduct;
 import de.epiceric.shopchest.shop.Shop.ShopType;
 import de.epiceric.shopchest.sql.Database;
 import de.epiceric.shopchest.sql.MySQL;
@@ -541,6 +542,30 @@ public class ShopChest extends JavaPlugin {
      */
     public Economy getEconomy() {
         return econ;
+    }
+
+    /** Writes a structured record of a successful shop action to the server log. */
+    public void audit(String action, Player actor, Shop shop, ShopProduct product, Double price, String detail) {
+        if (!Config.enableAuditLog) return;
+
+        String vendorName = shop.getVendor().getName() == null ? "<unknown>" : shop.getVendor().getName();
+        String item = product == null ? "<none>" : product.getItemStack().getType().getKey().toString();
+        int amount = product == null ? 0 : product.getAmount();
+        String itemData = product == null ? "<none>" : Utils.encode(product.getItemStack());
+
+        getLogger().info("[AUDIT] action=" + action
+                + " shop_id=" + shop.getID()
+                + " actor=" + actor.getName() + " actor_uuid=" + actor.getUniqueId()
+                + " vendor=" + vendorName + " vendor_uuid=" + shop.getVendor().getUniqueId()
+                + " admin=" + (shop.getShopType() == ShopType.ADMIN)
+                + " world=" + shop.getLocation().getWorld().getName()
+                + " x=" + shop.getLocation().getBlockX()
+                + " y=" + shop.getLocation().getBlockY()
+                + " z=" + shop.getLocation().getBlockZ()
+                + " item=" + item + " item_data=" + itemData
+                + " amount=" + amount
+                + " price=" + (price == null ? "<none>" : price)
+                + " detail=" + (detail == null ? "<none>" : detail));
     }
 
     /**

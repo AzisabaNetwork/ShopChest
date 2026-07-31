@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "de.epiceric"
-version = "1.21.11+1.13.4"
+version = "1.21.11+1.13.5"
 description = "ShopChest"
 
 val projectUrl: String by project

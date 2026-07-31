@@ -157,6 +157,9 @@ public class Config {
      **/
     public static boolean enableEconomyLog;
 
+    /** Whether successful shop actions should be written to the server audit log. */
+    public static boolean enableAuditLog;
+
     /**
      * Whether WorldGuard integration should be enabled
      **/
@@ -479,6 +482,7 @@ public class Config {
         enableUpdateChecker = plugin.getConfig().getBoolean("enable-update-checker");
         enableDebugLog = plugin.getConfig().getBoolean("enable-debug-log");
         enableEconomyLog = plugin.getConfig().getBoolean("enable-economy-log");
+        enableAuditLog = plugin.getConfig().getBoolean("enable-audit-log", true);
         cleanupEconomyLogDays = plugin.getConfig().getInt("cleanup-economy-log-days");
         enableWorldGuardIntegration = plugin.getConfig().getBoolean("enable-worldguard-integration");
         enableTownyIntegration = plugin.getConfig().getBoolean("enable-towny-integration");

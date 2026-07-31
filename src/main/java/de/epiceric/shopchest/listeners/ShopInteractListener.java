@@ -485,6 +485,8 @@ public class ShopInteractListener implements Listener {
 
         plugin.debug("Shop created");
         shopUtils.addShop(shop, true);
+        plugin.audit("CREATE", executor, shop, product, creationPrice,
+                "buy_price=" + buyPrice + " sell_price=" + sellPrice);
 
         Message message = shopType == ShopType.ADMIN ? Message.ADMIN_SHOP_CREATED : Message.SHOP_CREATED;
         executor.sendMessage(LanguageUtils.getMessage(message, new Replacement(Placeholder.CREATION_PRICE, creationPrice)));
@@ -534,6 +536,8 @@ public class ShopInteractListener implements Listener {
             executor.sendMessage(LanguageUtils.getMessage(Message.SHOP_REMOVED));
         }
 
+        plugin.audit("REMOVE", executor, shop, shop.getProduct(), null,
+                "refund=" + (creationPrice > 0 && Config.refundShopCreation && executor.getUniqueId().equals(shop.getVendor().getUniqueId()) ? creationPrice : 0));
         shopUtils.removeShop(shop, true);
         plugin.debug("Removed shop (#" + shop.getID() + ")");
     }

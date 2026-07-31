@@ -645,6 +645,8 @@ public abstract class Database {
         final String query = "INSERT INTO " + tableLogs + " (shop_id,timestamp,time,player_name,player_uuid,product_name,product,amount,"
                 + "vendor_name,vendor_uuid,admin,world,x,y,z,price,type) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)";
 
+        plugin.audit(type.toString(), executor, shop, product, price, "transaction");
+
         if (Config.enableEconomyLog) {
             new BukkitRunnable() {
                 @Override

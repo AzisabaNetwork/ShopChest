@@ -38,7 +38,14 @@ refund-shop-creation: false
 enable-update-checker: true
 
 # Set whether buys and sells should be logged in the database.
-enable-economy-log: false
+# Each entry includes the time, buyer/seller, vendor, shop location, item data,
+# amount, total price and transaction direction.
+enable-economy-log: true
+
+# Write successful shop creation, removal, purchase and sale actions to the
+# server log. Entries include the actor and vendor UUIDs, shop ID and location,
+# item type/data, amount, price, and whether it is an admin shop.
+enable-audit-log: true
 
 # Set the maximum age for economy log entries in days.
 # All log entries older than this will be deleted on server start.
