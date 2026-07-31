@@ -47,12 +47,15 @@ public class LanguageUtils {
     private static PotionType potionType(String key) { return Registry.POTION.get(NamespacedKey.minecraft(key)); }
 
     private static PotionType basePotionType(PotionMeta meta) {
-        String typeName = meta.getBasePotionType().name();
-        return typeName.startsWith("STRONG_") ? PotionType.valueOf(typeName.substring("STRONG_".length())) : meta.getBasePotionType();
+        PotionType potionType = meta.getBasePotionType();
+        if (potionType == null) return null;
+        String typeName = potionType.name();
+        return typeName.startsWith("STRONG_") ? PotionType.valueOf(typeName.substring("STRONG_".length())) : potionType;
     }
 
     private static boolean isUpgradedPotion(PotionMeta meta) {
-        return meta.getBasePotionType().name().startsWith("STRONG_");
+        PotionType potionType = meta.getBasePotionType();
+        return potionType != null && potionType.name().startsWith("STRONG_");
     }
 
 
@@ -2748,7 +2751,9 @@ public class LanguageUtils {
         PotionEffectType potionEffect;
         boolean upgraded;
 
-        potionEffect = basePotionType(potionMeta).getEffectType();
+        PotionType basePotionType = basePotionType(potionMeta);
+        if (basePotionType == null) return "";
+        potionEffect = basePotionType.getEffectType();
         upgraded = isUpgradedPotion(potionMeta);
 
         String potionEffectString = formatDefaultString(String.valueOf(potionEffect));

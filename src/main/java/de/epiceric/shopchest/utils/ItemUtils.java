@@ -32,7 +32,8 @@ public class ItemUtils {
 
     public static boolean isExtendedPotion(ItemStack itemStack) {
         if (itemStack.getItemMeta() instanceof PotionMeta) {
-            return ((PotionMeta) itemStack.getItemMeta()).getBasePotionType().name().startsWith("LONG_");
+            PotionType potionType = ((PotionMeta) itemStack.getItemMeta()).getBasePotionType();
+            return potionType != null && potionType.name().startsWith("LONG_");
         }
 
         return false;
