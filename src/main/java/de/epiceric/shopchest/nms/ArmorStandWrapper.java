@@ -21,7 +21,10 @@ public class ArmorStandWrapper {
     // Legacy hologram locations were the feet of a marker ArmorStand. Its
     // displayed name was about 1.975 blocks above that point; TextDisplay's
     // origin is the text itself, so retain the former visual placement.
-    private static final double TEXT_DISPLAY_Y_OFFSET = 1.975;
+    // Keep the lowest hologram line above the native floating item.  A
+    // TextDisplay has no ArmorStand nameplate offset, so it needs a full
+    // visual-height correction rather than the old entity-height correction.
+    private static final double TEXT_DISPLAY_Y_OFFSET = 2.375;
 
     private final ShopChest plugin;
     private final TextDisplay display;
