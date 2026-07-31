@@ -8,6 +8,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.TextDisplay;
 
 import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.config.Config;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
 /**
@@ -39,7 +40,10 @@ public class ArmorStandWrapper {
         this.display = location.getWorld().spawn(displayLocation, TextDisplay.class, textDisplay -> {
             textDisplay.text(LEGACY_SERIALIZER.deserialize(customName));
             textDisplay.setBillboard(Billboard.CENTER);
-            textDisplay.setSeeThrough(true);
+            // Let normal world geometry occlude shop text. Otherwise a large
+            // market leaks every hologram through floors and walls.
+            textDisplay.setSeeThrough(false);
+            textDisplay.setViewRange((float) Math.max(1.0D, Config.maximalDistance));
             textDisplay.setShadowed(false);
             textDisplay.setDefaultBackground(false);
             textDisplay.setPersistent(false);
