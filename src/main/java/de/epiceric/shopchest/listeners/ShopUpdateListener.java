@@ -112,9 +112,10 @@ public class ShopUpdateListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent e) {
-        if (e.getPlayer().getTicksLived() % 10 == 0) { // only every second
-            plugin.getUpdater().updateShops(e.getPlayer());
-        }
+        // TextDisplay/Item visibility now uses Bukkit entities.  Updating on
+        // the move event avoids the former 10-tick delay when walking across
+        // a row of shops.
+        plugin.getUpdater().updateShops(e.getPlayer());
     }
 
     @EventHandler

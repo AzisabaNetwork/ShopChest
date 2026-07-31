@@ -83,6 +83,10 @@ public class ShopUpdater {
      * @param runnable task to run
      */
     public void queue(Runnable runnable) {
-        Bukkit.getScheduler().runTask(plugin, runnable);
+        if (Bukkit.isPrimaryThread()) {
+            runnable.run();
+        } else {
+            Bukkit.getScheduler().runTask(plugin, runnable);
+        }
     }
 }
