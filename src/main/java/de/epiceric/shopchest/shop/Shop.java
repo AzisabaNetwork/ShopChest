@@ -5,6 +5,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -137,7 +138,9 @@ public class Shop {
             return false;
         }
 
-        plugin.getShopCreationThreadPool().execute(() -> {
+        // Holograms and item displays are Bukkit entities and must be created
+        // on the server thread.
+        Bukkit.getScheduler().runTask(plugin, () -> {
             if (hologram == null || !hologram.exists()) createHologram(preResult);
             if (item == null) createItem();
 
