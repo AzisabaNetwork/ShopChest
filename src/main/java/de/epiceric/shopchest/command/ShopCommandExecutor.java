@@ -429,7 +429,7 @@ class ShopCommandExecutor implements CommandExecutor {
             }
         }
 
-        if (Enchantment.DURABILITY.canEnchantItem(itemStack)) {
+        if (Enchantment.getByKey(org.bukkit.NamespacedKey.minecraft("unbreaking")).canEnchantItem(itemStack)) {
             if (itemStack.getDurability() > 0 && !Config.allowBrokenItems) {
                 p.sendMessage(LanguageUtils.getMessage(Message.CANNOT_SELL_BROKEN_ITEM));
                 plugin.debug(p.getName() + "'s item is broken");

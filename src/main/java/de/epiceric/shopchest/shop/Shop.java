@@ -212,11 +212,7 @@ public class Shop {
             chests[0] = (Chest) ih;
         }
 
-        if (Utils.getMajorVersion() < 13) {
-            face = ((org.bukkit.material.Directional) chests[0].getData()).getFacing();
-        } else {
-            face = ((Directional) chests[0].getBlockData()).getFacing();
-        }
+        face = ((Directional) chests[0].getBlockData()).getFacing();
 
         return new PreCreateResult(ih.getInventory(), chests, face);
     }
@@ -237,7 +233,7 @@ public class Shop {
     }
 
     /**
-     * Keep hologram text up to date.
+     * Keep the hologram text up to date.
      * <p><b>Has to be called synchronously!</b></p>
      */
     public void updateHologramText() {

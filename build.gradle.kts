@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "de.epiceric"
-version = "1.13.3"
+version = "1.21.11+1.13.4"
 description = "ShopChest"
 
 val projectUrl: String by project
@@ -76,7 +76,8 @@ dependencies {
     compileOnly(libs.com.github.milkbowl.vaultapi) {
         exclude("org.bukkit", "bukkit")
     }
-    compileOnly(libs.org.spigotmc.spigot.api)
+    compileOnly(libs.io.papermc.paper.api)
+    compileOnly(files("../Townia/build/libs/Townia-1.0-SNAPSHOT.jar"))
     compileOnly(libs.com.github.techfortress.griefprevention)
     compileOnly(libs.com.palmergames.bukkit.towny.towny)
     compileOnly(libs.org.projectlombok.lombok)

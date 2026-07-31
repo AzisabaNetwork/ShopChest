@@ -16,6 +16,9 @@ import com.google.gson.JsonPrimitive;
 import com.palmergames.bukkit.towny.TownyAPI;
 import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
 import com.palmergames.bukkit.towny.object.TownBlock;
+import net.azisaba.townia.api.TowniaAPI;
+import net.azisaba.townia.data.Plot;
+import net.azisaba.townia.data.Town;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -500,14 +503,9 @@ public class ShopInteractListener implements Listener {
 
         if (shop.getShopType() == ShopType.NORMAL && !executor.getUniqueId().equals(shop.getVendor().getUniqueId())
                 && !executor.hasPermission(Permissions.REMOVE_OTHER)) {
-            TownBlock townBlock = TownyAPI.getInstance().getTownBlock(shop.getLocation());
-            try {
-                if (townBlock == null || !townBlock.hasTown() || !townBlock.getTown().hasMayor() || !townBlock.getTown().getMayor().getName().equals(executor.getName())) {
-                    executor.sendMessage(LanguageUtils.getMessage(Message.NO_PERMISSION_REMOVE_OTHERS));
-                    return;
-                }
-            } catch (NotRegisteredException e) {
-                throw new RuntimeException(e);
+            if (!canRemoveOtherPlayerShop(executor, shop)) {
+                executor.sendMessage(LanguageUtils.getMessage(Message.NO_PERMISSION_REMOVE_OTHERS));
+                return;
             }
         }
 
@@ -538,6 +536,26 @@ public class ShopInteractListener implements Listener {
 
         shopUtils.removeShop(shop, true);
         plugin.debug("Removed shop (#" + shop.getID() + ")");
+    }
+
+    private boolean canRemoveOtherPlayerShop(Player executor, Shop shop) {
+        if (plugin.hasTownia()) {
+            TowniaAPI api = TowniaAPI.get();
+            if (api == null) return false;
+            Plot plot = api.getPlot(shop.getLocation().getChunk()).orElse(null);
+            if (plot == null || plot.getTownUuid() == null) return false;
+            Town town = api.getTown(plot.getTownUuid()).orElse(null);
+            return town != null && executor.getUniqueId().equals(town.getMayorUuid());
+        }
+
+        if (!plugin.hasTowny()) return false;
+        TownBlock townBlock = TownyAPI.getInstance().getTownBlock(shop.getLocation());
+        try {
+            return townBlock != null && townBlock.hasTown() && townBlock.getTown().hasMayor()
+                    && townBlock.getTown().getMayor().getName().equals(executor.getName());
+        } catch (NotRegisteredException ignored) {
+            return false;
+        }
     }
 
     /**

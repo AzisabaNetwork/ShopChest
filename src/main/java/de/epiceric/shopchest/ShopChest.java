@@ -60,6 +60,7 @@ import de.epiceric.shopchest.utils.UpdateChecker.UpdateCheckerResult;
 import de.epiceric.shopchest.utils.Utils;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.milkbowl.vault.economy.Economy;
+import net.azisaba.townia.api.TowniaAPI;
 
 public class ShopChest extends JavaPlugin {
 
@@ -383,6 +384,8 @@ public class ShopChest extends JavaPlugin {
     private void registerExternalListeners() {
         if (hasGriefPrevention())
             getServer().getPluginManager().registerEvents(new GriefPreventionListener(this), this);
+        if (hasTownia())
+            getServer().getPluginManager().registerEvents(new de.epiceric.shopchest.external.listeners.TowniaListener(this), this);
 //        if (hasTowny())
 //            getServer().getPluginManager().registerEvents(new TownyListener(this), this);
         if (hasWorldGuard())
@@ -510,6 +513,13 @@ public class ShopChest extends JavaPlugin {
      */
     public boolean hasTowny() {
         return Config.enableTownyIntegration && towny != null && towny.isEnabled();
+    }
+
+    /**
+     * @return Whether Townia's public service API is available
+     */
+    public boolean hasTownia() {
+        return Config.enableTownyIntegration && TowniaAPI.get() != null;
     }
 
     /**

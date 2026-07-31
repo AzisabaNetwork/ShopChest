@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
-import org.bukkit.entity.ArmorStand;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import de.epiceric.shopchest.ShopChest;
@@ -49,12 +49,12 @@ public class Hologram {
     }
 
     /**
-     * @param armorStand Armor stand to check
-     * @return Whether the given armor stand is part of the hologram
+     * @param entity Entity to check
+     * @return Whether the given TextDisplay is part of the hologram
      */
-    public boolean contains(ArmorStand armorStand) {
+    public boolean contains(Entity entity) {
         for (ArmorStandWrapper wrapper : wrappers) {
-            if (armorStand.getUniqueId().equals(wrapper.getUuid())) {
+            if (entity.getUniqueId().equals(wrapper.getUuid())) {
                 return true;
             }
         }
@@ -114,7 +114,7 @@ public class Hologram {
      * <p>Removes the hologram.</p>
      * 
      * Hologram will be hidden from all players and all
-     * ArmorStand entities will be killed.
+     * TextDisplay entities will be removed.
      */
     public void remove() {
         viewers.clear();

@@ -1,152 +1,74 @@
 package de.epiceric.shopchest.nms;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.UUID;
 
 import org.bukkit.Location;
-import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Display.Billboard;
 import org.bukkit.entity.Player;
-import org.inventivetalent.reflection.resolver.minecraft.NMSClassResolver;
+import org.bukkit.entity.TextDisplay;
 
 import de.epiceric.shopchest.ShopChest;
-import de.epiceric.shopchest.utils.Utils;
+import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 
+/**
+ * A native 1.21 TextDisplay-backed hologram line.
+ *
+ * The class name is retained to avoid a broad API-breaking rename inside this
+ * legacy plugin; it no longer creates or sends ArmorStand/NMS packets.
+ */
 public class ArmorStandWrapper {
-    private final NMSClassResolver nmsClassResolver = new NMSClassResolver();
-    private final Class<?> packetDataSerializerClass = nmsClassResolver.resolveSilent("network.PacketDataSerializer");
-    private final Class<?> packetPlayOutEntityDestroyClass = nmsClassResolver.resolveSilent("network.protocol.game.PacketPlayOutEntityDestroy");
-    private final Class<?> packetPlayOutEntityMetadataClass = nmsClassResolver.resolveSilent("network.protocol.game.PacketPlayOutEntityMetadata");
-    private final Class<?> packetPlayOutEntityTeleportClass = nmsClassResolver.resolveSilent("network.protocol.game.PacketPlayOutEntityTeleport");
-    private final Class<?> dataWatcherClass = nmsClassResolver.resolveSilent("network.syncher.DataWatcher");
+    private static final LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.legacySection();
 
-    private final UUID uuid = UUID.randomUUID();
-    private final int entityId;
-
-    private ShopChest plugin;
+    private final ShopChest plugin;
+    private final TextDisplay display;
     private Location location;
     private String customName;
 
     public ArmorStandWrapper(ShopChest plugin, Location location, String customName) {
         this.plugin = plugin;
-        this.location = location;
+        this.location = location.clone();
         this.customName = customName;
-        this.entityId = Utils.getFreeEntityId();
+        this.display = location.getWorld().spawn(location, TextDisplay.class, textDisplay -> {
+            textDisplay.text(LEGACY_SERIALIZER.deserialize(customName));
+            textDisplay.setBillboard(Billboard.CENTER);
+            textDisplay.setSeeThrough(true);
+            textDisplay.setShadowed(false);
+            textDisplay.setDefaultBackground(false);
+            textDisplay.setPersistent(false);
+            textDisplay.setInvulnerable(true);
+        });
+
+        // Hologram visibility is managed per player by Hologram, so newly
+        // created displays must not flash to players outside its view range.
+        for (Player player : location.getWorld().getPlayers()) {
+            player.hideEntity(plugin, display);
+        }
     }
 
     public void setVisible(Player player, boolean visible) {
-        try {
-            if (visible) {
-                Object dataWatcher = Utils.createDataWatcher(customName, null);
-                Utils.sendPacket(plugin, Utils.createPacketSpawnEntity(plugin, entityId, uuid, location, EntityType.ARMOR_STAND), player);
-                Utils.sendPacket(plugin, packetPlayOutEntityMetadataClass.getConstructor(int.class, dataWatcherClass, boolean.class)
-                        .newInstance(entityId, dataWatcher, true), player);
-            } else if (entityId != -1) {
-                Utils.sendPacket(plugin, packetPlayOutEntityDestroyClass.getConstructor(int[].class).newInstance((Object) new int[]{entityId}), player);
-            }
-        } catch (ReflectiveOperationException e) {
-            plugin.getLogger().severe("Could not change hologram visibility");
-            plugin.debug("Could not change armor stand visibility");
-            plugin.debug(e);
+        if (visible) {
+            player.showEntity(plugin, display);
+        } else {
+            player.hideEntity(plugin, display);
         }
     }
 
     public void setLocation(Location location) {
-        this.location = location;
-        double y = location.getY() + (Utils.getServerVersion().equals("v1_8_R1") ? 0 : 1.975);
-        Object packet;
-
-        try {
-            if (Utils.getMajorVersion() >= 17) {
-                // Empty constructor does not exist anymore in 1.17+ so create packet via serializer
-                Class<?> byteBufClass = Class.forName("io.netty.buffer.ByteBuf");
-                Class<?> unpooledClass = Class.forName("io.netty.buffer.Unpooled");
-                Object buffer = unpooledClass.getMethod("buffer").invoke(null);
-                Object serializer = packetDataSerializerClass.getConstructor(byteBufClass).newInstance(buffer);
-
-                Method d = packetDataSerializerClass.getMethod("d", int.class);
-                Method writeDouble = packetDataSerializerClass.getMethod("writeDouble", double.class);
-                Method writeByte = packetDataSerializerClass.getMethod("writeByte", int.class);
-                Method writeBoolean = packetDataSerializerClass.getMethod("writeBoolean", boolean.class);
-
-                d.invoke(serializer, getEntityId());
-                writeDouble.invoke(serializer, location.getX());
-                writeDouble.invoke(serializer, y);
-                writeDouble.invoke(serializer, location.getZ());
-                writeByte.invoke(serializer, 0);
-                writeByte.invoke(serializer, 0);
-                writeBoolean.invoke(serializer, false);
-
-                packet = packetPlayOutEntityTeleportClass.getConstructor(packetDataSerializerClass).newInstance(serializer);
-            } else {
-                packet = packetPlayOutEntityTeleportClass.getConstructor().newInstance();
-                Field[] fields = packetPlayOutEntityTeleportClass.getDeclaredFields();
-                for (Field field : fields) {
-                    field.setAccessible(true);
-                }
-    
-                boolean isPre9 = Utils.getMajorVersion() < 9;
-                fields[0].set(packet, entityId);
-    
-                if (isPre9) {
-                    fields[1].set(packet, (int)(location.getX() * 32));
-                    fields[2].set(packet, (int)(y * 32));
-                    fields[3].set(packet, (int)(location.getZ() * 32));
-                } else {
-                    fields[1].set(packet, location.getX());
-                    fields[2].set(packet, y);
-                    fields[3].set(packet, location.getZ());
-                }
-                fields[4].set(packet, (byte) 0);
-                fields[5].set(packet, (byte) 0);
-                fields[6].set(packet, true);
-            }
-
-            if (packet == null) {
-                plugin.getLogger().severe("Could not set hologram location");
-                plugin.debug("Could not set armor stand location: Packet is null");
-                return;
-            }
-
-            for (Player player : location.getWorld().getPlayers()) {
-                Utils.sendPacket(plugin, packet, player);
-            }
-        } catch (ReflectiveOperationException e) {
-            plugin.getLogger().severe("Could not set hologram location");
-            plugin.debug("Could not set armor stand location");
-            plugin.debug(e);
-        }
+        this.location = location.clone();
+        display.teleport(location);
     }
 
     public void setCustomName(String customName) {
         this.customName = customName;
-        Object dataWatcher = Utils.createDataWatcher(customName, null);
-        try {
-            Object packet = packetPlayOutEntityMetadataClass.getConstructor(int.class, dataWatcherClass, boolean.class)
-                    .newInstance(entityId, dataWatcher, true);
-
-            for (Player player : location.getWorld().getPlayers()) {
-                Utils.sendPacket(plugin, packet, player);
-            }
-        } catch (ReflectiveOperationException e) {
-            plugin.getLogger().severe("Could not set hologram text");
-            plugin.debug("Could not set armor stand custom name");
-            plugin.debug(e);
-        }
+        display.text(LEGACY_SERIALIZER.deserialize(customName));
     }
 
     public void remove() {
-        for (Player player : location.getWorld().getPlayers()) {
-            setVisible(player, false);
-        }
-    }
-
-    public int getEntityId() {
-        return entityId;
+        display.remove();
     }
 
     public UUID getUuid() {
-        return uuid;
+        return display.getUniqueId();
     }
 
     public Location getLocation() {
@@ -156,4 +78,5 @@ public class ArmorStandWrapper {
     public String getCustomName() {
         return customName;
     }
+
 }

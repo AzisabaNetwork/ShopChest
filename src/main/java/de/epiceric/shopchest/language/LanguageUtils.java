@@ -13,7 +13,8 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.SkullMeta;
-import org.bukkit.potion.Potion;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.potion.PotionType;
 
@@ -40,6 +41,19 @@ public class LanguageUtils {
     private static ArrayList<BannerPatternName> bannerPatternNames = new ArrayList<>();
     private static ArrayList<BookGenerationName> generationNames = new ArrayList<>();
     private static ArrayList<LocalizedMessage> messages = new ArrayList<>();
+
+    private static Enchantment enchantment(String key) { return Enchantment.getByKey(NamespacedKey.minecraft(key)); }
+    private static PotionEffectType effect(String key) { return PotionEffectType.getByKey(NamespacedKey.minecraft(key)); }
+    private static PotionType potionType(String key) { return Registry.POTION.get(NamespacedKey.minecraft(key)); }
+
+    private static PotionType basePotionType(PotionMeta meta) {
+        String typeName = meta.getBasePotionType().name();
+        return typeName.startsWith("STRONG_") ? PotionType.valueOf(typeName.substring("STRONG_".length())) : meta.getBasePotionType();
+    }
+
+    private static boolean isUpgradedPotion(PotionMeta meta) {
+        return meta.getBasePotionType().name().startsWith("STRONG_");
+    }
 
 
     private static void loadLegacy() {
@@ -730,46 +744,46 @@ public class LanguageUtils {
         }
 
         // Add Enchantment Names
-        enchantmentNames.add(new EnchantmentName(Enchantment.ARROW_DAMAGE, langConfig.getString("enchantment.arrowDamage", "Power")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.ARROW_FIRE, langConfig.getString("enchantment.arrowFire", "Flame")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.ARROW_INFINITE, langConfig.getString("enchantment.arrowInfinite", "Infinity")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.ARROW_KNOCKBACK, langConfig.getString("enchantment.arrowKnockback", "Punch")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.DAMAGE_ALL, langConfig.getString("enchantment.damage.all", "Sharpness")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.DAMAGE_ARTHROPODS, langConfig.getString("enchantment.damage.arthropods", "Bane of Arthropods")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.DAMAGE_UNDEAD, langConfig.getString("enchantment.damage.undead", "Smite")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.DIG_SPEED, langConfig.getString("enchantment.digging", "Efficiency")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.DURABILITY, langConfig.getString("enchantment.durability", "Unbreaking")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.FIRE_ASPECT, langConfig.getString("enchantment.fire", "Fire Aspect")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.LURE, langConfig.getString("enchantment.fishingSpeed", "Lure")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.KNOCKBACK, langConfig.getString("enchantment.knockback", "Knockback")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.LOOT_BONUS_MOBS, langConfig.getString("enchantment.lootBonus", "Looting")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.LOOT_BONUS_BLOCKS, langConfig.getString("enchantment.lootBonusDigger", "Fortune")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.LUCK, langConfig.getString("enchantment.lootBonusFishing", "Luck of the Sea")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.OXYGEN, langConfig.getString("enchantment.oxygen", "Respiration")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.PROTECTION_ENVIRONMENTAL, langConfig.getString("enchantment.protect.all", "Protection")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.PROTECTION_EXPLOSIONS, langConfig.getString("enchantment.protect.explosion", "Blast Protection")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.PROTECTION_FALL, langConfig.getString("enchantment.protect.fall", "Feather Falling")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.PROTECTION_FIRE, langConfig.getString("enchantment.protect.fire", "Fire Protection")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.PROTECTION_PROJECTILE, langConfig.getString("enchantment.protect.projectile", "Projectile Protection")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.THORNS, langConfig.getString("enchantment.thorns", "Thorns")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.SILK_TOUCH, langConfig.getString("enchantment.untouching", "Silk Touch")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.DEPTH_STRIDER, langConfig.getString("enchantment.waterWalker", "Depth Strider")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.WATER_WORKER, langConfig.getString("enchantment.waterWorker", "Aqua Affinity")));
+        enchantmentNames.add(new EnchantmentName(enchantment("power"), langConfig.getString("enchantment.arrowDamage", "Power")));
+        enchantmentNames.add(new EnchantmentName(enchantment("flame"), langConfig.getString("enchantment.arrowFire", "Flame")));
+        enchantmentNames.add(new EnchantmentName(enchantment("infinity"), langConfig.getString("enchantment.arrowInfinite", "Infinity")));
+        enchantmentNames.add(new EnchantmentName(enchantment("punch"), langConfig.getString("enchantment.arrowKnockback", "Punch")));
+        enchantmentNames.add(new EnchantmentName(enchantment("sharpness"), langConfig.getString("enchantment.damage.all", "Sharpness")));
+        enchantmentNames.add(new EnchantmentName(enchantment("bane_of_arthropods"), langConfig.getString("enchantment.damage.arthropods", "Bane of Arthropods")));
+        enchantmentNames.add(new EnchantmentName(enchantment("smite"), langConfig.getString("enchantment.damage.undead", "Smite")));
+        enchantmentNames.add(new EnchantmentName(enchantment("efficiency"), langConfig.getString("enchantment.digging", "Efficiency")));
+        enchantmentNames.add(new EnchantmentName(enchantment("unbreaking"), langConfig.getString("enchantment.durability", "Unbreaking")));
+        enchantmentNames.add(new EnchantmentName(enchantment("fire_aspect"), langConfig.getString("enchantment.fire", "Fire Aspect")));
+        enchantmentNames.add(new EnchantmentName(enchantment("lure"), langConfig.getString("enchantment.fishingSpeed", "Lure")));
+        enchantmentNames.add(new EnchantmentName(enchantment("knockback"), langConfig.getString("enchantment.knockback", "Knockback")));
+        enchantmentNames.add(new EnchantmentName(enchantment("looting"), langConfig.getString("enchantment.lootBonus", "Looting")));
+        enchantmentNames.add(new EnchantmentName(enchantment("fortune"), langConfig.getString("enchantment.lootBonusDigger", "Fortune")));
+        enchantmentNames.add(new EnchantmentName(enchantment("luck_of_the_sea"), langConfig.getString("enchantment.lootBonusFishing", "Luck of the Sea")));
+        enchantmentNames.add(new EnchantmentName(enchantment("respiration"), langConfig.getString("enchantment.oxygen", "Respiration")));
+        enchantmentNames.add(new EnchantmentName(enchantment("protection"), langConfig.getString("enchantment.protect.all", "Protection")));
+        enchantmentNames.add(new EnchantmentName(enchantment("blast_protection"), langConfig.getString("enchantment.protect.explosion", "Blast Protection")));
+        enchantmentNames.add(new EnchantmentName(enchantment("feather_falling"), langConfig.getString("enchantment.protect.fall", "Feather Falling")));
+        enchantmentNames.add(new EnchantmentName(enchantment("fire_protection"), langConfig.getString("enchantment.protect.fire", "Fire Protection")));
+        enchantmentNames.add(new EnchantmentName(enchantment("projectile_protection"), langConfig.getString("enchantment.protect.projectile", "Projectile Protection")));
+        enchantmentNames.add(new EnchantmentName(enchantment("thorns"), langConfig.getString("enchantment.thorns", "Thorns")));
+        enchantmentNames.add(new EnchantmentName(enchantment("silk_touch"), langConfig.getString("enchantment.untouching", "Silk Touch")));
+        enchantmentNames.add(new EnchantmentName(enchantment("depth_strider"), langConfig.getString("enchantment.waterWalker", "Depth Strider")));
+        enchantmentNames.add(new EnchantmentName(enchantment("aqua_affinity"), langConfig.getString("enchantment.waterWorker", "Aqua Affinity")));
 
         if (Utils.getMajorVersion() >= 9) {
             // Add Enchantment Names of 1.9
-            enchantmentNames.add(new EnchantmentName(Enchantment.FROST_WALKER, langConfig.getString("enchantment.frostWalker", "Frost Walker")));
-            enchantmentNames.add(new EnchantmentName(Enchantment.MENDING, langConfig.getString("enchantment.mending", "Mending")));
+            enchantmentNames.add(new EnchantmentName(enchantment("frost_walker"), langConfig.getString("enchantment.frostWalker", "Frost Walker")));
+            enchantmentNames.add(new EnchantmentName(enchantment("mending"), langConfig.getString("enchantment.mending", "Mending")));
         }
 
         if (Utils.getMajorVersion() >= 11) {
             // Add Enchantment Names of 1.11
-            enchantmentNames.add(new EnchantmentName(Enchantment.BINDING_CURSE, langConfig.getString("enchantment.binding_curse", "Curse of Binding")));
-            enchantmentNames.add(new EnchantmentName(Enchantment.VANISHING_CURSE, langConfig.getString("enchantment.vanishing_curse", "Curse of Vanishing")));
+            enchantmentNames.add(new EnchantmentName(enchantment("binding_curse"), langConfig.getString("enchantment.binding_curse", "Curse of Binding")));
+            enchantmentNames.add(new EnchantmentName(enchantment("vanishing_curse"), langConfig.getString("enchantment.vanishing_curse", "Curse of Vanishing")));
 
             if (Utils.getRevision() >= 2 || Utils.getMajorVersion() > 11) {
                 // Add Enchantment Name of 1.11.2
-                enchantmentNames.add(new EnchantmentName(Enchantment.SWEEPING_EDGE, langConfig.getString("enchantment.sweeping", "Sweeping Edge")));
+                enchantmentNames.add(new EnchantmentName(enchantment("sweeping_edge"), langConfig.getString("enchantment.sweeping", "Sweeping Edge")));
             }
         }
 
@@ -809,7 +823,7 @@ public class LanguageUtils {
         entityNames.add(new EntityName(EntityType.CHICKEN, langConfig.getString("entity.Chicken.name", "Chicken")));
         entityNames.add(new EntityName(EntityType.SQUID, langConfig.getString("entity.Squid.name", "Squid")));
         entityNames.add(new EntityName(EntityType.WOLF, langConfig.getString("entity.Wolf.name", "Wolf")));
-        entityNames.add(new EntityName(EntityType.MUSHROOM_COW, langConfig.getString("entity.MushroomCow.name", "Mooshroom")));
+        entityNames.add(new EntityName(EntityType.MOOSHROOM, langConfig.getString("entity.MushroomCow.name", "Mooshroom")));
         entityNames.add(new EntityName(EntityType.OCELOT, langConfig.getString("entity.Ozelot.name", "Ocelot")));
         entityNames.add(new EntityName(EntityType.HORSE, langConfig.getString(horseName, "Horse")));
         entityNames.add(new EntityName(EntityType.RABBIT, langConfig.getString("entity.Rabbit.name", "Rabbit")));
@@ -850,16 +864,16 @@ public class LanguageUtils {
 
         // Add Potion Effect Names
         potionEffectNames.add(new PotionEffectName(PotionEffectType.FIRE_RESISTANCE, langConfig.getString("effect.fireResistance", "Fire Resistance")));
-        potionEffectNames.add(new PotionEffectName(PotionEffectType.HARM, langConfig.getString("effect.harm", "Instant Damage")));
-        potionEffectNames.add(new PotionEffectName(PotionEffectType.HEAL, langConfig.getString("effect.heal", "Instant Health")));
+        potionEffectNames.add(new PotionEffectName(effect("instant_damage"), langConfig.getString("effect.harm", "Instant Damage")));
+        potionEffectNames.add(new PotionEffectName(effect("instant_health"), langConfig.getString("effect.heal", "Instant Health")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.INVISIBILITY, langConfig.getString("effect.invisibility", "Invisibility")));
-        potionEffectNames.add(new PotionEffectName(PotionEffectType.JUMP, langConfig.getString("effect.jump", "Jump Boost")));
+        potionEffectNames.add(new PotionEffectName(effect("jump_boost"), langConfig.getString("effect.jump", "Jump Boost")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.NIGHT_VISION, langConfig.getString("effect.nightVision", "Night Vision")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.POISON, langConfig.getString("effect.poison", "Poison")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.REGENERATION, langConfig.getString("effect.regeneration", "Regeneration")));
-        potionEffectNames.add(new PotionEffectName(PotionEffectType.SLOW, langConfig.getString("effect.moveSlowdown", "Slowness")));
+        potionEffectNames.add(new PotionEffectName(effect("slowness"), langConfig.getString("effect.moveSlowdown", "Slowness")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.SPEED, langConfig.getString("effect.moveSpeed", "Speed")));
-        potionEffectNames.add(new PotionEffectName(PotionEffectType.INCREASE_DAMAGE, langConfig.getString("effect.damageBoost", "Strength")));
+        potionEffectNames.add(new PotionEffectName(effect("strength"), langConfig.getString("effect.damageBoost", "Strength")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.WATER_BREATHING, langConfig.getString("effect.waterBreathing", "Water Breathing")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.WEAKNESS, langConfig.getString("effect.weakness", "Weakness")));
 
@@ -870,15 +884,15 @@ public class LanguageUtils {
 
         // Add Potion Names
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.FIRE_RESISTANCE, langConfig.getString("potion.effect.fire_resistance", "Potion of Fire Resistance")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.INSTANT_DAMAGE, langConfig.getString("potion.effect.harming", "Potion of Harming")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.INSTANT_HEAL, langConfig.getString("potion.effect.healing", "Potion of Healing")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, potionType("harming"), langConfig.getString("potion.effect.harming", "Potion of Harming")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, potionType("healing"), langConfig.getString("potion.effect.healing", "Potion of Healing")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.INVISIBILITY, langConfig.getString("potion.effect.invisibility", "Potion of Invisibility")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.JUMP, langConfig.getString("potion.effect.leaping", "Potion of Leaping")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, potionType("leaping"), langConfig.getString("potion.effect.leaping", "Potion of Leaping")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.NIGHT_VISION, langConfig.getString("potion.effect.night_vision", "Potion of Night Vision")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.POISON, langConfig.getString("potion.effect.poison", "Potion of Poison")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.REGEN, langConfig.getString("potion.effect.regeneration", "Potion of Regeneration")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, potionType("regeneration"), langConfig.getString("potion.effect.regeneration", "Potion of Regeneration")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.SLOWNESS, langConfig.getString("potion.effect.slowness", "Potion of Slowness")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.SPEED, langConfig.getString("potion.effect.swiftness", "Potion of Swiftness")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, potionType("swiftness"), langConfig.getString("potion.effect.swiftness", "Potion of Swiftness")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.STRENGTH, langConfig.getString("potion.effect.strength", "Potion of Strength")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.WATER_BREATHING, langConfig.getString("potion.effect.water_breathing", "Potion of Water Breathing")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.WEAKNESS, langConfig.getString("potion.effect.weakness", "Potion of Weakness")));
@@ -890,22 +904,22 @@ public class LanguageUtils {
             potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.LUCK, langConfig.getString("potion.effect.luck", "Potion of Luck")));
             potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.MUNDANE, langConfig.getString("potion.effect.mundane", "Mundane Potion")));
             potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.THICK, langConfig.getString("potion.effect.thick", "Thick Potion")));
-            potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.UNCRAFTABLE, langConfig.getString("potion.effect.empty", "Uncraftable Potion")));
+            potionNames.add(new PotionName(PotionName.PotionItemType.POTION, potionType("empty"), langConfig.getString("potion.effect.empty", "Uncraftable Potion")));
         }
 
         if (Utils.getMajorVersion() >= 9) {
             // Add Tipped Arrow Names (implemented in Minecraft since 1.9)
             potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.AWKWARD, langConfig.getString("tipped_arrow.effect.awkward", "Tipped Arrow")));
             potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.FIRE_RESISTANCE, langConfig.getString("tipped_arrow.effect.fire_resistance", "Arrow of Fire Resistance")));
-            potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.INSTANT_DAMAGE, langConfig.getString("tipped_arrow.effect.harming", "Arrow of Harming")));
-            potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.INSTANT_HEAL, langConfig.getString("tipped_arrow.effect.healing", "Arrow of Healing")));
+            potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, potionType("harming"), langConfig.getString("tipped_arrow.effect.harming", "Arrow of Harming")));
+            potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, potionType("healing"), langConfig.getString("tipped_arrow.effect.healing", "Arrow of Healing")));
             potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.INVISIBILITY, langConfig.getString("tipped_arrow.effect.invisibility", "Arrow of Invisibility")));
-            potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.JUMP, langConfig.getString("tipped_arrow.effect.leaping", "Arrow of Leaping")));
+            potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, potionType("leaping"), langConfig.getString("tipped_arrow.effect.leaping", "Arrow of Leaping")));
             potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.NIGHT_VISION, langConfig.getString("tipped_arrow.effect.night_vision", "Arrow of Night Vision")));
             potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.POISON, langConfig.getString("tipped_arrow.effect.poison", "Arrow of Poison")));
-            potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.REGEN, langConfig.getString("tipped_arrow.effect.regeneration", "Arrow of Regeneration")));
+            potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, potionType("regeneration"), langConfig.getString("tipped_arrow.effect.regeneration", "Arrow of Regeneration")));
             potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.SLOWNESS, langConfig.getString("tipped_arrow.effect.slowness", "Arrow of Slowness")));
-            potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.SPEED, langConfig.getString("tipped_arrow.effect.swiftness", "Arrow of Swiftness")));
+            potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, potionType("swiftness"), langConfig.getString("tipped_arrow.effect.swiftness", "Arrow of Swiftness")));
             potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.STRENGTH, langConfig.getString("tipped_arrow.effect.strength", "Arrow of Strength")));
             potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.WATER_BREATHING, langConfig.getString("tipped_arrow.effect.water_breathing", "Arrow of Water Breathing")));
             potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.WEAKNESS, langConfig.getString("tipped_arrow.effect.weakness", "Arrow of Weakness")));
@@ -913,20 +927,20 @@ public class LanguageUtils {
             potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.LUCK, langConfig.getString("tipped_arrow.effect.luck", "Arrow of Luck")));
             potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.MUNDANE, langConfig.getString("tipped_arrow.effect.mundane", "Tipped Arrow")));
             potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.THICK, langConfig.getString("tipped_arrow.effect.thick", "Tipped Arrow")));
-            potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.UNCRAFTABLE, langConfig.getString("tipped_arrow.effect.empty", "Uncraftable Tipped Arrow")));
+            potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, potionType("empty"), langConfig.getString("tipped_arrow.effect.empty", "Uncraftable Tipped Arrow")));
         }
 
         // Add Splash Potion Names
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.FIRE_RESISTANCE, langConfig.getString("splash_potion.effect.fire_resistance", "Splash Potion of Fire Resistance")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.INSTANT_DAMAGE, langConfig.getString("splash_potion.effect.harming", "Splash Potion of Harming")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.INSTANT_HEAL, langConfig.getString("splash_potion.effect.healing", "Splash Potion of Healing")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, potionType("harming"), langConfig.getString("splash_potion.effect.harming", "Splash Potion of Harming")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, potionType("healing"), langConfig.getString("splash_potion.effect.healing", "Splash Potion of Healing")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.INVISIBILITY, langConfig.getString("splash_potion.effect.invisibility", "Splash Potion of Invisibility")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.JUMP, langConfig.getString("splash_potion.effect.leaping", "Splash Potion of Leaping")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, potionType("leaping"), langConfig.getString("splash_potion.effect.leaping", "Splash Potion of Leaping")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.NIGHT_VISION, langConfig.getString("splash_potion.effect.night_vision", "Splash Potion of Night Vision")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.POISON, langConfig.getString("splash_potion.effect.poison", "Splash Potion of Poison")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.REGEN, langConfig.getString("splash_potion.effect.regeneration", "Splash Potion of Regeneration")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, potionType("regeneration"), langConfig.getString("splash_potion.effect.regeneration", "Splash Potion of Regeneration")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.SLOWNESS, langConfig.getString("splash_potion.effect.slowness", "Splash Potion of Slowness")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.SPEED, langConfig.getString("splash_potion.effect.swiftness", "Splash Potion of Swiftness")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, potionType("swiftness"), langConfig.getString("splash_potion.effect.swiftness", "Splash Potion of Swiftness")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.STRENGTH, langConfig.getString("splash_potion.effect.strength", "Splash Potion of Strength")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.WATER_BREATHING, langConfig.getString("splash_potion.effect.water_breathing", "Splash Potion of Water Breathing")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.WEAKNESS, langConfig.getString("splash_potion.effect.weakness", "Splash Potion of Weakness")));
@@ -938,22 +952,22 @@ public class LanguageUtils {
             potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.LUCK, langConfig.getString("splash_potion.effect.luck", "Splash Potion of Luck")));
             potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.MUNDANE, langConfig.getString("splash_potion.effect.mundane", "Mundane Splash Potion")));
             potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.THICK, langConfig.getString("splash_potion.effect.thick", "Thick Splash Potion")));
-            potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.UNCRAFTABLE, langConfig.getString("splash_potion.effect.empty", "Splash Uncraftable Potion")));
+            potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, potionType("empty"), langConfig.getString("splash_potion.effect.empty", "Splash Uncraftable Potion")));
         }
 
         if (Utils.getMajorVersion() >= 9) {
             // Add Lingering Potion Names (implemented in Minecraft since 1.9)
             potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.AWKWARD, langConfig.getString("lingering_potion.effect.awkward", "Awkward Lingering Potion")));
             potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.FIRE_RESISTANCE, langConfig.getString("lingering_potion.effect.fire_resistance", "Lingering Potion of Fire Resistance")));
-            potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.INSTANT_DAMAGE, langConfig.getString("lingering_potion.effect.harming", "Lingering Potion of Harming")));
-            potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.INSTANT_HEAL, langConfig.getString("lingering_potion.effect.healing", "Lingering Potion of Healing")));
+            potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, potionType("harming"), langConfig.getString("lingering_potion.effect.harming", "Lingering Potion of Harming")));
+            potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, potionType("healing"), langConfig.getString("lingering_potion.effect.healing", "Lingering Potion of Healing")));
             potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.INVISIBILITY, langConfig.getString("lingering_potion.effect.invisibility", "Lingering Potion of Invisibility")));
-            potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.JUMP, langConfig.getString("lingering_potion.effect.leaping", "Lingering Potion of Leaping")));
+            potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, potionType("leaping"), langConfig.getString("lingering_potion.effect.leaping", "Lingering Potion of Leaping")));
             potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.NIGHT_VISION, langConfig.getString("lingering_potion.effect.night_vision", "Lingering Potion of Night Vision")));
             potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.POISON, langConfig.getString("lingering_potion.effect.poison", "Lingering Potion of Poison")));
-            potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.REGEN, langConfig.getString("lingering_potion.effect.regeneration", "Lingering Potion of Regeneration")));
+            potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, potionType("regeneration"), langConfig.getString("lingering_potion.effect.regeneration", "Lingering Potion of Regeneration")));
             potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.SLOWNESS, langConfig.getString("lingering_potion.effect.slowness", "Lingering Potion of Slowness")));
-            potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.SPEED, langConfig.getString("lingering_potion.effect.swiftness", "Lingering Potion of Swiftness")));
+            potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, potionType("swiftness"), langConfig.getString("lingering_potion.effect.swiftness", "Lingering Potion of Swiftness")));
             potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.STRENGTH, langConfig.getString("lingering_potion.effect.strength", "Lingering Potion of Strength")));
             potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.WATER_BREATHING, langConfig.getString("lingering_potion.effect.water_breathing", "Lingering Potion of Water Breathing")));
             potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.WEAKNESS, langConfig.getString("lingering_potion.effect.weakness", "Lingering Potion of Weakness")));
@@ -961,7 +975,7 @@ public class LanguageUtils {
             potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.LUCK, langConfig.getString("lingering_potion.effect.luck", "Lingering Potion of Luck")));
             potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.MUNDANE, langConfig.getString("lingering_potion.effect.mundane", "Mundane Lingering Potion")));
             potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.THICK, langConfig.getString("lingering_potion.effect.thick", "Thick Lingering Potion")));
-            potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.UNCRAFTABLE, langConfig.getString("lingering_potion.effect.empty", "Lingering Uncraftable Potion")));
+            potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, potionType("empty"), langConfig.getString("lingering_potion.effect.empty", "Lingering Uncraftable Potion")));
         }
 
         // Add Music Disc Titles
@@ -1085,7 +1099,7 @@ public class LanguageUtils {
         itemNames.add(new ItemName(Material.ACACIA_LEAVES, langConfig.getString("block.minecraft.acacia_leaves", "Acacia Leaves")));
         itemNames.add(new ItemName(Material.DARK_OAK_LEAVES, langConfig.getString("block.minecraft.dark_oak_leaves", "Dark Oak Leaves")));
         itemNames.add(new ItemName(Material.DEAD_BUSH, langConfig.getString("block.minecraft.dead_bush", "Dead Bush")));
-        itemNames.add(new ItemName(Material.GRASS, langConfig.getString("block.minecraft.grass", "Grass")));
+        itemNames.add(new ItemName(Material.SHORT_GRASS, langConfig.getString("block.minecraft.grass", "Grass")));
         itemNames.add(new ItemName(Material.FERN, langConfig.getString("block.minecraft.fern", "Fern")));
         itemNames.add(new ItemName(Material.SPONGE, langConfig.getString("block.minecraft.sponge", "Sponge")));
         itemNames.add(new ItemName(Material.WET_SPONGE, langConfig.getString("block.minecraft.wet_sponge", "Wet Sponge")));
@@ -1821,7 +1835,7 @@ public class LanguageUtils {
         itemNames.add(new ItemName(Material.KNOWLEDGE_BOOK, langConfig.getString("item.minecraft.knowledge_book", "Knowledge Book")));
         itemNames.add(new ItemName(Material.DEBUG_STICK, langConfig.getString("item.minecraft.debug_stick", "Debug Stick")));
         itemNames.add(new ItemName(Material.TRIDENT, langConfig.getString("item.minecraft.trident", "Trident")));
-        itemNames.add(new ItemName(Material.SCUTE, langConfig.getString("item.minecraft.scute", "Scute")));
+        itemNames.add(new ItemName(Material.TURTLE_SCUTE, langConfig.getString("item.minecraft.scute", "Scute")));
         itemNames.add(new ItemName(Material.TURTLE_HELMET, langConfig.getString("item.minecraft.turtle_helmet", "Turtle Shell")));
         itemNames.add(new ItemName(Material.PHANTOM_MEMBRANE, langConfig.getString("item.minecraft.phantom_membrane", "Phantom Membrane")));
         itemNames.add(new ItemName(Material.NAUTILUS_SHELL, langConfig.getString("item.minecraft.nautilus_shell", "Nautilus Shell")));
@@ -1962,7 +1976,7 @@ public class LanguageUtils {
             itemNames.add(new ItemName(Material.BLACKSTONE_SLAB, langConfig.getString("block.minecraft.blackstone_slab", "Blackstone Slab")));
             itemNames.add(new ItemName(Material.BLACKSTONE_STAIRS, langConfig.getString("block.minecraft.blackstone_stairs", "Blackstone Stairs")));
             itemNames.add(new ItemName(Material.BLACKSTONE_WALL, langConfig.getString("block.minecraft.blackstone_wall", "Blackstone Wall")));
-            itemNames.add(new ItemName(Material.CHAIN, langConfig.getString("block.minecraft.chain", "Chain")));
+            itemNames.add(new ItemName(Material.IRON_CHAIN, langConfig.getString("block.minecraft.chain", "Chain")));
             itemNames.add(new ItemName(Material.CHISELED_NETHER_BRICKS, langConfig.getString("block.minecraft.chiseled_nether_bricks", "Chiseled Nether Bricks")));
             itemNames.add(new ItemName(Material.CHISELED_POLISHED_BLACKSTONE, langConfig.getString("block.minecraft.chiseled_polished_blackstone", "Chiseled Polished Blackstone")));
             itemNames.add(new ItemName(Material.CRACKED_NETHER_BRICKS, langConfig.getString("block.minecraft.cracked_nether_bricks", "Cracked Nether Bricks")));
@@ -2259,51 +2273,51 @@ public class LanguageUtils {
         }
 
         // Add Enchantment Names
-        enchantmentNames.add(new EnchantmentName(Enchantment.DAMAGE_ALL, langConfig.getString("enchantment.minecraft.sharpness", "Sharpness")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.DAMAGE_UNDEAD, langConfig.getString("enchantment.minecraft.smite", "Smite")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.DAMAGE_ARTHROPODS, langConfig.getString("enchantment.minecraft.bane_of_arthropods", "Bane of Arthropods")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.KNOCKBACK, langConfig.getString("enchantment.minecraft.knockback", "Knockback")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.FIRE_ASPECT, langConfig.getString("enchantment.minecraft.fire_aspect", "Fire Aspect")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.SWEEPING_EDGE, langConfig.getString("enchantment.minecraft.sweeping", "Sweeping Edge")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.PROTECTION_ENVIRONMENTAL, langConfig.getString("enchantment.minecraft.protection", "Protection")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.PROTECTION_FIRE, langConfig.getString("enchantment.minecraft.fire_protection", "Fire Protection")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.PROTECTION_FALL, langConfig.getString("enchantment.minecraft.feather_falling", "Feather Falling")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.PROTECTION_EXPLOSIONS, langConfig.getString("enchantment.minecraft.blast_protection", "Blast Protection")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.PROTECTION_PROJECTILE, langConfig.getString("enchantment.minecraft.projectile_protection", "Projectile Protection")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.OXYGEN, langConfig.getString("enchantment.minecraft.respiration", "Respiration")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.WATER_WORKER, langConfig.getString("enchantment.minecraft.aqua_affinity", "Aqua Affinity")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.DEPTH_STRIDER, langConfig.getString("enchantment.minecraft.depth_strider", "Depth Strider")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.FROST_WALKER, langConfig.getString("enchantment.minecraft.frost_walker", "Frost Walker")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.DIG_SPEED, langConfig.getString("enchantment.minecraft.efficiency", "Efficiency")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.SILK_TOUCH, langConfig.getString("enchantment.minecraft.silk_touch", "Silk Touch")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.DURABILITY, langConfig.getString("enchantment.minecraft.unbreaking", "Unbreaking")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.LOOT_BONUS_MOBS, langConfig.getString("enchantment.minecraft.looting", "Looting")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.LOOT_BONUS_BLOCKS, langConfig.getString("enchantment.minecraft.fortune", "Fortune")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.LUCK, langConfig.getString("enchantment.minecraft.luck_of_the_sea", "Luck of the Sea")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.LURE, langConfig.getString("enchantment.minecraft.lure", "Lure")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.ARROW_DAMAGE, langConfig.getString("enchantment.minecraft.power", "Power")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.ARROW_FIRE, langConfig.getString("enchantment.minecraft.flame", "Flame")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.ARROW_KNOCKBACK, langConfig.getString("enchantment.minecraft.punch", "Punch")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.ARROW_INFINITE, langConfig.getString("enchantment.minecraft.infinity", "Infinity")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.THORNS, langConfig.getString("enchantment.minecraft.thorns", "Thorns")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.MENDING, langConfig.getString("enchantment.minecraft.mending", "Mending")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.BINDING_CURSE, langConfig.getString("enchantment.minecraft.binding_curse", "Curse of Binding")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.VANISHING_CURSE, langConfig.getString("enchantment.minecraft.vanishing_curse", "Curse of Vanishing")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.LOYALTY, langConfig.getString("enchantment.minecraft.loyalty", "Loyalty")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.IMPALING, langConfig.getString("enchantment.minecraft.impaling", "Impaling")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.RIPTIDE, langConfig.getString("enchantment.minecraft.riptide", "Riptide")));
-        enchantmentNames.add(new EnchantmentName(Enchantment.CHANNELING, langConfig.getString("enchantment.minecraft.channeling", "Channeling")));
+        enchantmentNames.add(new EnchantmentName(enchantment("sharpness"), langConfig.getString("enchantment.minecraft.sharpness", "Sharpness")));
+        enchantmentNames.add(new EnchantmentName(enchantment("smite"), langConfig.getString("enchantment.minecraft.smite", "Smite")));
+        enchantmentNames.add(new EnchantmentName(enchantment("bane_of_arthropods"), langConfig.getString("enchantment.minecraft.bane_of_arthropods", "Bane of Arthropods")));
+        enchantmentNames.add(new EnchantmentName(enchantment("knockback"), langConfig.getString("enchantment.minecraft.knockback", "Knockback")));
+        enchantmentNames.add(new EnchantmentName(enchantment("fire_aspect"), langConfig.getString("enchantment.minecraft.fire_aspect", "Fire Aspect")));
+        enchantmentNames.add(new EnchantmentName(enchantment("sweeping_edge"), langConfig.getString("enchantment.minecraft.sweeping", "Sweeping Edge")));
+        enchantmentNames.add(new EnchantmentName(enchantment("protection"), langConfig.getString("enchantment.minecraft.protection", "Protection")));
+        enchantmentNames.add(new EnchantmentName(enchantment("fire_protection"), langConfig.getString("enchantment.minecraft.fire_protection", "Fire Protection")));
+        enchantmentNames.add(new EnchantmentName(enchantment("feather_falling"), langConfig.getString("enchantment.minecraft.feather_falling", "Feather Falling")));
+        enchantmentNames.add(new EnchantmentName(enchantment("blast_protection"), langConfig.getString("enchantment.minecraft.blast_protection", "Blast Protection")));
+        enchantmentNames.add(new EnchantmentName(enchantment("projectile_protection"), langConfig.getString("enchantment.minecraft.projectile_protection", "Projectile Protection")));
+        enchantmentNames.add(new EnchantmentName(enchantment("respiration"), langConfig.getString("enchantment.minecraft.respiration", "Respiration")));
+        enchantmentNames.add(new EnchantmentName(enchantment("aqua_affinity"), langConfig.getString("enchantment.minecraft.aqua_affinity", "Aqua Affinity")));
+        enchantmentNames.add(new EnchantmentName(enchantment("depth_strider"), langConfig.getString("enchantment.minecraft.depth_strider", "Depth Strider")));
+        enchantmentNames.add(new EnchantmentName(enchantment("frost_walker"), langConfig.getString("enchantment.minecraft.frost_walker", "Frost Walker")));
+        enchantmentNames.add(new EnchantmentName(enchantment("efficiency"), langConfig.getString("enchantment.minecraft.efficiency", "Efficiency")));
+        enchantmentNames.add(new EnchantmentName(enchantment("silk_touch"), langConfig.getString("enchantment.minecraft.silk_touch", "Silk Touch")));
+        enchantmentNames.add(new EnchantmentName(enchantment("unbreaking"), langConfig.getString("enchantment.minecraft.unbreaking", "Unbreaking")));
+        enchantmentNames.add(new EnchantmentName(enchantment("looting"), langConfig.getString("enchantment.minecraft.looting", "Looting")));
+        enchantmentNames.add(new EnchantmentName(enchantment("fortune"), langConfig.getString("enchantment.minecraft.fortune", "Fortune")));
+        enchantmentNames.add(new EnchantmentName(enchantment("luck_of_the_sea"), langConfig.getString("enchantment.minecraft.luck_of_the_sea", "Luck of the Sea")));
+        enchantmentNames.add(new EnchantmentName(enchantment("lure"), langConfig.getString("enchantment.minecraft.lure", "Lure")));
+        enchantmentNames.add(new EnchantmentName(enchantment("power"), langConfig.getString("enchantment.minecraft.power", "Power")));
+        enchantmentNames.add(new EnchantmentName(enchantment("flame"), langConfig.getString("enchantment.minecraft.flame", "Flame")));
+        enchantmentNames.add(new EnchantmentName(enchantment("punch"), langConfig.getString("enchantment.minecraft.punch", "Punch")));
+        enchantmentNames.add(new EnchantmentName(enchantment("infinity"), langConfig.getString("enchantment.minecraft.infinity", "Infinity")));
+        enchantmentNames.add(new EnchantmentName(enchantment("thorns"), langConfig.getString("enchantment.minecraft.thorns", "Thorns")));
+        enchantmentNames.add(new EnchantmentName(enchantment("mending"), langConfig.getString("enchantment.minecraft.mending", "Mending")));
+        enchantmentNames.add(new EnchantmentName(enchantment("binding_curse"), langConfig.getString("enchantment.minecraft.binding_curse", "Curse of Binding")));
+        enchantmentNames.add(new EnchantmentName(enchantment("vanishing_curse"), langConfig.getString("enchantment.minecraft.vanishing_curse", "Curse of Vanishing")));
+        enchantmentNames.add(new EnchantmentName(enchantment("loyalty"), langConfig.getString("enchantment.minecraft.loyalty", "Loyalty")));
+        enchantmentNames.add(new EnchantmentName(enchantment("impaling"), langConfig.getString("enchantment.minecraft.impaling", "Impaling")));
+        enchantmentNames.add(new EnchantmentName(enchantment("riptide"), langConfig.getString("enchantment.minecraft.riptide", "Riptide")));
+        enchantmentNames.add(new EnchantmentName(enchantment("channeling"), langConfig.getString("enchantment.minecraft.channeling", "Channeling")));
 
         if (Utils.getMajorVersion() >= 17) {
             // Add 1.17 enchantment name
-            enchantmentNames.add(new EnchantmentName(Enchantment.SOUL_SPEED, langConfig.getString("enchantment.minecraft.soul_speed", "Soul Speed")));
+            enchantmentNames.add(new EnchantmentName(enchantment("soul_speed"), langConfig.getString("enchantment.minecraft.soul_speed", "Soul Speed")));
         }
 
         if (Utils.getMajorVersion() >= 14) {
             // Add 1.14 enchantment names
-            enchantmentNames.add(new EnchantmentName(Enchantment.MULTISHOT, langConfig.getString("enchantment.minecraft.multishot", "Multishot")));
-            enchantmentNames.add(new EnchantmentName(Enchantment.QUICK_CHARGE, langConfig.getString("enchantment.minecraft.quick_charge", "Quick Charge")));
-            enchantmentNames.add(new EnchantmentName(Enchantment.PIERCING, langConfig.getString("enchantment.minecraft.piercing", "Piercing")));
+            enchantmentNames.add(new EnchantmentName(enchantment("multishot"), langConfig.getString("enchantment.minecraft.multishot", "Multishot")));
+            enchantmentNames.add(new EnchantmentName(enchantment("quick_charge"), langConfig.getString("enchantment.minecraft.quick_charge", "Quick Charge")));
+            enchantmentNames.add(new EnchantmentName(enchantment("piercing"), langConfig.getString("enchantment.minecraft.piercing", "Piercing")));
         }
 
         // Add Enchantment Level Names
@@ -2320,16 +2334,16 @@ public class LanguageUtils {
 
         // Add Potion Effect Names
         potionEffectNames.add(new PotionEffectName(PotionEffectType.SPEED, langConfig.getString("effect.minecraft.speed", "Speed")));
-        potionEffectNames.add(new PotionEffectName(PotionEffectType.SLOW, langConfig.getString("effect.minecraft.slowness", "Slowness")));
-        potionEffectNames.add(new PotionEffectName(PotionEffectType.FAST_DIGGING, langConfig.getString("effect.minecraft.haste", "Haste")));
-        potionEffectNames.add(new PotionEffectName(PotionEffectType.SLOW_DIGGING, langConfig.getString("effect.minecraft.mining_fatigue", "Mining Fatigue")));
-        potionEffectNames.add(new PotionEffectName(PotionEffectType.INCREASE_DAMAGE, langConfig.getString("effect.minecraft.strength", "Strength")));
-        potionEffectNames.add(new PotionEffectName(PotionEffectType.HEAL, langConfig.getString("effect.minecraft.instant_health", "Instant Health")));
-        potionEffectNames.add(new PotionEffectName(PotionEffectType.HARM, langConfig.getString("effect.minecraft.instant_damage", "Instant Damage")));
-        potionEffectNames.add(new PotionEffectName(PotionEffectType.JUMP, langConfig.getString("effect.minecraft.jump_boost", "Jump Boost")));
-        potionEffectNames.add(new PotionEffectName(PotionEffectType.CONFUSION, langConfig.getString("effect.minecraft.nausea", "Nausea")));
+        potionEffectNames.add(new PotionEffectName(effect("slowness"), langConfig.getString("effect.minecraft.slowness", "Slowness")));
+        potionEffectNames.add(new PotionEffectName(effect("haste"), langConfig.getString("effect.minecraft.haste", "Haste")));
+        potionEffectNames.add(new PotionEffectName(effect("mining_fatigue"), langConfig.getString("effect.minecraft.mining_fatigue", "Mining Fatigue")));
+        potionEffectNames.add(new PotionEffectName(effect("strength"), langConfig.getString("effect.minecraft.strength", "Strength")));
+        potionEffectNames.add(new PotionEffectName(effect("instant_health"), langConfig.getString("effect.minecraft.instant_health", "Instant Health")));
+        potionEffectNames.add(new PotionEffectName(effect("instant_damage"), langConfig.getString("effect.minecraft.instant_damage", "Instant Damage")));
+        potionEffectNames.add(new PotionEffectName(effect("jump_boost"), langConfig.getString("effect.minecraft.jump_boost", "Jump Boost")));
+        potionEffectNames.add(new PotionEffectName(effect("nausea"), langConfig.getString("effect.minecraft.nausea", "Nausea")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.REGENERATION, langConfig.getString("effect.minecraft.regeneration", "Regeneration")));
-        potionEffectNames.add(new PotionEffectName(PotionEffectType.DAMAGE_RESISTANCE, langConfig.getString("effect.minecraft.resistance", "Resistance")));
+        potionEffectNames.add(new PotionEffectName(effect("resistance"), langConfig.getString("effect.minecraft.resistance", "Resistance")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.FIRE_RESISTANCE, langConfig.getString("effect.minecraft.fire_resistance", "Fire Resistance")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.WATER_BREATHING, langConfig.getString("effect.minecraft.water_breathing", "Water Breathing")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.INVISIBILITY, langConfig.getString("effect.minecraft.invisibility", "Invisibility")));
@@ -2339,14 +2353,14 @@ public class LanguageUtils {
         potionEffectNames.add(new PotionEffectName(PotionEffectType.WEAKNESS, langConfig.getString("effect.minecraft.weakness", "Weakness")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.POISON, langConfig.getString("effect.minecraft.poison", "Poison")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.WITHER, langConfig.getString("effect.minecraft.wither", "Wither")));
-        potionEffectNames.add(new PotionEffectName(PotionEffectType.HEALTH_BOOST, langConfig.getString("effect.minecraft.health_boost", "Health Boost")));
+        potionEffectNames.add(new PotionEffectName(effect("health_boost"), langConfig.getString("effect.minecraft.health_boost", "Health Boost")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.ABSORPTION, langConfig.getString("effect.minecraft.absorption", "Absorption")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.SATURATION, langConfig.getString("effect.minecraft.saturation", "Saturation")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.GLOWING, langConfig.getString("effect.minecraft.glowing", "Glowing")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.LUCK, langConfig.getString("effect.minecraft.luck", "Luck")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.UNLUCK, langConfig.getString("effect.minecraft.unluck", "Bad Luck")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.LEVITATION, langConfig.getString("effect.minecraft.levitation", "Levitation")));
-        potionEffectNames.add(new PotionEffectName(PotionEffectType.SLOW_FALLING, langConfig.getString("effect.minecraft.slow_falling", "Slow Falling")));
+        potionEffectNames.add(new PotionEffectName(effect("slow_falling"), langConfig.getString("effect.minecraft.slow_falling", "Slow Falling")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.CONDUIT_POWER, langConfig.getString("effect.minecraft.conduit_power", "Conduit Power")));
         potionEffectNames.add(new PotionEffectName(PotionEffectType.DOLPHINS_GRACE, langConfig.getString("effect.minecraft.dolphins_grace", "Dolphin's Grace")));
 
@@ -2359,22 +2373,22 @@ public class LanguageUtils {
         }
 
         // Add Potion Names
-        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.UNCRAFTABLE, langConfig.getString("item.minecraft.potion.effect.empty", "Uncraftable Potion")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, potionType("empty"), langConfig.getString("item.minecraft.potion.effect.empty", "Uncraftable Potion")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.WATER, langConfig.getString("item.minecraft.potion.effect.water", "Water Bottle")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.MUNDANE, langConfig.getString("item.minecraft.potion.effect.mundane", "Mundane Potion")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.THICK, langConfig.getString("item.minecraft.potion.effect.thick", "Thick Potion")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.AWKWARD, langConfig.getString("item.minecraft.potion.effect.awkward", "Awkward Potion")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.NIGHT_VISION, langConfig.getString("item.minecraft.potion.effect.night_vision", "Potion of Night Vision")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.INVISIBILITY, langConfig.getString("item.minecraft.potion.effect.invisibility", "Potion of Invisibility")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.JUMP, langConfig.getString("item.minecraft.potion.effect.leaping", "Potion of Leaping")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, potionType("leaping"), langConfig.getString("item.minecraft.potion.effect.leaping", "Potion of Leaping")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.FIRE_RESISTANCE, langConfig.getString("item.minecraft.potion.effect.fire_resistance", "Potion of Fire Resistance")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.SPEED, langConfig.getString("item.minecraft.potion.effect.swiftness", "Potion of Swiftness")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, potionType("swiftness"), langConfig.getString("item.minecraft.potion.effect.swiftness", "Potion of Swiftness")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.SLOWNESS, langConfig.getString("item.minecraft.potion.effect.slowness", "Potion of Slowness")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.WATER_BREATHING, langConfig.getString("item.minecraft.potion.effect.water_breathing", "Potion of Water Breathing")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.INSTANT_HEAL, langConfig.getString("item.minecraft.potion.effect.healing", "Potion of Healing")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.INSTANT_DAMAGE, langConfig.getString("item.minecraft.potion.effect.harming", "Potion of Harming")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, potionType("healing"), langConfig.getString("item.minecraft.potion.effect.healing", "Potion of Healing")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, potionType("harming"), langConfig.getString("item.minecraft.potion.effect.harming", "Potion of Harming")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.POISON, langConfig.getString("item.minecraft.potion.effect.poison", "Potion of Poison")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.REGEN, langConfig.getString("item.minecraft.potion.effect.regeneration", "Potion of Regeneration")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.POTION, potionType("regeneration"), langConfig.getString("item.minecraft.potion.effect.regeneration", "Potion of Regeneration")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.STRENGTH, langConfig.getString("item.minecraft.potion.effect.strength", "Potion of Strength")));
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.WEAKNESS, langConfig.getString("item.minecraft.potion.effect.weakness", "Potion of Weakness")));
         //potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.LEVITATION, langConfig.getString("item.minecraft.potion.effect.levitation", "Potion of Levitation")));
@@ -2383,22 +2397,22 @@ public class LanguageUtils {
         potionNames.add(new PotionName(PotionName.PotionItemType.POTION, PotionType.SLOW_FALLING, langConfig.getString("item.minecraft.potion.effect.slow_falling", "Potion of Slow Falling")));
 
         // Add Splash Potion Names
-        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.UNCRAFTABLE, langConfig.getString("item.minecraft.splash_potion.effect.empty", "Splash Uncraftable Potion")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, potionType("empty"), langConfig.getString("item.minecraft.splash_potion.effect.empty", "Splash Uncraftable Potion")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.WATER, langConfig.getString("item.minecraft.splash_potion.effect.water", "Splash Water Bottle")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.MUNDANE, langConfig.getString("item.minecraft.splash_potion.effect.mundane", "Mundane Splash Potion")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.THICK, langConfig.getString("item.minecraft.splash_potion.effect.thick", "Thick Splash Potion")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.AWKWARD, langConfig.getString("item.minecraft.splash_potion.effect.awkward", "Awkward Splash Potion")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.NIGHT_VISION, langConfig.getString("item.minecraft.splash_potion.effect.night_vision", "Splash Potion of Night Vision")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.INVISIBILITY, langConfig.getString("item.minecraft.splash_potion.effect.invisibility", "Splash Potion of Invisibility")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.JUMP, langConfig.getString("item.minecraft.splash_potion.effect.leaping", "Splash Potion of Leaping")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, potionType("leaping"), langConfig.getString("item.minecraft.splash_potion.effect.leaping", "Splash Potion of Leaping")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.FIRE_RESISTANCE, langConfig.getString("item.minecraft.splash_potion.effect.fire_resistance", "Splash Potion of Fire Resistance")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.SPEED, langConfig.getString("item.minecraft.splash_potion.effect.swiftness", "Splash Potion of Swiftness")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, potionType("swiftness"), langConfig.getString("item.minecraft.splash_potion.effect.swiftness", "Splash Potion of Swiftness")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.SLOWNESS, langConfig.getString("item.minecraft.splash_potion.effect.slowness", "Splash Potion of Slowness")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.WATER_BREATHING, langConfig.getString("item.minecraft.splash_potion.effect.water_breathing", "Splash Potion of Water Breathing")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.INSTANT_HEAL, langConfig.getString("item.minecraft.splash_potion.effect.healing", "Splash Potion of Healing")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.INSTANT_DAMAGE, langConfig.getString("item.minecraft.splash_potion.effect.harming", "Splash Potion of Harming")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, potionType("healing"), langConfig.getString("item.minecraft.splash_potion.effect.healing", "Splash Potion of Healing")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, potionType("harming"), langConfig.getString("item.minecraft.splash_potion.effect.harming", "Splash Potion of Harming")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.POISON, langConfig.getString("item.minecraft.splash_potion.effect.poison", "Splash Potion of Poison")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.REGEN, langConfig.getString("item.minecraft.splash_potion.effect.regeneration", "Splash Potion of Regeneration")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, potionType("regeneration"), langConfig.getString("item.minecraft.splash_potion.effect.regeneration", "Splash Potion of Regeneration")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.STRENGTH, langConfig.getString("item.minecraft.splash_potion.effect.strength", "Splash Potion of Strength")));
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.WEAKNESS, langConfig.getString("item.minecraft.splash_potion.effect.weakness", "Splash Potion of Weakness")));
         //potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.LEVITATION, langConfig.getString("item.minecraft.splash_potion.effect.levitation", "Splash Potion of Levitation")));
@@ -2407,22 +2421,22 @@ public class LanguageUtils {
         potionNames.add(new PotionName(PotionName.PotionItemType.SPLASH_POTION, PotionType.SLOW_FALLING, langConfig.getString("item.minecraft.splash_potion.effect.slow_falling", "Splash Potion of Slow Falling")));
 
         // Add Lingering Potion Names
-        potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.UNCRAFTABLE, langConfig.getString("item.minecraft.lingering_potion.effect.empty", "Lingering Uncraftable Potion")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, potionType("empty"), langConfig.getString("item.minecraft.lingering_potion.effect.empty", "Lingering Uncraftable Potion")));
         potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.WATER, langConfig.getString("item.minecraft.lingering_potion.effect.water", "Lingering Water Bottle")));
         potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.MUNDANE, langConfig.getString("item.minecraft.lingering_potion.effect.mundane", "Mundane Lingering Potion")));
         potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.THICK, langConfig.getString("item.minecraft.lingering_potion.effect.thick", "Thick Lingering Potion")));
         potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.AWKWARD, langConfig.getString("item.minecraft.lingering_potion.effect.awkward", "Awkward Lingering Potion")));
         potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.NIGHT_VISION, langConfig.getString("item.minecraft.lingering_potion.effect.night_vision", "Lingering Potion of Night Vision")));
         potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.INVISIBILITY, langConfig.getString("item.minecraft.lingering_potion.effect.invisibility", "Lingering Potion of Invisibility")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.JUMP, langConfig.getString("item.minecraft.lingering_potion.effect.leaping", "Lingering Potion of Leaping")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, potionType("leaping"), langConfig.getString("item.minecraft.lingering_potion.effect.leaping", "Lingering Potion of Leaping")));
         potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.FIRE_RESISTANCE, langConfig.getString("item.minecraft.lingering_potion.effect.fire_resistance", "Lingering Potion of Fire Resistance")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.SPEED, langConfig.getString("item.minecraft.lingering_potion.effect.swiftness", "Lingering Potion of Swiftness")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, potionType("swiftness"), langConfig.getString("item.minecraft.lingering_potion.effect.swiftness", "Lingering Potion of Swiftness")));
         potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.SLOWNESS, langConfig.getString("item.minecraft.lingering_potion.effect.slowness", "Lingering Potion of Slowness")));
         potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.WATER_BREATHING, langConfig.getString("item.minecraft.lingering_potion.effect.water_breathing", "Lingering Potion of Water Breathing")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.INSTANT_HEAL, langConfig.getString("item.minecraft.lingering_potion.effect.healing", "Lingering Potion of Healing")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.INSTANT_DAMAGE, langConfig.getString("item.minecraft.lingering_potion.effect.harming", "Lingering Potion of Harming")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, potionType("healing"), langConfig.getString("item.minecraft.lingering_potion.effect.healing", "Lingering Potion of Healing")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, potionType("harming"), langConfig.getString("item.minecraft.lingering_potion.effect.harming", "Lingering Potion of Harming")));
         potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.POISON, langConfig.getString("item.minecraft.lingering_potion.effect.poison", "Lingering Potion of Poison")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.REGEN, langConfig.getString("item.minecraft.lingering_potion.effect.regeneration", "Lingering Potion of Regeneration")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, potionType("regeneration"), langConfig.getString("item.minecraft.lingering_potion.effect.regeneration", "Lingering Potion of Regeneration")));
         potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.STRENGTH, langConfig.getString("item.minecraft.lingering_potion.effect.strength", "Lingering Potion of Strength")));
         potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.WEAKNESS, langConfig.getString("item.minecraft.lingering_potion.effect.weakness", "Lingering Potion of Weakness")));
         //potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.LEVITATION, langConfig.getString("item.minecraft.lingering_potion.effect.levitation", "Lingering Potion of Levitation")));
@@ -2431,22 +2445,22 @@ public class LanguageUtils {
         potionNames.add(new PotionName(PotionName.PotionItemType.LINGERING_POTION, PotionType.SLOW_FALLING, langConfig.getString("item.minecraft.lingering_potion.effect.slow_falling", "Lingering Potion of Slow Falling")));
         
         // Add Tipped Arrow Names
-        potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.UNCRAFTABLE, langConfig.getString("item.minecraft.tipped_arrow.effect.empty", "Uncraftable Tipped Arrow")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, potionType("empty"), langConfig.getString("item.minecraft.tipped_arrow.effect.empty", "Uncraftable Tipped Arrow")));
         potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.WATER, langConfig.getString("item.minecraft.tipped_arrow.effect.water", "Arrow of Splashing")));
         potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.MUNDANE, langConfig.getString("item.minecraft.tipped_arrow.effect.mundane", "Tipped Arrow")));
         potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.THICK, langConfig.getString("item.minecraft.tipped_arrow.effect.thick", "Tipped Arrow")));
         potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.AWKWARD, langConfig.getString("item.minecraft.tipped_arrow.effect.awkward", "Tipped Arrow")));
         potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.NIGHT_VISION, langConfig.getString("item.minecraft.tipped_arrow.effect.night_vision", "Arrow of Night Vision")));
         potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.INVISIBILITY, langConfig.getString("item.minecraft.tipped_arrow.effect.invisibility", "Arrow of Invisibility")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.JUMP, langConfig.getString("item.minecraft.tipped_arrow.effect.leaping", "Arrow of Leaping")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, potionType("leaping"), langConfig.getString("item.minecraft.tipped_arrow.effect.leaping", "Arrow of Leaping")));
         potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.FIRE_RESISTANCE, langConfig.getString("item.minecraft.tipped_arrow.effect.fire_resistance", "Arrow of Fire Resistance")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.SPEED, langConfig.getString("item.minecraft.tipped_arrow.effect.swiftness", "Arrow of Swiftness")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, potionType("swiftness"), langConfig.getString("item.minecraft.tipped_arrow.effect.swiftness", "Arrow of Swiftness")));
         potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.SLOWNESS, langConfig.getString("item.minecraft.tipped_arrow.effect.slowness", "Arrow of Slowness")));
         potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.WATER_BREATHING, langConfig.getString("item.minecraft.tipped_arrow.effect.water_breathing", "Arrow of Water Breathing")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.INSTANT_HEAL, langConfig.getString("item.minecraft.tipped_arrow.effect.healing", "Arrow of Healing")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.INSTANT_DAMAGE, langConfig.getString("item.minecraft.tipped_arrow.effect.harming", "Arrow of Harming")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, potionType("healing"), langConfig.getString("item.minecraft.tipped_arrow.effect.healing", "Arrow of Healing")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, potionType("harming"), langConfig.getString("item.minecraft.tipped_arrow.effect.harming", "Arrow of Harming")));
         potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.POISON, langConfig.getString("item.minecraft.tipped_arrow.effect.poison", "Arrow of Poison")));
-        potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.REGEN, langConfig.getString("item.minecraft.tipped_arrow.effect.regeneration", "Arrow of Regeneration")));
+        potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, potionType("regeneration"), langConfig.getString("item.minecraft.tipped_arrow.effect.regeneration", "Arrow of Regeneration")));
         potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.STRENGTH, langConfig.getString("item.minecraft.tipped_arrow.effect.strength", "Arrow of Strength")));
         potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.WEAKNESS, langConfig.getString("item.minecraft.tipped_arrow.effect.weakness", "Arrow of Weakness")));
         //potionNames.add(new PotionName(PotionName.PotionItemType.TIPPED_ARROW, PotionType.LEVITATION, langConfig.getString("item.minecraft.tipped_arrow.effect.levitation", "Arrow of Levitation")));
@@ -2624,31 +2638,13 @@ public class LanguageUtils {
             PotionType potionType;
             String upgradeString;
 
-            if (Utils.getMajorVersion() < 9) {
-                Potion potion = Potion.fromItemStack(stack);
-                potionType = potion.getType();
-                upgradeString = potion.getLevel() == 2 && Config.appendPotionLevelToItemName ? " II" : "";
-            } else {
-                potionType = meta.getBasePotionData().getType();
-                upgradeString = (meta.getBasePotionData().isUpgraded() && Config.appendPotionLevelToItemName ? " II" : "");
-            }
+            potionType = basePotionType(meta);
+            upgradeString = (isUpgradedPotion(meta) && Config.appendPotionLevelToItemName ? " II" : "");
 
             for (PotionName potionName : potionNames) {
                 if (material == Material.POTION) {
-                    if (Utils.getMajorVersion() < 9) {
-                        if (Potion.fromItemStack(stack).isSplash()) {
-                            if (potionName.getPotionItemType() == PotionName.PotionItemType.SPLASH_POTION && potionName.getPotionType() == potionType) {
-                                return potionName.getLocalizedName() + upgradeString;
-                            }
-                        } else {
-                            if (potionName.getPotionItemType() == PotionName.PotionItemType.POTION && potionName.getPotionType() == potionType) {
-                                return potionName.getLocalizedName() + upgradeString;
-                            }
-                        }
-                    } else {
-                        if (potionName.getPotionItemType() == PotionName.PotionItemType.POTION && potionName.getPotionType() == potionType) {
-                            return potionName.getLocalizedName() + upgradeString;
-                        }
+                    if (potionName.getPotionItemType() == PotionName.PotionItemType.POTION && potionName.getPotionType() == potionType) {
+                        return potionName.getLocalizedName() + upgradeString;
                     }
                 } else {
                     if (Utils.getMajorVersion() >= 9) {
@@ -2677,7 +2673,7 @@ public class LanguageUtils {
 
             if (Utils.getMajorVersion() < 13) {
                 if (material.toString().equals("MONSTER_EGG")) {
-                    EntityType spawnedType = SpawnEggMeta.getEntityTypeFromItemStack(plugin, stack);
+                    EntityType spawnedType = SpawnEggMeta.getEntityTypeFromItemStack(stack);
 
                     for (EntityName entityName : entityNames) {
                         if (entityName.getEntityType() == spawnedType) {
@@ -2708,8 +2704,7 @@ public class LanguageUtils {
         if (enchantment == null) return null;
 
         String levelString = langConfig.getString("enchantment.level." + level, String.valueOf(level));
-        String enchantmentString = formatDefaultString(Utils.getMajorVersion() < 13
-                ? enchantment.getName() : enchantment.getKey().getKey());
+        String enchantmentString = formatDefaultString(enchantment.getKey().getKey());
 
         for (EnchantmentName enchantmentName : enchantmentNames) {
             if (enchantmentName.getEnchantment().equals(enchantment)) {
@@ -2753,14 +2748,8 @@ public class LanguageUtils {
         PotionEffectType potionEffect;
         boolean upgraded;
 
-        if (Utils.getMajorVersion() < 9) {
-            Potion potion = Potion.fromItemStack(itemStack);
-            potionEffect = potion.getType().getEffectType();
-            upgraded = potion.getLevel() == 2;
-        } else {
-            potionEffect = potionMeta.getBasePotionData().getType().getEffectType();
-            upgraded = potionMeta.getBasePotionData().isUpgraded();
-        }
+        potionEffect = basePotionType(potionMeta).getEffectType();
+        upgraded = isUpgradedPotion(potionMeta);
 
         String potionEffectString = formatDefaultString(String.valueOf(potionEffect));
 
