@@ -130,7 +130,13 @@ public class ShopChest extends JavaPlugin {
 
         worldGuard = Bukkit.getServer().getPluginManager().getPlugin("WorldGuard");
         if (worldGuard != null) {
-            WorldGuardShopFlag.register(this);
+            try {
+                WorldGuardShopFlag.register(this);
+            } catch (IllegalStateException e) {
+                getLogger().warning("WorldGuard custom flags could not be registered after server startup.");
+                getLogger().warning("Restart the server to enable create-shop, use-shop, and use-admin-shop flags.");
+                debug("WorldGuard custom flag registration is only available during server startup");
+            }
         }
     }
 
