@@ -46,13 +46,16 @@ import de.epiceric.shopchest.nms.JsonBuilder;
 import de.epiceric.shopchest.shop.Shop;
 
 public class Utils {
+    // Legacy packet helpers below are retained only for old call sites.  Do
+    // not resolve NMS classes during plugin startup: Paper 1.21 has no
+    // versioned CraftBukkit package for ReflectionHelper to inspect.
     static NMSClassResolver nmsClassResolver = new NMSClassResolver();
-    static Class<?> entityClass = nmsClassResolver.resolveSilent("world.entity.Entity");
-    static Class<?> entityArmorStandClass = nmsClassResolver.resolveSilent("world.entity.decoration.EntityArmorStand");
-    static Class<?> entityItemClass = nmsClassResolver.resolveSilent("world.entity.item.EntityItem");
-    static Class<?> dataWatcherClass = nmsClassResolver.resolveSilent("network.syncher.DataWatcher");
-    static Class<?> dataWatcherObjectClass = nmsClassResolver.resolveSilent("network.syncher.DataWatcherObject");
-    static Class<?> chatSerializerClass = nmsClassResolver.resolveSilent("ChatSerializer", "network.chat.IChatBaseComponent$ChatSerializer");
+    static Class<?> entityClass;
+    static Class<?> entityArmorStandClass;
+    static Class<?> entityItemClass;
+    static Class<?> dataWatcherClass;
+    static Class<?> dataWatcherObjectClass;
+    static Class<?> chatSerializerClass;
 
     private Utils() {}
 

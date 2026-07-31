@@ -152,30 +152,6 @@ public class ShopChest extends JavaPlugin {
             return;
         }
 
-        switch (Utils.getServerVersion()) {
-            case "v1_8_R1":
-            case "v1_8_R2":
-            case "v1_8_R3":
-            case "v1_9_R1":
-            case "v1_9_R2":
-            case "v1_10_R1":
-            case "v1_11_R1":
-            case "v1_12_R1":
-            case "v1_13_R1":
-            case "v1_13_R2":
-            case "v1_14_R1":
-            case "v1_15_R1":
-            case "v1_16_R1":
-            case "v1_16_R2":
-            case "v1_16_R3":
-                break;
-            default:
-                debug("Server version not officially supported: " + Utils.getServerVersion() + "!");
-                debug("Plugin may still work, but more errors are expected!");
-                getLogger().warning("Server version not officially supported: " + Utils.getServerVersion() + "!");
-                getLogger().warning("Plugin may still work, but more errors are expected!");
-        }
-
         shopUtils = new ShopUtils(this);
         saveResource("item_names.txt", true);
         LanguageUtils.load();
