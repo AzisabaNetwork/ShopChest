@@ -18,6 +18,10 @@ import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
  */
 public class ArmorStandWrapper {
     private static final LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.legacySection();
+    // Legacy hologram locations were the feet of a marker ArmorStand. Its
+    // displayed name was about 1.975 blocks above that point; TextDisplay's
+    // origin is the text itself, so retain the former visual placement.
+    private static final double TEXT_DISPLAY_Y_OFFSET = 1.975;
 
     private final ShopChest plugin;
     private final TextDisplay display;
@@ -28,7 +32,8 @@ public class ArmorStandWrapper {
         this.plugin = plugin;
         this.location = location.clone();
         this.customName = customName;
-        this.display = location.getWorld().spawn(location, TextDisplay.class, textDisplay -> {
+        Location displayLocation = location.clone().add(0, TEXT_DISPLAY_Y_OFFSET, 0);
+        this.display = location.getWorld().spawn(displayLocation, TextDisplay.class, textDisplay -> {
             textDisplay.text(LEGACY_SERIALIZER.deserialize(customName));
             textDisplay.setBillboard(Billboard.CENTER);
             textDisplay.setSeeThrough(true);
@@ -55,7 +60,7 @@ public class ArmorStandWrapper {
 
     public void setLocation(Location location) {
         this.location = location.clone();
-        display.teleport(location);
+        display.teleport(location.clone().add(0, TEXT_DISPLAY_Y_OFFSET, 0));
     }
 
     public void setCustomName(String customName) {
