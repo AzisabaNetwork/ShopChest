@@ -19,7 +19,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import de.epiceric.shopchest.ShopChest;
 import de.epiceric.shopchest.config.Config;
@@ -222,18 +221,12 @@ public class Shop {
     }
 
     /**
-     * Acuatlly creates the hologram (async)
+     * Actually creates the hologram on the server thread.
      */
     private void createHologram(PreCreateResult preResult) {
         String[] holoText = getHologramText(preResult.inventory);
         holoLocation = getHologramLocation(preResult.chests, preResult.face);
-
-        new BukkitRunnable(){
-            @Override
-            public void run() {
-                hologram = new Hologram(plugin, holoText, holoLocation);
-            }
-        }.runTask(plugin);
+        hologram = new Hologram(plugin, holoText, holoLocation);
     }
 
     /**
