@@ -15,8 +15,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import com.palmergames.bukkit.towny.Towny;
-
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.AdvancedPie;
 import org.bstats.charts.SimplePie;
@@ -78,7 +76,6 @@ public class ShopChest extends JavaPlugin {
     private ShopUtils shopUtils;
     private FileWriter fw;
     private Plugin worldGuard;
-    private Towny towny;
     private GriefPrevention griefPrevention;
     private ShopUpdater updater;
     private ExecutorService shopCreationThreadPool;
@@ -241,11 +238,6 @@ public class ShopChest extends JavaPlugin {
     }
 
     private void loadExternalPlugins() {
-        Plugin townyPlugin = Bukkit.getServer().getPluginManager().getPlugin("Towny");
-        if (townyPlugin instanceof Towny) {
-            towny = (Towny) townyPlugin;
-        }
-
         Plugin griefPreventionPlugin = Bukkit.getServer().getPluginManager().getPlugin("GriefPrevention");
         if (griefPreventionPlugin instanceof GriefPrevention) {
             griefPrevention = (GriefPrevention) griefPreventionPlugin;
@@ -369,8 +361,6 @@ public class ShopChest extends JavaPlugin {
             getServer().getPluginManager().registerEvents(new GriefPreventionListener(this), this);
         if (hasTownia())
             getServer().getPluginManager().registerEvents(new de.epiceric.shopchest.external.listeners.TowniaListener(this), this);
-//        if (hasTowny())
-//            getServer().getPluginManager().registerEvents(new TownyListener(this), this);
         if (hasWorldGuard())
             getServer().getPluginManager().registerEvents(new de.epiceric.shopchest.external.listeners.WorldGuardListener(this), this);
     }
@@ -489,13 +479,6 @@ public class ShopChest extends JavaPlugin {
      */
     public GriefPrevention getGriefPrevention() {
         return griefPrevention;
-    }
-
-    /**
-     * @return Whether the plugin 'Towny' is enabled
-     */
-    public boolean hasTowny() {
-        return Config.enableTownyIntegration && towny != null && towny.isEnabled();
     }
 
     /**

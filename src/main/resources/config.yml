@@ -181,7 +181,7 @@ worldguard-default-flag-values:
   use-shop: false
   use-admin-shop: false
 
-# Set the types of Towny/Townia plots where shop creation should be allowed.
+# Set the types of Townia plots where shop creation should be allowed.
 # Townia accepts DEFAULT, SHOP, ARENA, EMBASSY, FARM and INN. For migration,
 # the legacy values COMMERCIAL and RESIDENTIAL map to SHOP and DEFAULT.
 towny-shop-plots:

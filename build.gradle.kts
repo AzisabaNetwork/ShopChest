@@ -67,7 +67,6 @@ repositories {
 }
 
 dependencies {
-//    paperweight.paperDevBundle("1.21.11-R0.1-SNAPSHOT")
     api(libs.org.codemc.worldguardwrapper.worldguardwrapper)
     api(libs.org.bstats.bstats.bukkit)
     api(libs.com.zaxxer.hikaricp)
@@ -77,9 +76,8 @@ dependencies {
         exclude("org.bukkit", "bukkit")
     }
     compileOnly(libs.io.papermc.paper.api)
-    compileOnly(files("../Townia/build/libs/Townia-1.0-SNAPSHOT.jar"))
+    compileOnly("net.azisaba:Townia:1.0-SNAPSHOT")
     compileOnly(libs.com.github.techfortress.griefprevention)
-    compileOnly(libs.com.palmergames.bukkit.towny.towny)
     compileOnly(libs.org.projectlombok.lombok)
     compileOnly(fileTree("libs"))
     compileOnly("io.lumine:Mythic-Dist:5.12.0")
@@ -87,6 +85,8 @@ dependencies {
 
 tasks {
     processResources {
+        // The expanded plugin metadata must be regenerated when the project version changes.
+        inputs.property("version", project.version)
         from(
             sourceSets.main
                 .get()

@@ -13,9 +13,6 @@ import java.util.regex.Pattern;
 
 import com.google.gson.JsonPrimitive;
 
-import com.palmergames.bukkit.towny.TownyAPI;
-import com.palmergames.bukkit.towny.exceptions.NotRegisteredException;
-import com.palmergames.bukkit.towny.object.TownBlock;
 import net.azisaba.townia.api.TowniaAPI;
 import net.azisaba.townia.data.Plot;
 import net.azisaba.townia.data.Town;
@@ -552,14 +549,7 @@ public class ShopInteractListener implements Listener {
             return town != null && executor.getUniqueId().equals(town.getMayorUuid());
         }
 
-        if (!plugin.hasTowny()) return false;
-        TownBlock townBlock = TownyAPI.getInstance().getTownBlock(shop.getLocation());
-        try {
-            return townBlock != null && townBlock.hasTown() && townBlock.getTown().hasMayor()
-                    && townBlock.getTown().getMayor().getName().equals(executor.getName());
-        } catch (NotRegisteredException ignored) {
-            return false;
-        }
+        return false;
     }
 
     /**
