@@ -32,7 +32,10 @@ public class ShopItem {
             entity.setPickupDelay(Integer.MAX_VALUE);
             entity.setCanMobPickup(false);
             entity.setInvulnerable(true);
-            entity.setPersistent(false);
+            // Shop items must survive both the normal item despawn timer and
+            // chunk unloads. They are explicitly removed with their shop.
+            entity.setUnlimitedLifetime(true);
+            entity.setPersistent(true);
         });
 
         for (Player player : location.getWorld().getPlayers()) {

@@ -174,6 +174,7 @@ public class Shop {
         if (item != null) {
             plugin.debug("Removing shop item (#" + id + ")");
             item.remove();
+            item = null;
         }
     }
 
