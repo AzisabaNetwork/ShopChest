@@ -5,7 +5,6 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -138,18 +137,12 @@ public class Shop {
         }
 
         // Holograms and item displays are Bukkit entities and must be created
-        // on the server thread.
-        Bukkit.getScheduler().runTask(plugin, () -> {
+        // on the server thread. Spread creation over several ticks so loading
+        // a large number of shops cannot stall the server.
+        plugin.getUpdater().queueEntityCreation(location.getWorld(), () -> {
+            if (!created) return;
             if (hologram == null || !hologram.exists()) createHologram(preResult);
             if (item == null) createItem();
-
-            // Update shops for players in the same world after creation has finished
-            plugin.getUpdater().queue(() -> {
-                for (Player player : location.getWorld().getPlayers()) {
-                    plugin.getShopUtils().resetPlayerLocation(player);
-                }
-            });
-            plugin.getUpdater().updateShops(location.getWorld());
         });
 
         created = true;
@@ -175,6 +168,7 @@ public class Shop {
             item.remove();
             item = null;
         }
+        created = false;
     }
 
     /**
