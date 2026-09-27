@@ -134,7 +134,7 @@ public class JsonBuilder {
 
         matcher.reset();
 
-        PartArray array = new PartArray(new Part());
+        PartArray array = new PartArray();
         int lastEndIndex = 0;
 
         while (matcher.find()) {

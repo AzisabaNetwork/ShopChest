@@ -620,14 +620,12 @@ public class ShopInteractListener implements Listener {
         String chestSpace = LanguageUtils.getMessage(Message.SHOP_INFO_CHEST_SPACE,
                 new Replacement(Placeholder.CHEST_SPACE, space));
 
-        executor.sendMessage(" ");
         if (shop.getShopType() != ShopType.ADMIN) executor.sendMessage(vendorString);
         jb.sendJson(executor);
         if (shop.getShopType() != ShopType.ADMIN && shop.getBuyPrice() > 0) executor.sendMessage(stock);
         if (shop.getShopType() != ShopType.ADMIN && shop.getSellPrice() > 0) executor.sendMessage(chestSpace);
         executor.sendMessage(priceString);
         executor.sendMessage(shopType);
-        executor.sendMessage(" ");
     }
 
     /**
@@ -648,6 +646,7 @@ public class ShopInteractListener implements Listener {
         JsonBuilder jb = new JsonBuilder(plugin);
         JsonBuilder.PartArray rootArray = new JsonBuilder.PartArray();
 
+        String nbtString = "";
         try {
             Class<?> craftItemStackClass = Utils.getOBCClass("inventory.CraftItemStack");
             if (craftItemStackClass != null) {
@@ -660,13 +659,39 @@ public class ShopInteractListener implements Listener {
                         if (m.getName().equals("save") || m.getName().equals("b")) {
                             if (m.getParameterCount() == 1 && m.getParameterTypes()[0].isAssignableFrom(nbtTagCompoundClass)) {
                                 saveMethod = m;
+                                m.invoke(nmsStack, nbtTagCompound);
                                 break;
                             }
                         }
                     }
-                    if (saveMethod != null) {
-                        saveMethod.invoke(nmsStack, nbtTagCompound);
-                        jsonItem = new JsonPrimitive(nbtTagCompound.toString()).toString();
+                    if (saveMethod == null) {
+                        try {
+                            Object craftServer = Bukkit.getServer();
+                            Object mcServer = craftServer.getClass().getMethod("getServer").invoke(craftServer);
+                            Object registryAccess = mcServer.getClass().getMethod("registryAccess").invoke(mcServer);
+
+                            for (java.lang.reflect.Method m : nmsStack.getClass().getMethods()) {
+                                if (m.getName().equals("save") || m.getName().equals("b") || m.getName().equals("saveOptional")) {
+                                    if (m.getParameterCount() == 2 && m.getParameterTypes()[1].isAssignableFrom(nbtTagCompoundClass)) {
+                                        m.invoke(nmsStack, registryAccess, nbtTagCompound);
+                                        saveMethod = m;
+                                        break;
+                                    } else if (m.getParameterCount() == 1 && m.getParameterTypes()[0].isAssignableFrom(registryAccess.getClass())) {
+                                        Object res = m.invoke(nmsStack, registryAccess);
+                                        if (res != null) {
+                                            nbtTagCompound = res;
+                                            saveMethod = m;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                        } catch (Throwable ignored) {
+                        }
+                    }
+                    if (saveMethod != null && nbtTagCompound != null) {
+                        nbtString = nbtTagCompound.toString();
+                        jsonItem = new JsonPrimitive(nbtString).toString();
                     }
                 }
             }
@@ -708,12 +733,14 @@ public class ShopInteractListener implements Listener {
             rootArray.addPart(new JsonBuilder.Part(part));
 
             if (i < parts.length - 1) {
-                JsonBuilder.PartMap hoverEvent = new JsonBuilder.PartMap();
-                hoverEvent.setValue("action", new JsonBuilder.Part("show_item"));
-                hoverEvent.setValue("value", new JsonBuilder.Part(jsonItem, false));
-
                 JsonBuilder.PartMap itemNameMap = JsonBuilder.parse(formatPrefix + productName).toMap();
-                itemNameMap.setValue("hoverEvent", hoverEvent);
+                if (nbtString != null && !nbtString.isEmpty()) {
+                    JsonBuilder.PartMap hoverEvent = new JsonBuilder.PartMap();
+                    hoverEvent.setValue("action", new JsonBuilder.Part("show_item"));
+                    hoverEvent.setValue("contents", new JsonBuilder.Part(nbtString, false));
+                    hoverEvent.setValue("value", new JsonBuilder.Part(jsonItem, false));
+                    itemNameMap.setValue("hoverEvent", hoverEvent);
+                }
 
                 rootArray.addPart(itemNameMap);
             }
