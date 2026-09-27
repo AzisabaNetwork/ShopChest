@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "de.epiceric"
-version = "2.0.0+1.21.11"
+version = "2.0.1+1.21.11"
 description = "ShopChest"
 
 val projectUrl = project.findProperty("projectUrl")?.toString().orEmpty()
