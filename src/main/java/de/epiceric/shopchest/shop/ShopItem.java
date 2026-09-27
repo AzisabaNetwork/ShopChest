@@ -32,15 +32,19 @@ public class ShopItem {
             entity.setPickupDelay(Integer.MAX_VALUE);
             entity.setCanMobPickup(false);
             entity.setInvulnerable(true);
-            // Shop items must survive both the normal item despawn timer and
-            // chunk unloads. They are explicitly removed with their shop.
+            // Shop items do not despawn while loaded, but must not be saved into chunk
+            // save files so chunk unloads and restarts do not leave orphan item entities.
             entity.setUnlimitedLifetime(true);
-            entity.setPersistent(true);
+            entity.setPersistent(false);
         });
 
         for (Player player : location.getWorld().getPlayers()) {
             player.hideEntity(plugin, item);
         }
+    }
+
+    public boolean isValid() {
+        return item != null && item.isValid();
     }
 
     public Location getLocation() {
@@ -55,14 +59,28 @@ public class ShopItem {
         return viewers.contains(player.getUniqueId());
     }
 
+    public void setVisible(Player player, boolean visible) {
+        if (item == null || !item.isValid()) return;
+        if (!item.getWorld().equals(player.getWorld())) return;
+
+        if (visible) {
+            if (!player.canSee(item)) {
+                player.showEntity(plugin, item);
+            }
+        } else {
+            if (player.canSee(item)) {
+                player.hideEntity(plugin, item);
+            }
+        }
+    }
+
     public void showPlayer(Player player) {
         showPlayer(player, false);
     }
 
     public void showPlayer(Player player, boolean force) {
-        if (viewers.add(player.getUniqueId()) || force) {
-            player.showEntity(plugin, item);
-        }
+        viewers.add(player.getUniqueId());
+        setVisible(player, true);
     }
 
     public void hidePlayer(Player player) {
@@ -70,9 +88,8 @@ public class ShopItem {
     }
 
     public void hidePlayer(Player player, boolean force) {
-        if (viewers.remove(player.getUniqueId()) || force) {
-            player.hideEntity(plugin, item);
-        }
+        viewers.remove(player.getUniqueId());
+        setVisible(player, false);
     }
 
     public void resetVisible(Player player) {
@@ -81,7 +98,9 @@ public class ShopItem {
 
     public void remove() {
         viewers.clear();
-        item.remove();
+        if (item != null && item.isValid()) {
+            item.remove();
+        }
     }
 
     public void resetForPlayer(Player player) {

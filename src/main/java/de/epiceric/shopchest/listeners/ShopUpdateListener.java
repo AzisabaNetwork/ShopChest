@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Player;
@@ -13,10 +14,14 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
+import org.bukkit.event.world.ChunkUnloadEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import de.epiceric.shopchest.ShopChest;
@@ -56,6 +61,20 @@ public class ShopUpdateListener implements Listener {
         }
     }
 
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerJoin(PlayerJoinEvent e) {
+        final Player p = e.getPlayer();
+        plugin.getShopUtils().resetPlayerLocation(p);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (p.isOnline()) {
+                    plugin.getShopUtils().updateShops(p, true);
+                }
+            }
+        }.runTaskLater(plugin, 1L);
+    }
+
     @EventHandler
     public void onPlayerLeave(PlayerQuitEvent e) {
         // If done without delay, Bukkit#getOnlinePlayers() would still
@@ -78,48 +97,102 @@ public class ShopUpdateListener implements Listener {
         }.runTaskLater(plugin, 1L);
     }
 
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerChangedWorld(PlayerChangedWorldEvent e) {
+        final Player p = e.getPlayer();
+        World from = e.getFrom();
+        for (Shop shop : plugin.getShopUtils().getShops()) {
+            if (shop.getLocation().getWorld().equals(from)) {
+                if (shop.hasItem()) shop.getItem().resetVisible(p);
+                if (shop.hasHologram()) shop.getHologram().resetVisible(p);
+            }
+        }
+        plugin.getShopUtils().resetPlayerLocation(p);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (p.isOnline()) {
+                    plugin.getShopUtils().updateShops(p, true);
+                }
+            }
+        }.runTaskLater(plugin, 1L);
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onPlayerRespawn(PlayerRespawnEvent e) {
+        final Player p = e.getPlayer();
+        for (Shop shop : plugin.getShopUtils().getShops()) {
+            if (shop.hasItem()) shop.getItem().resetVisible(p);
+            if (shop.hasHologram()) shop.getHologram().resetVisible(p);
+        }
+        plugin.getShopUtils().resetPlayerLocation(p);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                if (p.isOnline()) {
+                    plugin.getShopUtils().updateShops(p, true);
+                }
+            }
+        }.runTaskLater(plugin, 1L);
+    }
+
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerTeleport(PlayerTeleportEvent e) {
         Location from = e.getFrom();
         Location to = e.getTo();
+        if (to == null) return;
         final Player p = e.getPlayer();
 
-        // Wait till the chunk should have loaded on the client
-        if (!from.getWorld().getName().equals(to.getWorld().getName())
+        if (!from.getWorld().equals(to.getWorld())
                 || from.getChunk().getX() != to.getChunk().getX()
                 || from.getChunk().getZ() != to.getChunk().getZ()) {
+            plugin.getShopUtils().resetPlayerLocation(p);
             new BukkitRunnable() {
                 @Override
                 public void run() {
-                    plugin.getUpdater().queue(() -> {
-                        if (p.isOnline()) {
-                            for (Shop shop : plugin.getShopUtils().getShops()) {
-                                if (shop.hasItem()) {
-                                    shop.getItem().hidePlayer(p);
-                                }
-                                if (shop.hasHologram()) {
-                                    shop.getHologram().hidePlayer(p);
-                                }
-                            }
-                            plugin.getShopUtils().resetPlayerLocation(p);
-                        }
-                    });
-                    plugin.getUpdater().updateShops(p);
+                    if (p.isOnline()) {
+                        plugin.getShopUtils().updateShops(p, true);
+                    }
                 }
-            }.runTaskLater(plugin, 15L);
+            }.runTaskLater(plugin, 5L);
         }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent e) {
-        // TextDisplay/Item visibility now uses Bukkit entities.  Updating on
-        // the move event avoids the former 10-tick delay when walking across
-        // a row of shops.
+        // TextDisplay/Item visibility uses Bukkit entities. Updating on
+        // the move event avoids delay when walking across shops.
         plugin.getUpdater().updateShops(e.getPlayer());
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onChunkUnload(ChunkUnloadEvent e) {
+        Chunk chunk = e.getChunk();
+        for (Shop shop : plugin.getShopUtils().getShops()) {
+            Location loc = shop.getLocation();
+            if (loc.getWorld().equals(chunk.getWorld())
+                    && (loc.getBlockX() >> 4) == chunk.getX()
+                    && (loc.getBlockZ() >> 4) == chunk.getZ()) {
+                shop.removeHologram();
+                shop.removeItem();
+            }
+        }
     }
 
     @EventHandler
     public void onChunkLoad(ChunkLoadEvent e) {
+        Chunk chunk = e.getChunk();
+
+        // Restore entities for shops that are already loaded in memory
+        for (Shop shop : plugin.getShopUtils().getShops()) {
+            Location loc = shop.getLocation();
+            if (loc.getWorld().equals(chunk.getWorld())
+                    && (loc.getBlockX() >> 4) == chunk.getX()
+                    && (loc.getBlockZ() >> 4) == chunk.getZ()) {
+                shop.checkOrRecreateEntities();
+            }
+        }
+
         if (!plugin.getShopDatabase().isInitialized()) {
             return;
         }

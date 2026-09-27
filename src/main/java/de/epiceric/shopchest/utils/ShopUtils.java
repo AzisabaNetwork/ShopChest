@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -15,6 +16,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.World;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Player;
@@ -437,58 +439,77 @@ public class ShopUtils {
     private void updateVisibleShops(Player player) {
         double itemDistSquared = Math.pow(Config.maximalItemDistance, 2);
         double maxDist = Config.maximalDistance;
+        double maxDistSquared = maxDist * maxDist;
 
         double nearestDistSquared = Double.MAX_VALUE;
         Shop nearestShop = null;
 
         Location pLoc = player.getEyeLocation();
-        Vector pDir = pLoc.getDirection();
+        World playerWorld = pLoc.getWorld();
+        if (playerWorld == null) return;
+        Vector pDir = pLoc.getDirection().normalize();
 
-        // Display holograms based on sight
-        for (double i = 0; i <= maxDist; i++) {
-            Location loc = pLoc.clone();
-            Vector dir = pDir.clone();
-            double factor = Math.min(i, maxDist);
-            
-            loc.add(dir.multiply(factor));
-            Location locBelow = loc.clone().subtract(0, 1, 0);
+        // Raycast with 0.2 block step to detect chest, floating item, or hologram text accurately
+        for (double d = 0; d <= maxDist; d += 0.2) {
+            Location loc = pLoc.clone().add(pDir.clone().multiply(d));
 
-            // Check block below as player may look at hologram
+            // Check chest block, 1 block below, and 2 blocks below (in case player looks at item or hologram text)
             Shop shop = getShop(loc);
             if (shop == null) {
-                shop = getShop(locBelow);
+                shop = getShop(loc.clone().subtract(0, 1, 0));
+            }
+            if (shop == null) {
+                shop = getShop(loc.clone().subtract(0, 2, 0));
             }
 
             if (shop != null && shop.hasHologram()) {
-                double distSquared = pLoc.distanceSquared(loc);
-                if (distSquared < nearestDistSquared) {
-                    nearestDistSquared = distSquared;
-                    nearestShop = shop;
-                }
-            }
-        }
-
-        for (Shop shop : getShops()) {
-            if (!shop.equals(nearestShop) && shop.hasHologram()) {
-                shop.getHologram().hidePlayer(player);
-            }
-
-            // Display item based on distance
-            Location shopLocation = shop.getLocation();
-            if (shopLocation.getWorld().getName().equals(player.getWorld().getName())) {
-                double distSquared = shop.getLocation().distanceSquared(player.getLocation());
-
-                if (shop.hasItem()) {
-                    if (distSquared <= itemDistSquared) {
-                        shop.getItem().showPlayer(player);
-                    } else {
-                        shop.getItem().hidePlayer(player);
+                Location shopLoc = shop.getLocation();
+                if (shopLoc.getWorld() != null && shopLoc.getWorld().equals(playerWorld)) {
+                    double distSquared = pLoc.distanceSquared(shopLoc);
+                    if (distSquared <= maxDistSquared && distSquared < nearestDistSquared) {
+                        nearestDistSquared = distSquared;
+                        nearestShop = shop;
                     }
                 }
             }
         }
 
-        if (nearestShop != null) {
+        Set<Shop> processed = Collections.newSetFromMap(new IdentityHashMap<>());
+
+        for (Shop shop : getShops()) {
+            if (!processed.add(shop)) continue;
+
+            Location shopLocation = shop.getLocation();
+            World shopWorld = shopLocation.getWorld();
+
+            if (shopWorld == null || !shopWorld.equals(playerWorld)) {
+                if (shop.hasHologram()) {
+                    shop.getHologram().hidePlayer(player);
+                }
+                if (shop.hasItem()) {
+                    shop.getItem().hidePlayer(player);
+                }
+                continue;
+            }
+
+            if (!shop.equals(nearestShop) && shop.hasHologram()) {
+                shop.getHologram().hidePlayer(player);
+            }
+
+            // Display item based on distance
+            double distSquared = shopLocation.distanceSquared(player.getLocation());
+            if (shop.hasItem()) {
+                if (distSquared <= itemDistSquared) {
+                    shop.checkOrRecreateEntities();
+                    shop.getItem().showPlayer(player);
+                } else {
+                    shop.getItem().hidePlayer(player);
+                }
+            }
+        }
+
+        if (nearestShop != null && nearestShop.hasHologram()) {
+            nearestShop.checkOrRecreateEntities();
             nearestShop.getHologram().showPlayer(player);
         }
     }
@@ -498,25 +519,44 @@ public class ShopUtils {
         double itemDistSqr = Math.pow(Config.maximalItemDistance, 2);
 
         Location playerLocation = p.getLocation();
+        World playerWorld = playerLocation.getWorld();
+        if (playerWorld == null) return;
+
+        Set<Shop> processed = Collections.newSetFromMap(new IdentityHashMap<>());
 
         for (Shop shop : getShops()) {
-            if (playerLocation.getWorld().getName().equals(shop.getLocation().getWorld().getName())) {
-                double distSqr = shop.getLocation().distanceSquared(playerLocation);
+            if (!processed.add(shop)) continue;
 
+            Location shopLocation = shop.getLocation();
+            World shopWorld = shopLocation.getWorld();
+
+            if (shopWorld == null || !shopWorld.equals(playerWorld)) {
                 if (shop.hasHologram()) {
-                    if (distSqr <= holoDistSqr) {
-                        shop.getHologram().showPlayer(p);
-                    } else {
-                        shop.getHologram().hidePlayer(p);
-                    }
+                    shop.getHologram().hidePlayer(p);
                 }
-
                 if (shop.hasItem()) {
-                    if (distSqr <= itemDistSqr) {
-                        shop.getItem().showPlayer(p);
-                    } else {
-                        shop.getItem().hidePlayer(p);
-                    }
+                    shop.getItem().hidePlayer(p);
+                }
+                continue;
+            }
+
+            double distSqr = shopLocation.distanceSquared(playerLocation);
+
+            if (shop.hasHologram()) {
+                if (distSqr <= holoDistSqr) {
+                    shop.checkOrRecreateEntities();
+                    shop.getHologram().showPlayer(p);
+                } else {
+                    shop.getHologram().hidePlayer(p);
+                }
+            }
+
+            if (shop.hasItem()) {
+                if (distSqr <= itemDistSqr) {
+                    shop.checkOrRecreateEntities();
+                    shop.getItem().showPlayer(p);
+                } else {
+                    shop.getItem().hidePlayer(p);
                 }
             }
         }

@@ -76,6 +76,14 @@ public class Hologram {
         return viewers.contains(p.getUniqueId());
     }
 
+    public boolean isValid() {
+        if (!exists || wrappers.isEmpty()) return false;
+        for (ArmorStandWrapper wrapper : wrappers) {
+            if (!wrapper.isValid()) return false;
+        }
+        return true;
+    }
+
     /**
      * @param p Player to which the hologram should be shown
      */
@@ -88,9 +96,8 @@ public class Hologram {
      * @param force Whether to force showing the hologram
      */
     public void showPlayer(Player p, boolean force) {
-        if (viewers.add(p.getUniqueId()) || force) {
-            togglePlayer(p, true);
-        }
+        viewers.add(p.getUniqueId());
+        togglePlayer(p, true);
     }
 
     /**
@@ -105,9 +112,8 @@ public class Hologram {
      * @param force Whether to force hiding the hologram
      */
     public void hidePlayer(Player p, boolean force) {
-        if (viewers.remove(p.getUniqueId()) || force) {
-            togglePlayer(p, false);
-        }
+        viewers.remove(p.getUniqueId());
+        togglePlayer(p, false);
     }
 
     /**

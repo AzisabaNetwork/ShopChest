@@ -21,11 +21,10 @@ public class ArmorStandWrapper {
     private static final LegacyComponentSerializer LEGACY_SERIALIZER = LegacyComponentSerializer.legacySection();
     // Legacy hologram locations were the feet of a marker ArmorStand. Its
     // displayed name was about 1.975 blocks above that point; TextDisplay's
-    // origin is the text itself, so retain the former visual placement.
-    // Keep the lowest hologram line above the native floating item.  A
-    // TextDisplay has no ArmorStand nameplate offset, so it needs a full
-    // visual-height correction rather than the old entity-height correction.
-    private static final double TEXT_DISPLAY_Y_OFFSET = 2.375;
+    // origin is the text itself. Keeping the lowest hologram line comfortably
+    // above the native floating item (at Y+0.9) while keeping 3-4 lines under
+    // ceiling blocks (at Y+2.0).
+    private static final double TEXT_DISPLAY_Y_OFFSET = 2.05;
 
     private final ShopChest plugin;
     private final TextDisplay display;
@@ -43,7 +42,7 @@ public class ArmorStandWrapper {
             // Let normal world geometry occlude shop text. Otherwise a large
             // market leaks every hologram through floors and walls.
             textDisplay.setSeeThrough(false);
-            textDisplay.setViewRange((float) Math.max(1.0D, Config.maximalDistance));
+            textDisplay.setViewRange(1.0F);
             textDisplay.setShadowed(false);
             textDisplay.setDefaultBackground(false);
             textDisplay.setPersistent(false);
@@ -57,26 +56,43 @@ public class ArmorStandWrapper {
         }
     }
 
+    public boolean isValid() {
+        return display != null && display.isValid();
+    }
+
     public void setVisible(Player player, boolean visible) {
+        if (display == null || !display.isValid()) return;
+        if (!display.getWorld().equals(player.getWorld())) return;
+
         if (visible) {
-            player.showEntity(plugin, display);
+            if (!player.canSee(display)) {
+                player.showEntity(plugin, display);
+            }
         } else {
-            player.hideEntity(plugin, display);
+            if (player.canSee(display)) {
+                player.hideEntity(plugin, display);
+            }
         }
     }
 
     public void setLocation(Location location) {
         this.location = location.clone();
-        display.teleport(location.clone().add(0, TEXT_DISPLAY_Y_OFFSET, 0));
+        if (display != null && display.isValid()) {
+            display.teleport(location.clone().add(0, TEXT_DISPLAY_Y_OFFSET, 0));
+        }
     }
 
     public void setCustomName(String customName) {
         this.customName = customName;
-        display.text(LEGACY_SERIALIZER.deserialize(customName));
+        if (display != null && display.isValid()) {
+            display.text(LEGACY_SERIALIZER.deserialize(customName));
+        }
     }
 
     public void remove() {
-        display.remove();
+        if (display != null && display.isValid()) {
+            display.remove();
+        }
     }
 
     public UUID getUuid() {

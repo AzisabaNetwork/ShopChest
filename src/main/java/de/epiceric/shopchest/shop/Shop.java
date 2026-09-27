@@ -153,9 +153,10 @@ public class Shop {
      * Removes the hologram of the shop
      */
     public void removeHologram() {
-        if (hologram != null && hologram.exists()) {
+        if (hologram != null) {
             plugin.debug("Removing hologram (#" + id + ")");
             hologram.remove();
+            hologram = null;
         }
     }
 
@@ -168,7 +169,6 @@ public class Shop {
             item.remove();
             item = null;
         }
-        created = false;
     }
 
     /**
@@ -178,10 +178,51 @@ public class Shop {
     private void createItem() {
         plugin.debug("Creating item (#" + id + ")");
 
-        Location itemLocation;
+        if (holoLocation == null) {
+            PreCreateResult preResult = preCreateHologram();
+            if (preResult != null) {
+                holoLocation = getHologramLocation(preResult.chests, preResult.face);
+            } else {
+                holoLocation = location.clone().add(0.5, 0, 0.5);
+            }
+        }
 
-        itemLocation = new Location(location.getWorld(), holoLocation.getX(), location.getY() + 0.9, holoLocation.getZ());
+        Location itemLocation = new Location(location.getWorld(), holoLocation.getX(), location.getY() + 0.9, holoLocation.getZ());
         item = new ShopItem(plugin, product.getItemStack(), itemLocation);
+    }
+
+    /**
+     * Checks if Bukkit entities for hologram and floating item exist and are valid.
+     * Recreates them on the server thread if the chunk is loaded and entities are missing or invalid.
+     */
+    public void checkOrRecreateEntities() {
+        if (!created) return;
+        World w = location.getWorld();
+        if (w == null || !w.isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
+            return;
+        }
+        if (areEntitiesValid()) {
+            return;
+        }
+        PreCreateResult preResult = preCreateHologram();
+        if (preResult == null) return;
+        plugin.getUpdater().queueEntityCreation(w, () -> {
+            if (!created) return;
+            if (!hasValidHologram()) {
+                if (hologram != null) {
+                    hologram.remove();
+                    hologram = null;
+                }
+                createHologram(preResult);
+            }
+            if (!hasValidItem()) {
+                if (item != null) {
+                    item.remove();
+                    item = null;
+                }
+                createItem();
+            }
+        });
     }
 
     /**
@@ -448,6 +489,18 @@ public class Shop {
 
     public boolean hasItem() {
         return item != null;
+    }
+
+    public boolean hasValidHologram() {
+        return hologram != null && hologram.exists() && hologram.isValid();
+    }
+
+    public boolean hasValidItem() {
+        return item != null && item.isValid();
+    }
+
+    public boolean areEntitiesValid() {
+        return hasValidHologram() && hasValidItem();
     }
 
     /**
