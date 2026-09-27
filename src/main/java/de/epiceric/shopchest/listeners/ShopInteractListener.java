@@ -602,9 +602,6 @@ public class ShopInteractListener implements Listener {
         String vendorString = LanguageUtils.getMessage(Message.SHOP_INFO_VENDOR,
                 new Replacement(Placeholder.VENDOR, vendorName));
 
-        // Make JSON message with item preview
-        JsonBuilder jb = getProductJson(shop.getProduct());
-
         String disabled = LanguageUtils.getMessage(Message.SHOP_INFO_DISABLED);
 
         String priceString = LanguageUtils.getMessage(Message.SHOP_INFO_PRICE,
@@ -621,7 +618,7 @@ public class ShopInteractListener implements Listener {
                 new Replacement(Placeholder.CHEST_SPACE, space));
 
         if (shop.getShopType() != ShopType.ADMIN) executor.sendMessage(vendorString);
-        jb.sendJson(executor);
+        sendProductMessage(executor, shop.getProduct());
         if (shop.getShopType() != ShopType.ADMIN && shop.getBuyPrice() > 0) executor.sendMessage(stock);
         if (shop.getShopType() != ShopType.ADMIN && shop.getSellPrice() > 0) executor.sendMessage(chestSpace);
         executor.sendMessage(priceString);
@@ -629,125 +626,53 @@ public class ShopInteractListener implements Listener {
     }
 
     /**
-     * Create a {@link JsonBuilder} containing the shop info message for the product
-     * in which you can hover the item name to get a preview.
+     * Send the shop product info message to the executor with 1.21.11 Paper Adventure item hover event.
+     * @param executor Player receiving the message
      * @param product The product of the shop
-     * @return A {@link JsonBuilder} that can send the message via {@link JsonBuilder#sendJson(Player)}
      */
-    private JsonBuilder getProductJson(ShopProduct product) {
-        // Add spaces at start and end, so there will always be a part before and after
-        // the item name after splitting at Placeholder.ITEM_NAME
-        String productString = " " + LanguageUtils.getMessage(Message.SHOP_INFO_PRODUCT,
-                new Replacement(Placeholder.AMOUNT, String.valueOf(product.getAmount()))) + " ";
+    private void sendProductMessage(Player executor, ShopProduct product) {
+        String productString = LanguageUtils.getMessage(Message.SHOP_INFO_PRODUCT,
+                new Replacement(Placeholder.AMOUNT, String.valueOf(product.getAmount())));
 
-        String[] parts = productString.split(Placeholder.ITEM_NAME.toString());
+        String placeholder = Placeholder.ITEM_NAME.toString();
         String productName = product.getLocalizedName();
-        String jsonItem = "";
-        JsonBuilder jb = new JsonBuilder(plugin);
-        JsonBuilder.PartArray rootArray = new JsonBuilder.PartArray();
+        ItemStack itemStack = product.getItemStack();
 
-        String nbtString = "";
-        try {
-            Class<?> craftItemStackClass = Utils.getOBCClass("inventory.CraftItemStack");
-            if (craftItemStackClass != null) {
-                Object nmsStack = craftItemStackClass.getMethod("asNMSCopy", ItemStack.class).invoke(null, product.getItemStack());
-                Class<?> nbtTagCompoundClass = Utils.getNMSClass("net.minecraft.nbt.CompoundTag", "NBTTagCompound");
-                if (nbtTagCompoundClass != null && nmsStack != null) {
-                    Object nbtTagCompound = nbtTagCompoundClass.getConstructor().newInstance();
-                    java.lang.reflect.Method saveMethod = null;
-                    for (java.lang.reflect.Method m : nmsStack.getClass().getMethods()) {
-                        if (m.getName().equals("save") || m.getName().equals("b")) {
-                            if (m.getParameterCount() == 1 && m.getParameterTypes()[0].isAssignableFrom(nbtTagCompoundClass)) {
-                                saveMethod = m;
-                                m.invoke(nmsStack, nbtTagCompound);
-                                break;
-                            }
-                        }
-                    }
-                    if (saveMethod == null) {
-                        try {
-                            Object craftServer = Bukkit.getServer();
-                            Object mcServer = craftServer.getClass().getMethod("getServer").invoke(craftServer);
-                            Object registryAccess = mcServer.getClass().getMethod("registryAccess").invoke(mcServer);
+        int placeholderIndex = productString.indexOf(placeholder);
+        if (placeholderIndex != -1) {
+            String prefix = productString.substring(0, placeholderIndex);
+            String suffix = productString.substring(placeholderIndex + placeholder.length());
 
-                            for (java.lang.reflect.Method m : nmsStack.getClass().getMethods()) {
-                                if (m.getName().equals("save") || m.getName().equals("b") || m.getName().equals("saveOptional")) {
-                                    if (m.getParameterCount() == 2 && m.getParameterTypes()[1].isAssignableFrom(nbtTagCompoundClass)) {
-                                        m.invoke(nmsStack, registryAccess, nbtTagCompound);
-                                        saveMethod = m;
-                                        break;
-                                    } else if (m.getParameterCount() == 1 && m.getParameterTypes()[0].isAssignableFrom(registryAccess.getClass())) {
-                                        Object res = m.invoke(nmsStack, registryAccess);
-                                        if (res != null) {
-                                            nbtTagCompound = res;
-                                            saveMethod = m;
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                        } catch (Throwable ignored) {
-                        }
-                    }
-                    if (saveMethod != null && nbtTagCompound != null) {
-                        nbtString = nbtTagCompound.toString();
-                        jsonItem = new JsonPrimitive(nbtString).toString();
-                    }
+            net.kyori.adventure.text.Component prefixComponent = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()
+                    .deserialize(prefix);
+
+            String lastColors = org.bukkit.ChatColor.getLastColors(prefix);
+            if (lastColors.isEmpty()) lastColors = "§e";
+
+            net.kyori.adventure.text.Component itemComponent = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()
+                    .deserialize(lastColors + productName);
+
+            if (itemStack != null && itemStack.getType() != org.bukkit.Material.AIR) {
+                try {
+                    itemComponent = itemComponent.hoverEvent(itemStack.asHoverEvent());
+                } catch (Throwable e) {
+                    plugin.debug("Failed to attach item hover event: " + e.getMessage());
                 }
             }
-        } catch (Throwable e) {
-            plugin.getLogger().severe("Failed to create JSON from item. Product preview will not be available.");
-            plugin.debug("Failed to create JSON from item:");
-            plugin.debug(e);
-            jb.setRootPart(new JsonBuilder.Part(productString.replace(Placeholder.ITEM_NAME.toString(), productName)));
-            return jb;
+
+            net.kyori.adventure.text.Component suffixComponent = net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection()
+                    .deserialize(suffix);
+
+            net.kyori.adventure.text.Component finalMessage = net.kyori.adventure.text.Component.text()
+                    .append(prefixComponent)
+                    .append(itemComponent)
+                    .append(suffixComponent)
+                    .build();
+
+            executor.sendMessage(finalMessage);
+        } else {
+            executor.sendMessage(net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer.legacySection().deserialize(productString));
         }
-
-        for (int i = 0; i < parts.length; i++) {
-            String part = parts[i];
-
-            // Remove spaces at start and end that were added before
-            if (i == 0 && part.startsWith(" ")) {
-                part = part.substring(1);
-            } else if (i == parts.length - 1 && part.endsWith(" ")) {
-                part = part.substring(0, part.length() - 1);
-            }
-
-            String formatPrefix = "";
-
-            // A color code resets all format codes, so only format codes
-            // after the last color code have to be found.
-            int lastColorGroupEndIndex = 0;
-
-            Matcher colorMatcher = COLOR_CODE_PATTERN.matcher(part);
-            if (colorMatcher.find()) {
-                formatPrefix = colorMatcher.group(1);
-                lastColorGroupEndIndex = colorMatcher.end();
-            }
-
-            Matcher formatMatcher = FORMAT_CODE_PATTERN.matcher(part);
-            while (formatMatcher.find(lastColorGroupEndIndex)) {
-                formatPrefix += formatMatcher.group(1);
-            }
-
-            rootArray.addPart(new JsonBuilder.Part(part));
-
-            if (i < parts.length - 1) {
-                JsonBuilder.PartMap itemNameMap = JsonBuilder.parse(formatPrefix + productName).toMap();
-                if (nbtString != null && !nbtString.isEmpty()) {
-                    JsonBuilder.PartMap hoverEvent = new JsonBuilder.PartMap();
-                    hoverEvent.setValue("action", new JsonBuilder.Part("show_item"));
-                    hoverEvent.setValue("contents", new JsonBuilder.Part(nbtString, false));
-                    hoverEvent.setValue("value", new JsonBuilder.Part(jsonItem, false));
-                    itemNameMap.setValue("hoverEvent", hoverEvent);
-                }
-
-                rootArray.addPart(itemNameMap);
-            }
-        }
-
-        jb.setRootPart(rootArray);
-        return jb;
     }
 
     /**

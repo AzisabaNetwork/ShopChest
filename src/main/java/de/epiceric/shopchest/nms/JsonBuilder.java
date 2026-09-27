@@ -211,7 +211,7 @@ public class JsonBuilder {
 
     public void sendJson(Player p) {        
         try {
-            p.spigot().sendMessage(net.md_5.bungee.chat.ComponentSerializer.parse(toString()));
+            p.sendMessage(net.kyori.adventure.text.serializer.gson.GsonComponentSerializer.gson().deserialize(toString()));
             plugin.debug("Sent JSON: " + toString());
         } catch (Throwable e) {
             plugin.getLogger().severe("Failed to send JSON message");
