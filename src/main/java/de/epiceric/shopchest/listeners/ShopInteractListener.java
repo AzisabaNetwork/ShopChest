@@ -39,8 +39,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.codemc.worldguardwrapper.WorldGuardWrapper;
 import org.codemc.worldguardwrapper.flag.IWrappedFlag;
 import org.codemc.worldguardwrapper.flag.WrappedState;
-import org.inventivetalent.reflection.resolver.minecraft.NMSClassResolver;
-import org.inventivetalent.reflection.resolver.minecraft.OBCClassResolver;
 
 import de.epiceric.shopchest.ShopChest;
 import de.epiceric.shopchest.config.Config;
@@ -651,16 +649,28 @@ public class ShopInteractListener implements Listener {
         JsonBuilder.PartArray rootArray = new JsonBuilder.PartArray();
 
         try {
-            OBCClassResolver obcClassResolver = new OBCClassResolver();
-            NMSClassResolver nmsClassResolver = new NMSClassResolver();
-
-            Class<?> craftItemStackClass = obcClassResolver.resolveSilent("inventory.CraftItemStack");
-            Object nmsStack = craftItemStackClass.getMethod("asNMSCopy", ItemStack.class).invoke(null, product.getItemStack());
-            Class<?> nbtTagCompoundClass = nmsClassResolver.resolveSilent("nbt.NBTTagCompound");
-            Object nbtTagCompound = nbtTagCompoundClass.getConstructor().newInstance();
-            nmsStack.getClass().getMethod("save", nbtTagCompoundClass).invoke(nmsStack, nbtTagCompound);
-            jsonItem = new JsonPrimitive(nbtTagCompound.toString()).toString();
-        } catch (Exception e) {
+            Class<?> craftItemStackClass = Utils.getOBCClass("inventory.CraftItemStack");
+            if (craftItemStackClass != null) {
+                Object nmsStack = craftItemStackClass.getMethod("asNMSCopy", ItemStack.class).invoke(null, product.getItemStack());
+                Class<?> nbtTagCompoundClass = Utils.getNMSClass("net.minecraft.nbt.CompoundTag", "NBTTagCompound");
+                if (nbtTagCompoundClass != null && nmsStack != null) {
+                    Object nbtTagCompound = nbtTagCompoundClass.getConstructor().newInstance();
+                    java.lang.reflect.Method saveMethod = null;
+                    for (java.lang.reflect.Method m : nmsStack.getClass().getMethods()) {
+                        if (m.getName().equals("save") || m.getName().equals("b")) {
+                            if (m.getParameterCount() == 1 && m.getParameterTypes()[0].isAssignableFrom(nbtTagCompoundClass)) {
+                                saveMethod = m;
+                                break;
+                            }
+                        }
+                    }
+                    if (saveMethod != null) {
+                        saveMethod.invoke(nmsStack, nbtTagCompound);
+                        jsonItem = new JsonPrimitive(nbtTagCompound.toString()).toString();
+                    }
+                }
+            }
+        } catch (Throwable e) {
             plugin.getLogger().severe("Failed to create JSON from item. Product preview will not be available.");
             plugin.debug("Failed to create JSON from item:");
             plugin.debug(e);

@@ -33,8 +33,6 @@ import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
-import org.inventivetalent.reflection.resolver.FieldResolver;
-import org.inventivetalent.reflection.resolver.minecraft.NMSClassResolver;
 
 import de.epiceric.shopchest.ShopChest;
 import de.epiceric.shopchest.config.Placeholder;
@@ -46,10 +44,7 @@ import de.epiceric.shopchest.nms.JsonBuilder;
 import de.epiceric.shopchest.shop.Shop;
 
 public class Utils {
-    // Legacy packet helpers below are retained only for old call sites.  Do
-    // not resolve NMS classes during plugin startup: Paper 1.21 has no
-    // versioned CraftBukkit package for ReflectionHelper to inspect.
-    static NMSClassResolver nmsClassResolver = new NMSClassResolver();
+    // Legacy packet helpers below are retained only for old call sites.
     static Class<?> entityClass;
     static Class<?> entityArmorStandClass;
     static Class<?> entityItemClass;
@@ -456,6 +451,53 @@ public class Utils {
         return null;
     }
 
+    public static Class<?> getOBCClass(String path) {
+        try {
+            return Class.forName("org.bukkit.craftbukkit." + path);
+        } catch (ClassNotFoundException e1) {
+            try {
+                String pkg = Bukkit.getServer().getClass().getPackage().getName();
+                return Class.forName(pkg + "." + path);
+            } catch (ClassNotFoundException e2) {
+                return null;
+            }
+        }
+    }
+
+    public static Class<?> getNMSClass(String name, String legacyName) {
+        try {
+            return Class.forName(name);
+        } catch (ClassNotFoundException e1) {
+            try {
+                return Class.forName("net.minecraft.server." + legacyName);
+            } catch (ClassNotFoundException e2) {
+                try {
+                    String pkg = Bukkit.getServer().getClass().getPackage().getName();
+                    String version = pkg.substring(pkg.lastIndexOf('.') + 1);
+                    return Class.forName("net.minecraft.server." + version + "." + legacyName);
+                } catch (Exception e3) {
+                    return null;
+                }
+            }
+        }
+    }
+
+    public static Field getField(Class<?> clazz, String... fieldNames) throws NoSuchFieldException {
+        if (clazz == null) throw new NoSuchFieldException("Class is null");
+        for (String name : fieldNames) {
+            try {
+                Field field = clazz.getDeclaredField(name);
+                field.setAccessible(true);
+                return field;
+            } catch (NoSuchFieldException ignored) {
+            }
+        }
+        if (clazz.getSuperclass() != null && clazz.getSuperclass() != Object.class) {
+            return getField(clazz.getSuperclass(), fieldNames);
+        }
+        throw new NoSuchFieldException("Field not found among " + Arrays.toString(fieldNames) + " in " + clazz.getName());
+    }
+
     /**
      * Get a free entity ID for use in {@link #createPacketSpawnEntity(ShopChest, int, UUID, Location, Vector, EntityType)}
      *
@@ -463,7 +505,7 @@ public class Utils {
      */
     public static int getFreeEntityId() {
         try {
-            Field entityCountField = new FieldResolver(entityClass).resolve("entityCount", "b");
+            Field entityCountField = getField(entityClass, "entityCount", "b", "ENTITY_COUNTER");
             entityCountField.setAccessible(true);
             if (entityCountField.getType() == int.class) {
                 int id = entityCountField.getInt(null);
@@ -485,9 +527,9 @@ public class Utils {
      */
     public static Object createPacketSpawnEntity(ShopChest plugin, int id, UUID uuid, Location loc, EntityType type) {
         try {
-            Class<?> packetPlayOutSpawnEntityClass = nmsClassResolver.resolveSilent("network.protocol.game.PacketPlayOutSpawnEntity");
-            Class<?> entityTypesClass = nmsClassResolver.resolveSilent("world.entity.EntityTypes");
-            Class<?> vec3dClass = nmsClassResolver.resolveSilent("world.phys.Vec3D");
+            Class<?> packetPlayOutSpawnEntityClass = getNMSClass("net.minecraft.network.protocol.game.PacketPlayOutSpawnEntity", "PacketPlayOutSpawnEntity");
+            Class<?> entityTypesClass = getNMSClass("net.minecraft.world.entity.EntityTypes", "EntityTypes");
+            Class<?> vec3dClass = getNMSClass("net.minecraft.world.phys.Vec3D", "Vec3D");
 
             boolean isPre9 = getMajorVersion() < 9;
             boolean isPre14 = getMajorVersion() < 14;
@@ -555,7 +597,7 @@ public class Utils {
             fields[11].set(packet, 0);
 
             return packet;
-        } catch (NoSuchMethodException | NoSuchFieldException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+        } catch (Exception e) {
             plugin.getLogger().severe("Failed to create packet to spawn entity!");
             plugin.debug("Failed to create packet to spawn entity!");
             plugin.debug(e);
@@ -577,20 +619,33 @@ public class Utils {
                 return false;
             }
 
-            Class<?> packetClass = nmsClassResolver.resolveSilent("network.protocol.Packet");
+            Class<?> packetClass = getNMSClass("net.minecraft.network.protocol.Packet", "Packet");
             if (packetClass == null) {
                 plugin.debug("Failed to send packet: Could not find Packet class");
                 return false;
             }
 
             Object nmsPlayer = player.getClass().getMethod("getHandle").invoke(player);
-            Field fConnection = (new FieldResolver(nmsPlayer.getClass())).resolve("playerConnection", "b");
+            Field fConnection = getField(nmsPlayer.getClass(), "playerConnection", "b", "connection", "c");
             Object playerConnection = fConnection.get(nmsPlayer);
 
-            playerConnection.getClass().getMethod("sendPacket", packetClass).invoke(playerConnection, packet);
+            Method sendPacketMethod = null;
+            for (Method m : playerConnection.getClass().getMethods()) {
+                if (m.getName().equals("sendPacket") || m.getName().equals("send") || m.getName().equals("a")) {
+                    if (m.getParameterCount() == 1 && m.getParameterTypes()[0].isAssignableFrom(packetClass)) {
+                        sendPacketMethod = m;
+                        break;
+                    }
+                }
+            }
 
-            return true;
-        } catch (NoSuchMethodException | NoSuchFieldException | IllegalAccessException | InvocationTargetException e) {
+            if (sendPacketMethod != null) {
+                sendPacketMethod.invoke(playerConnection, packet);
+                return true;
+            }
+
+            return false;
+        } catch (Exception e) {
             plugin.getLogger().severe("Failed to send packet " + packet.getClass().getName());
             plugin.debug("Failed to send packet " + packet.getClass().getName());
             plugin.debug(e);

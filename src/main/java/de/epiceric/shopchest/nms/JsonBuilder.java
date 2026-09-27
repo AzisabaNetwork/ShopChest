@@ -12,8 +12,6 @@ import java.util.regex.Pattern;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
-import org.inventivetalent.reflection.resolver.FieldResolver;
-import org.inventivetalent.reflection.resolver.minecraft.NMSClassResolver;
 
 import de.epiceric.shopchest.ShopChest;
 import de.epiceric.shopchest.utils.Utils;
@@ -117,29 +115,8 @@ public class JsonBuilder {
     private Part rootPart;
     private ShopChest plugin;
 
-    private final NMSClassResolver nmsClassResolver = new NMSClassResolver();
-    private Class<?> iChatBaseComponentClass = nmsClassResolver.resolveSilent("network.chat.IChatBaseComponent");
-    private Class<?> packetPlayOutChatClass = nmsClassResolver.resolveSilent("network.protocol.game.PacketPlayOutChat");
-    private Class<?> chatSerializerClass = nmsClassResolver.resolveSilent("ChatSerializer", "network.chat.IChatBaseComponent$ChatSerializer");
-    private Class<?> chatMessageTypeClass;
-
     public JsonBuilder(ShopChest plugin) {
         this.plugin = plugin;
-
-        if (Utils.getMajorVersion() >= 16) {
-            chatMessageTypeClass = nmsClassResolver.resolveSilent("network.chat.ChatMessageType");
-        }
-
-        Class<?>[] requiredClasses = new Class<?>[] {
-          iChatBaseComponentClass, packetPlayOutChatClass, chatSerializerClass
-        };
-
-        for (Class<?> c : requiredClasses) {
-            if (c == null) {
-                plugin.debug("Failed to instantiate JsonBuilder: Could not find all required classes");
-                return;
-            }
-        }
     }
 
     public static Part parse(String text) {
@@ -234,17 +211,11 @@ public class JsonBuilder {
 
     public void sendJson(Player p) {        
         try {
-            Object iChatBaseComponent = chatSerializerClass.getMethod("a", String.class).invoke(null, toString());
-            Object packetPlayOutChat = Utils.getMajorVersion() < 16
-                ? packetPlayOutChatClass.getConstructor(iChatBaseComponentClass).newInstance(iChatBaseComponent)
-                : packetPlayOutChatClass.getConstructor(iChatBaseComponentClass, chatMessageTypeClass, UUID.class)
-                        .newInstance(iChatBaseComponent, (new FieldResolver(chatMessageTypeClass)).resolve("CHAT", "a").get(null), UUID.randomUUID());
-            
-            Utils.sendPacket(plugin, packetPlayOutChat, p);
+            p.spigot().sendMessage(net.md_5.bungee.chat.ComponentSerializer.parse(toString()));
             plugin.debug("Sent JSON: " + toString());
-        } catch (ReflectiveOperationException e) {
-            plugin.getLogger().severe("Failed to send JSON with reflection");
-            plugin.debug("Failed to send JSON with reflection: " + toString());
+        } catch (Throwable e) {
+            plugin.getLogger().severe("Failed to send JSON message");
+            plugin.debug("Failed to send JSON message: " + toString());
             plugin.debug(e);
         }
     }
