@@ -326,6 +326,32 @@ message.commandDescription.open=&a/%COMMAND% open - Open a shop.
 # Usable Placeholders: %COMMAND%
 message.commandDescription.config=&a/%COMMAND% config <set|add|remove> <property> <value> - Change configuration values.
 
+# Set the command description message for '/shop history' when you type '/shop'.
+# Usable Placeholders: %COMMAND%
+message.commandDescription.history=&a/%COMMAND% history [player] [page] - View the transaction history.
+
+# Set the message when a player is not permitted to view his own / another player's transaction history.
+message.noPermission.history=&cYou don't have permission to view the transaction history.
+message.noPermission.history-others=&cYou don't have permission to view other players' transaction history.
+
+# Set the header, the entries and the footer of the transaction history ('/shop history').
+# A transaction is "bought" if the player bought from the shop, and "sold" if he sold to the shop.
+# Usable Placeholders (header): %PLAYER%, %PAGE%, %PAGES%
+# Usable Placeholders (entries): %DATE%, %PLAYER%, %AMOUNT%, %ITEMNAME%, %PRICE%, %VENDOR%
+# Usable Placeholders (footer): %COMMAND%, %PLAYER%, %PAGE% (next page)
+message.history.header=&6--- Transaction history of &e%PLAYER% &6(page %PAGE%/%PAGES%) ---
+message.history.bought=&7%DATE% &f%PLAYER% &abought &6%AMOUNT% x %ITEMNAME%&a for &6%PRICE%&a from &f%VENDOR%
+message.history.sold=&7%DATE% &f%PLAYER% &csold &6%AMOUNT% x %ITEMNAME%&c for &6%PRICE%&c to &f%VENDOR%
+message.history.footer=&6Use &e/%COMMAND% history %PLAYER% %PAGE% &6to see the next page.
+
+# Set the messages for an empty history, a disabled economy log, a page that does not exist and an unknown player.
+# Usable Placeholders (invalid-page): %PAGE%, %PAGES%
+# Usable Placeholders (player-not-found): %PLAYER%
+message.history.empty=&cNo transactions found.
+message.history.disabled=&cThe transaction history is disabled (enable-economy-log).
+message.history.invalid-page=&cPage %PAGE% does not exist (%PAGES% pages).
+message.history.player-not-found=&cPlayer %PLAYER% was not found.
+
 # Set the message a player gets after setting a configuration value per command
 # Usable Placeholders: %PROPERTY%, %VALUE%
 message.config.set=&6Changed &a%PROPERTY% &6to &a%VALUE%&6.

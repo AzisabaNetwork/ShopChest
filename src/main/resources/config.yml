@@ -38,7 +38,9 @@ refund-shop-creation: false
 enable-update-checker: true
 
 # Set whether buys and sells should be logged in the database.
-enable-economy-log: false
+# The log is required for the transaction history ("/shop history") and for the
+# revenue message vendors get when they join.
+enable-economy-log: true
 
 # Set the maximum age for economy log entries in days.
 # All log entries older than this will be deleted on server start.

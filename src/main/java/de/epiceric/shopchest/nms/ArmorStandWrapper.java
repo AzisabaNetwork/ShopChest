@@ -1,7 +1,6 @@
 package de.epiceric.shopchest.nms;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.UUID;
 
 import org.bukkit.Location;
@@ -14,11 +13,10 @@ import de.epiceric.shopchest.utils.Utils;
 
 public class ArmorStandWrapper {
     private final NMSClassResolver nmsClassResolver = new NMSClassResolver();
-    private final Class<?> packetDataSerializerClass = nmsClassResolver.resolveSilent("network.PacketDataSerializer");
-    private final Class<?> packetPlayOutEntityDestroyClass = nmsClassResolver.resolveSilent("network.protocol.game.PacketPlayOutEntityDestroy");
-    private final Class<?> packetPlayOutEntityMetadataClass = nmsClassResolver.resolveSilent("network.protocol.game.PacketPlayOutEntityMetadata");
-    private final Class<?> packetPlayOutEntityTeleportClass = nmsClassResolver.resolveSilent("network.protocol.game.PacketPlayOutEntityTeleport");
-    private final Class<?> dataWatcherClass = nmsClassResolver.resolveSilent("network.syncher.DataWatcher");
+    private final Class<?> packetPlayOutEntityDestroyClass = nmsClassResolver.resolveSilent("PacketPlayOutEntityDestroy");
+    private final Class<?> packetPlayOutEntityMetadataClass = nmsClassResolver.resolveSilent("PacketPlayOutEntityMetadata");
+    private final Class<?> packetPlayOutEntityTeleportClass = nmsClassResolver.resolveSilent("PacketPlayOutEntityTeleport");
+    private final Class<?> dataWatcherClass = nmsClassResolver.resolveSilent("DataWatcher");
 
     private final UUID uuid = UUID.randomUUID();
     private final int entityId;
@@ -57,50 +55,27 @@ public class ArmorStandWrapper {
         Object packet;
 
         try {
-            if (Utils.getMajorVersion() >= 17) {
-                // Empty constructor does not exist anymore in 1.17+ so create packet via serializer
-                Class<?> byteBufClass = Class.forName("io.netty.buffer.ByteBuf");
-                Class<?> unpooledClass = Class.forName("io.netty.buffer.Unpooled");
-                Object buffer = unpooledClass.getMethod("buffer").invoke(null);
-                Object serializer = packetDataSerializerClass.getConstructor(byteBufClass).newInstance(buffer);
-
-                Method d = packetDataSerializerClass.getMethod("d", int.class);
-                Method writeDouble = packetDataSerializerClass.getMethod("writeDouble", double.class);
-                Method writeByte = packetDataSerializerClass.getMethod("writeByte", int.class);
-                Method writeBoolean = packetDataSerializerClass.getMethod("writeBoolean", boolean.class);
-
-                d.invoke(serializer, getEntityId());
-                writeDouble.invoke(serializer, location.getX());
-                writeDouble.invoke(serializer, y);
-                writeDouble.invoke(serializer, location.getZ());
-                writeByte.invoke(serializer, 0);
-                writeByte.invoke(serializer, 0);
-                writeBoolean.invoke(serializer, false);
-
-                packet = packetPlayOutEntityTeleportClass.getConstructor(packetDataSerializerClass).newInstance(serializer);
-            } else {
-                packet = packetPlayOutEntityTeleportClass.getConstructor().newInstance();
-                Field[] fields = packetPlayOutEntityTeleportClass.getDeclaredFields();
-                for (Field field : fields) {
-                    field.setAccessible(true);
-                }
-    
-                boolean isPre9 = Utils.getMajorVersion() < 9;
-                fields[0].set(packet, entityId);
-    
-                if (isPre9) {
-                    fields[1].set(packet, (int)(location.getX() * 32));
-                    fields[2].set(packet, (int)(y * 32));
-                    fields[3].set(packet, (int)(location.getZ() * 32));
-                } else {
-                    fields[1].set(packet, location.getX());
-                    fields[2].set(packet, y);
-                    fields[3].set(packet, location.getZ());
-                }
-                fields[4].set(packet, (byte) 0);
-                fields[5].set(packet, (byte) 0);
-                fields[6].set(packet, true);
+            packet = packetPlayOutEntityTeleportClass.getConstructor().newInstance();
+            Field[] fields = packetPlayOutEntityTeleportClass.getDeclaredFields();
+            for (Field field : fields) {
+                field.setAccessible(true);
             }
+
+            boolean isPre9 = Utils.getMajorVersion() < 9;
+            fields[0].set(packet, entityId);
+
+            if (isPre9) {
+                fields[1].set(packet, (int)(location.getX() * 32));
+                fields[2].set(packet, (int)(y * 32));
+                fields[3].set(packet, (int)(location.getZ() * 32));
+            } else {
+                fields[1].set(packet, location.getX());
+                fields[2].set(packet, y);
+                fields[3].set(packet, location.getZ());
+            }
+            fields[4].set(packet, (byte) 0);
+            fields[5].set(packet, (byte) 0);
+            fields[6].set(packet, true);
 
             if (packet == null) {
                 plugin.getLogger().severe("Could not set hologram location");

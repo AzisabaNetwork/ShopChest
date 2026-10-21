@@ -90,6 +90,22 @@ message.commandDescription.update=&a/%COMMAND% update - Suche nach Aktualisierun
 message.commandDescription.limits=&a/%COMMAND% limits - Betrachte die Shop Limits.
 message.commandDescription.open=&a/%COMMAND% open - Öffne einen Shop.
 message.commandDescription.config=&a/%COMMAND% config <set|add|remove> <property> <value> - Verändere Konfigurationswerte.
+
+# Beschreibung von '/shop history' bei Eingabe von '/shop'.
+message.commandDescription.history=&a/%COMMAND% history [player] [page] - Zeige den Transaktionsverlauf.
+
+message.noPermission.history=&cDu hast keine Berechtigung den Transaktionsverlauf einzusehen.
+message.noPermission.history-others=&cDu hast keine Berechtigung den Transaktionsverlauf anderer Spieler einzusehen.
+
+message.history.header=&6--- Transaktionsverlauf von &e%PLAYER% &6(Seite %PAGE%/%PAGES%) ---
+message.history.bought=&7%DATE% &f%PLAYER% &akaufte &6%AMOUNT% x %ITEMNAME%&a für &6%PRICE%&a von &f%VENDOR%
+message.history.sold=&7%DATE% &f%PLAYER% &cverkaufte &6%AMOUNT% x %ITEMNAME%&c für &6%PRICE%&c an &f%VENDOR%
+message.history.footer=&6Nutze &e/%COMMAND% history %PLAYER% %PAGE% &6für die nächste Seite.
+
+message.history.empty=&cKeine Transaktionen gefunden.
+message.history.disabled=&cDer Transaktionsverlauf ist deaktiviert (enable-economy-log).
+message.history.invalid-page=&cSeite %PAGE% existiert nicht (%PAGES% Seiten).
+message.history.player-not-found=&cSpieler %PLAYER% wurde nicht gefunden.
 message.config.set=&6Eigenschaft &a%PROPERTY% &6wurde auf &a%VALUE% &6gesetzt.
 message.config.added=&6Wert &a%VALUE% &6wurde zu &a%PROPERTY% &6hinzugefügt.
 message.config.removed=&6Wert &a%VALUE% &6wurde aus &a%PROPERTY% &6entfernt.

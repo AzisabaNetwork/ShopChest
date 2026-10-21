@@ -645,7 +645,7 @@ public class ShopInteractListener implements Listener {
 
             Class<?> craftItemStackClass = obcClassResolver.resolveSilent("inventory.CraftItemStack");
             Object nmsStack = craftItemStackClass.getMethod("asNMSCopy", ItemStack.class).invoke(null, product.getItemStack());
-            Class<?> nbtTagCompoundClass = nmsClassResolver.resolveSilent("nbt.NBTTagCompound");
+            Class<?> nbtTagCompoundClass = nmsClassResolver.resolveSilent("NBTTagCompound");
             Object nbtTagCompound = nbtTagCompoundClass.getConstructor().newInstance();
             nmsStack.getClass().getMethod("save", nbtTagCompoundClass).invoke(nmsStack, nbtTagCompound);
             jsonItem = new JsonPrimitive(nbtTagCompound.toString()).toString();

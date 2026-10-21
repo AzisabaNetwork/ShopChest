@@ -111,6 +111,17 @@ public class ShopCommand {
             }
         });
 
+        addSubCommand(new ShopSubCommand("history", false, executor, tabCompleter) {
+            @Override
+            public String getHelpMessage(CommandSender sender) {
+                if (sender.hasPermission(Permissions.HISTORY) || sender.hasPermission(Permissions.HISTORY_OTHER)) {
+                    return LanguageUtils.getMessage(Message.COMMAND_DESC_HISTORY, cmdReplacement);
+                } else {
+                    return "";
+                }
+            }
+        });
+
         addSubCommand(new ShopSubCommand("removeall", false, executor, tabCompleter) {
             @Override
             public String getHelpMessage(CommandSender sender) {

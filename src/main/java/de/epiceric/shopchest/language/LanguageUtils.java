@@ -1955,308 +1955,9 @@ public class LanguageUtils {
             itemNames.add(new ItemName(Material.HONEYCOMB_BLOCK, langConfig.getString("block.minecraft.honeycomb_block", "Honeycomb Block")));
         }
 
-        if (Utils.getMajorVersion() >= 16) {
-            itemNames.add(new ItemName(Material.ANCIENT_DEBRIS, langConfig.getString("block.minecraft.ancient_debris", "Ancient Debris")));
-            itemNames.add(new ItemName(Material.BASALT, langConfig.getString("block.minecraft.basalt", "Basalt")));
-            itemNames.add(new ItemName(Material.BLACKSTONE, langConfig.getString("block.minecraft.blackstone", "Blackstone")));
-            itemNames.add(new ItemName(Material.BLACKSTONE_SLAB, langConfig.getString("block.minecraft.blackstone_slab", "Blackstone Slab")));
-            itemNames.add(new ItemName(Material.BLACKSTONE_STAIRS, langConfig.getString("block.minecraft.blackstone_stairs", "Blackstone Stairs")));
-            itemNames.add(new ItemName(Material.BLACKSTONE_WALL, langConfig.getString("block.minecraft.blackstone_wall", "Blackstone Wall")));
-            itemNames.add(new ItemName(Material.CHAIN, langConfig.getString("block.minecraft.chain", "Chain")));
-            itemNames.add(new ItemName(Material.CHISELED_NETHER_BRICKS, langConfig.getString("block.minecraft.chiseled_nether_bricks", "Chiseled Nether Bricks")));
-            itemNames.add(new ItemName(Material.CHISELED_POLISHED_BLACKSTONE, langConfig.getString("block.minecraft.chiseled_polished_blackstone", "Chiseled Polished Blackstone")));
-            itemNames.add(new ItemName(Material.CRACKED_NETHER_BRICKS, langConfig.getString("block.minecraft.cracked_nether_bricks", "Cracked Nether Bricks")));
-            itemNames.add(new ItemName(Material.CRACKED_POLISHED_BLACKSTONE_BRICKS, langConfig.getString("block.minecraft.cracked_polished_blackstone_bricks", "Cracked Polished Blackstone Bricks")));
-            itemNames.add(new ItemName(Material.CRIMSON_BUTTON, langConfig.getString("block.minecraft.crimson_button", "Crimson Button")));
-            itemNames.add(new ItemName(Material.CRIMSON_DOOR, langConfig.getString("block.minecraft.crimson_door", "Crimson Door")));
-            itemNames.add(new ItemName(Material.CRIMSON_FENCE, langConfig.getString("block.minecraft.crimson_fence", "Crimson Fence")));
-            itemNames.add(new ItemName(Material.CRIMSON_FENCE_GATE, langConfig.getString("block.minecraft.crimson_fence_gate", "Crimson Fence Gate")));
-            itemNames.add(new ItemName(Material.CRIMSON_FUNGUS, langConfig.getString("block.minecraft.crimson_fungus", "Crimson Fungus")));
-            itemNames.add(new ItemName(Material.CRIMSON_HYPHAE, langConfig.getString("block.minecraft.crimson_hyphae", "Crimson Hyphae")));
-            itemNames.add(new ItemName(Material.CRIMSON_NYLIUM, langConfig.getString("block.minecraft.crimson_nylium", "Crimson Nylium")));
-            itemNames.add(new ItemName(Material.CRIMSON_PLANKS, langConfig.getString("block.minecraft.crimson_planks", "Crimson Planks")));
-            itemNames.add(new ItemName(Material.CRIMSON_PRESSURE_PLATE, langConfig.getString("block.minecraft.crimson_pressure_plate", "Crimson Pressure Plate")));
-            itemNames.add(new ItemName(Material.CRIMSON_ROOTS, langConfig.getString("block.minecraft.crimson_roots", "Crimson Roots")));
-            itemNames.add(new ItemName(Material.CRIMSON_SIGN, langConfig.getString("block.minecraft.crimson_sign", "Crimson Sign")));
-            itemNames.add(new ItemName(Material.CRIMSON_SLAB, langConfig.getString("block.minecraft.crimson_slab", "Crimson Slab")));
-            itemNames.add(new ItemName(Material.CRIMSON_STAIRS, langConfig.getString("block.minecraft.crimson_stairs", "Crimson Stairs")));
-            itemNames.add(new ItemName(Material.CRIMSON_STEM, langConfig.getString("block.minecraft.crimson_stem", "Crimson Stem")));
-            itemNames.add(new ItemName(Material.CRIMSON_TRAPDOOR, langConfig.getString("block.minecraft.crimson_trapdoor", "Crimson Trapdoor")));
-            itemNames.add(new ItemName(Material.CRIMSON_WALL_SIGN, langConfig.getString("block.minecraft.crimson_wall_sign", "Crimson Wall Sign")));
-            itemNames.add(new ItemName(Material.CRYING_OBSIDIAN, langConfig.getString("block.minecraft.crying_obsidian", "Crying Obsidian")));
-            itemNames.add(new ItemName(Material.GILDED_BLACKSTONE, langConfig.getString("block.minecraft.gilded_blackstone", "Gilded Blackstone")));
-            itemNames.add(new ItemName(Material.HOGLIN_SPAWN_EGG, langConfig.getString("item.minecraft.hoglin_spawn_egg", "Hoglin Spawn Egg")));
-            itemNames.add(new ItemName(Material.LODESTONE, langConfig.getString("block.minecraft.lodestone", "Lodestone")));
-            // itemNames.add(new ItemName(Material.LODESTONE_COMPASS, langConfig.getString("item.minecraft.lodestone_compass", "Lodestone Compass")));
-            itemNames.add(new ItemName(Material.MUSIC_DISC_PIGSTEP, langConfig.getString("item.minecraft.music_disc_pigstep", "Music Disc")));
-            itemNames.add(new ItemName(Material.NETHER_GOLD_ORE, langConfig.getString("block.minecraft.nether_gold_ore", "Nether Gold Ore")));
-            itemNames.add(new ItemName(Material.NETHER_SPROUTS, langConfig.getString("block.minecraft.nether_sprouts", "Nether Sprouts")));
-            itemNames.add(new ItemName(Material.NETHERITE_AXE, langConfig.getString("item.minecraft.netherite_axe", "Netherite Axe")));
-            itemNames.add(new ItemName(Material.NETHERITE_BLOCK, langConfig.getString("block.minecraft.netherite_block", "Netherite Block")));
-            itemNames.add(new ItemName(Material.NETHERITE_BOOTS, langConfig.getString("item.minecraft.netherite_boots", "Netherite Boots")));
-            itemNames.add(new ItemName(Material.NETHERITE_CHESTPLATE, langConfig.getString("item.minecraft.netherite_chestplate", "Netherite Chestplate")));
-            itemNames.add(new ItemName(Material.NETHERITE_HELMET, langConfig.getString("item.minecraft.netherite_helmet", "Netherite Helmet")));
-            itemNames.add(new ItemName(Material.NETHERITE_HOE, langConfig.getString("item.minecraft.netherite_hoe", "Netherite Hoe")));
-            itemNames.add(new ItemName(Material.NETHERITE_INGOT, langConfig.getString("item.minecraft.netherite_ingot", "Netherite Ingot")));
-            itemNames.add(new ItemName(Material.NETHERITE_LEGGINGS, langConfig.getString("item.minecraft.netherite_leggings", "Netherite Leggings")));
-            itemNames.add(new ItemName(Material.NETHERITE_PICKAXE, langConfig.getString("item.minecraft.netherite_pickaxe", "Netherite Pickaxe")));
-            itemNames.add(new ItemName(Material.NETHERITE_SCRAP, langConfig.getString("item.minecraft.netherite_scrap", "Netherite Scrap")));
-            itemNames.add(new ItemName(Material.NETHERITE_SHOVEL, langConfig.getString("item.minecraft.netherite_shovel", "Netherite Shovel")));
-            itemNames.add(new ItemName(Material.NETHERITE_SWORD, langConfig.getString("item.minecraft.netherite_sword", "Netherite Sword")));
-            itemNames.add(new ItemName(Material.PIGLIN_SPAWN_EGG, langConfig.getString("item.minecraft.piglin_spawn_egg", "Piglin Spawn Egg")));
-            itemNames.add(new ItemName(Material.POLISHED_BASALT, langConfig.getString("block.minecraft.polished_basalt", "Polished Basalt")));
-            itemNames.add(new ItemName(Material.POLISHED_BLACKSTONE, langConfig.getString("block.minecraft.polished_blackstone", "Polished Blackstone")));
-            itemNames.add(new ItemName(Material.POLISHED_BLACKSTONE_BRICK_SLAB, langConfig.getString("block.minecraft.polished_blackstone_brick_slab", "Polished Blackstone Brick Slab")));
-            itemNames.add(new ItemName(Material.POLISHED_BLACKSTONE_BRICK_STAIRS, langConfig.getString("block.minecraft.polished_blackstone_brick_stairs", "Polished Blackstone Brick Stairs")));
-            itemNames.add(new ItemName(Material.POLISHED_BLACKSTONE_BRICK_WALL, langConfig.getString("block.minecraft.polished_blackstone_brick_wall", "Polished Blackstone Brick Wall")));
-            itemNames.add(new ItemName(Material.POLISHED_BLACKSTONE_BRICKS, langConfig.getString("block.minecraft.polished_blackstone_bricks", "Polished Blackstone Bricks")));
-            itemNames.add(new ItemName(Material.POLISHED_BLACKSTONE_BUTTON, langConfig.getString("block.minecraft.polished_blackstone_button", "Polished Blackstone Button")));
-            itemNames.add(new ItemName(Material.POLISHED_BLACKSTONE_PRESSURE_PLATE, langConfig.getString("block.minecraft.polished_blackstone_pressure_plate", "Polished Blackstone Pressure Plate")));
-            itemNames.add(new ItemName(Material.POLISHED_BLACKSTONE_SLAB, langConfig.getString("block.minecraft.polished_blackstone_slab", "Polished Blackstone Slab")));
-            itemNames.add(new ItemName(Material.POLISHED_BLACKSTONE_STAIRS, langConfig.getString("block.minecraft.polished_blackstone_stairs", "Polished Blackstone Stairs")));
-            itemNames.add(new ItemName(Material.POLISHED_BLACKSTONE_WALL, langConfig.getString("block.minecraft.polished_blackstone_wall", "Polished Blackstone Wall")));
-            itemNames.add(new ItemName(Material.POTTED_CRIMSON_FUNGUS, langConfig.getString("block.minecraft.potted_crimson_fungus", "Potted Crimson Fungus")));
-            itemNames.add(new ItemName(Material.POTTED_CRIMSON_ROOTS, langConfig.getString("block.minecraft.potted_crimson_roots", "Potted Crimson Roots")));
-            itemNames.add(new ItemName(Material.POTTED_WARPED_FUNGUS, langConfig.getString("block.minecraft.potted_warped_fungus", "Potted Warped Fungus")));
-            itemNames.add(new ItemName(Material.POTTED_WARPED_ROOTS, langConfig.getString("block.minecraft.potted_warped_roots", "Potted Warped Roots")));
-            itemNames.add(new ItemName(Material.QUARTZ_BRICKS, langConfig.getString("block.minecraft.quartz_bricks", "Quartz Bricks")));
-            itemNames.add(new ItemName(Material.RESPAWN_ANCHOR, langConfig.getString("block.minecraft.respawn_anchor", "Respawn Anchor")));
-            itemNames.add(new ItemName(Material.SHROOMLIGHT, langConfig.getString("block.minecraft.shroomlight", "Shroomlight")));
-            itemNames.add(new ItemName(Material.SOUL_CAMPFIRE, langConfig.getString("block.minecraft.soul_campfire", "Soul Campfire")));
-            itemNames.add(new ItemName(Material.SOUL_FIRE, langConfig.getString("block.minecraft.soul_fire", "Soul Fire")));
-            itemNames.add(new ItemName(Material.SOUL_LANTERN, langConfig.getString("block.minecraft.soul_lantern", "Soul Lantern")));
-            itemNames.add(new ItemName(Material.SOUL_SOIL, langConfig.getString("block.minecraft.soul_soil", "Soul Soil")));
-            itemNames.add(new ItemName(Material.SOUL_TORCH, langConfig.getString("block.minecraft.soul_torch", "Soul Torch")));
-            itemNames.add(new ItemName(Material.SOUL_WALL_TORCH, langConfig.getString("block.minecraft.soul_wall_torch", "Soul Wall Torch")));
-            itemNames.add(new ItemName(Material.STRIDER_SPAWN_EGG, langConfig.getString("item.minecraft.strider_spawn_egg", "Strider Spawn Egg")));
-            itemNames.add(new ItemName(Material.STRIPPED_CRIMSON_HYPHAE, langConfig.getString("block.minecraft.stripped_crimson_hyphae", "Stripped Crimson Hyphae")));
-            itemNames.add(new ItemName(Material.STRIPPED_CRIMSON_STEM, langConfig.getString("block.minecraft.stripped_crimson_stem", "Stripped Crimson Stem")));
-            itemNames.add(new ItemName(Material.STRIPPED_WARPED_HYPHAE, langConfig.getString("block.minecraft.stripped_warped_hyphae", "Stripped Warped Hyphae")));
-            itemNames.add(new ItemName(Material.STRIPPED_WARPED_STEM, langConfig.getString("block.minecraft.stripped_warped_stem", "Stripped Warped Stem")));
-            itemNames.add(new ItemName(Material.TARGET, langConfig.getString("block.minecraft.target", "Target")));
-            itemNames.add(new ItemName(Material.TWISTING_VINES, langConfig.getString("block.minecraft.twisting_vines", "Twisting Vines")));
-            itemNames.add(new ItemName(Material.TWISTING_VINES_PLANT, langConfig.getString("block.minecraft.twisting_vines_plant", "Twisting Vines Plant")));
-            itemNames.add(new ItemName(Material.WARPED_BUTTON, langConfig.getString("block.minecraft.warped_button", "Warped Button")));
-            itemNames.add(new ItemName(Material.WARPED_DOOR, langConfig.getString("block.minecraft.warped_door", "Warped Door")));
-            itemNames.add(new ItemName(Material.WARPED_FENCE, langConfig.getString("block.minecraft.warped_fence", "Warped Fence")));
-            itemNames.add(new ItemName(Material.WARPED_FENCE_GATE, langConfig.getString("block.minecraft.warped_fence_gate", "Warped Fence Gate")));
-            itemNames.add(new ItemName(Material.WARPED_FUNGUS, langConfig.getString("block.minecraft.warped_fungus", "Warped Fungus")));
-            itemNames.add(new ItemName(Material.WARPED_FUNGUS_ON_A_STICK, langConfig.getString("item.minecraft.warped_fungus_on_a_stick", "Warped Fungus on a Stick")));
-            itemNames.add(new ItemName(Material.WARPED_HYPHAE, langConfig.getString("block.minecraft.warped_hyphae", "Warped Hyphae")));
-            itemNames.add(new ItemName(Material.WARPED_NYLIUM, langConfig.getString("block.minecraft.warped_nylium", "Warped Nylium")));
-            itemNames.add(new ItemName(Material.WARPED_PLANKS, langConfig.getString("block.minecraft.warped_planks", "Warped Planks")));
-            itemNames.add(new ItemName(Material.WARPED_PRESSURE_PLATE, langConfig.getString("block.minecraft.warped_pressure_plate", "Warped Pressure Plate")));
-            itemNames.add(new ItemName(Material.WARPED_ROOTS, langConfig.getString("block.minecraft.warped_roots", "Warped Roots")));
-            itemNames.add(new ItemName(Material.WARPED_SIGN, langConfig.getString("block.minecraft.warped_sign", "Warped Sign")));
-            itemNames.add(new ItemName(Material.WARPED_SLAB, langConfig.getString("block.minecraft.warped_slab", "Warped Slab")));
-            itemNames.add(new ItemName(Material.WARPED_STAIRS, langConfig.getString("block.minecraft.warped_stairs", "Warped Stairs")));
-            itemNames.add(new ItemName(Material.WARPED_STEM, langConfig.getString("block.minecraft.warped_stem", "Warped Stem")));
-            itemNames.add(new ItemName(Material.WARPED_TRAPDOOR, langConfig.getString("block.minecraft.warped_trapdoor", "Warped Trapdoor")));
-            itemNames.add(new ItemName(Material.WARPED_WALL_SIGN, langConfig.getString("block.minecraft.warped_wall_sign", "Warped Wall Sign")));
-            itemNames.add(new ItemName(Material.WARPED_WART_BLOCK, langConfig.getString("block.minecraft.warped_wart_block", "Warped Wart Block")));
-            itemNames.add(new ItemName(Material.WEEPING_VINES, langConfig.getString("block.minecraft.weeping_vines", "Weeping Vines")));
-            itemNames.add(new ItemName(Material.WEEPING_VINES_PLANT, langConfig.getString("block.minecraft.weeping_vines_plant", "Weeping Vines Plant")));
-            itemNames.add(new ItemName(Material.ZOGLIN_SPAWN_EGG, langConfig.getString("item.minecraft.zoglin_spawn_egg", "Zoglin Spawn Egg")));
-            itemNames.add(new ItemName(Material.ZOMBIFIED_PIGLIN_SPAWN_EGG, langConfig.getString("item.minecraft.zombified_piglin_spawn_egg", "Zombified Piglin Spawn Egg")));
-
-            if (Utils.getMajorVersion() > 16 || Utils.getRevision() >= 2) {
-                // Add 1.16.2 item names
-                itemNames.add(new ItemName(Material.PIGLIN_BRUTE_SPAWN_EGG, langConfig.getString("item.minecraft.piglin_brute_spawn_egg", "Piglin Brute Spawn Egg")));
-            }
-        } else {
-            // Add pre-1.16 item names that don't exist anymore
-            itemNames.add(new ItemName(Material.valueOf("ZOMBIE_PIGMAN_SPAWN_EGG"), langConfig.getString("item.minecraft.zombie_pigman_spawn_egg", "Zombie Pigman Spawn Egg")));
-        }
-
-        if (Utils.getMajorVersion() >= 17) {
-            itemNames.add(new ItemName(Material.AMETHYST_BLOCK, langConfig.getString("block.minecraft.amethyst_block", "Block of Amethyst")));
-            itemNames.add(new ItemName(Material.AMETHYST_CLUSTER, langConfig.getString("block.minecraft.amethyst_cluster", "Amethyst Cluster")));
-            itemNames.add(new ItemName(Material.AZALEA, langConfig.getString("block.minecraft.azalea", "Azalea")));
-            itemNames.add(new ItemName(Material.AZALEA_LEAVES, langConfig.getString("block.minecraft.azalea_leaves", "Azalea Leaves")));
-            itemNames.add(new ItemName(Material.BIG_DRIPLEAF, langConfig.getString("block.minecraft.big_dripleaf", "Big Dripleaf")));
-            itemNames.add(new ItemName(Material.BIG_DRIPLEAF_STEM, langConfig.getString("block.minecraft.big_dripleaf_stem", "Big Dripleaf Stem")));
-            itemNames.add(new ItemName(Material.BLACK_BANNER, langConfig.getString("block.minecraft.black_banner", "Black Banner")));
-            itemNames.add(new ItemName(Material.BLACK_CANDLE, langConfig.getString("block.minecraft.black_candle", "Black Candle")));
-            itemNames.add(new ItemName(Material.BLACK_CANDLE_CAKE, langConfig.getString("block.minecraft.black_candle_cake", "Cake with Black Candle")));
-            itemNames.add(new ItemName(Material.BLUE_BANNER, langConfig.getString("block.minecraft.blue_banner", "Blue Banner")));
-            itemNames.add(new ItemName(Material.BLUE_CANDLE, langConfig.getString("block.minecraft.blue_candle", "Blue Candle")));
-            itemNames.add(new ItemName(Material.BLUE_CANDLE_CAKE, langConfig.getString("block.minecraft.blue_candle_cake", "Cake with Blue Candle")));
-            itemNames.add(new ItemName(Material.BRAIN_CORAL_WALL_FAN, langConfig.getString("block.minecraft.brain_coral_wall_fan", "Brain Coral Wall Fan")));
-            itemNames.add(new ItemName(Material.BROWN_BANNER, langConfig.getString("block.minecraft.brown_banner", "Brown Banner")));
-            itemNames.add(new ItemName(Material.BROWN_CANDLE, langConfig.getString("block.minecraft.brown_candle", "Brown Candle")));
-            itemNames.add(new ItemName(Material.BROWN_CANDLE_CAKE, langConfig.getString("block.minecraft.brown_candle_cake", "Cake with Brown Candle")));
-            itemNames.add(new ItemName(Material.BUBBLE_CORAL_WALL_FAN, langConfig.getString("block.minecraft.bubble_coral_wall_fan", "Bubble Coral Wall Fan")));
-            itemNames.add(new ItemName(Material.BUDDING_AMETHYST, langConfig.getString("block.minecraft.budding_amethyst", "Budding Amethyst")));
-            itemNames.add(new ItemName(Material.CALCITE, langConfig.getString("block.minecraft.calcite", "Calcite")));
-            itemNames.add(new ItemName(Material.CANDLE, langConfig.getString("block.minecraft.candle", "Candle")));
-            itemNames.add(new ItemName(Material.CANDLE_CAKE, langConfig.getString("block.minecraft.candle_cake", "Cake with Candle")));
-            itemNames.add(new ItemName(Material.CAVE_VINES, langConfig.getString("block.minecraft.cave_vines", "Cave Vines")));
-            itemNames.add(new ItemName(Material.CAVE_VINES_PLANT, langConfig.getString("block.minecraft.cave_vines_plant", "Cave Vines Plant")));
-            itemNames.add(new ItemName(Material.CHISELED_DEEPSLATE, langConfig.getString("block.minecraft.chiseled_deepslate", "Chiseled Deepslate")));
-            itemNames.add(new ItemName(Material.COBBLED_DEEPSLATE, langConfig.getString("block.minecraft.cobbled_deepslate", "Cobbled Deepslate")));
-            itemNames.add(new ItemName(Material.COBBLED_DEEPSLATE_SLAB, langConfig.getString("block.minecraft.cobbled_deepslate_slab", "Cobbled Deepslate Slab")));
-            itemNames.add(new ItemName(Material.COBBLED_DEEPSLATE_STAIRS, langConfig.getString("block.minecraft.cobbled_deepslate_stairs", "Cobbled Deepslate Stairs")));
-            itemNames.add(new ItemName(Material.COBBLED_DEEPSLATE_WALL, langConfig.getString("block.minecraft.cobbled_deepslate_wall", "Cobbled Deepslate Wall")));
-            itemNames.add(new ItemName(Material.COPPER_BLOCK, langConfig.getString("block.minecraft.copper_block", "Block of Copper")));
-            itemNames.add(new ItemName(Material.COPPER_ORE, langConfig.getString("block.minecraft.copper_ore", "Copper Ore")));
-            itemNames.add(new ItemName(Material.CRACKED_DEEPSLATE_BRICKS, langConfig.getString("block.minecraft.cracked_deepslate_bricks", "Cracked Deepslate Bricks")));
-            itemNames.add(new ItemName(Material.CRACKED_DEEPSLATE_TILES, langConfig.getString("block.minecraft.cracked_deepslate_tiles", "Cracked Deepslate Tiles")));
-            itemNames.add(new ItemName(Material.CUT_COPPER, langConfig.getString("block.minecraft.cut_copper", "Cut Copper")));
-            itemNames.add(new ItemName(Material.CUT_COPPER_SLAB, langConfig.getString("block.minecraft.cut_copper_slab", "Cut Copper Slab")));
-            itemNames.add(new ItemName(Material.CUT_COPPER_STAIRS, langConfig.getString("block.minecraft.cut_copper_stairs", "Cut Copper Stairs")));
-            itemNames.add(new ItemName(Material.CYAN_BANNER, langConfig.getString("block.minecraft.cyan_banner", "Cyan Banner")));
-            itemNames.add(new ItemName(Material.CYAN_CANDLE, langConfig.getString("block.minecraft.cyan_candle", "Cyan Candle")));
-            itemNames.add(new ItemName(Material.CYAN_CANDLE_CAKE, langConfig.getString("block.minecraft.cyan_candle_cake", "Cake with Cyan Candle")));
-            itemNames.add(new ItemName(Material.DEAD_BRAIN_CORAL_FAN, langConfig.getString("block.minecraft.dead_brain_coral_fan", "Dead Brain Coral Fan")));
-            itemNames.add(new ItemName(Material.DEAD_BRAIN_CORAL_WALL_FAN, langConfig.getString("block.minecraft.dead_brain_coral_wall_fan", "Dead Brain Coral Wall Fan")));
-            itemNames.add(new ItemName(Material.DEAD_BUBBLE_CORAL_FAN, langConfig.getString("block.minecraft.dead_bubble_coral_fan", "Dead Bubble Coral Fan")));
-            itemNames.add(new ItemName(Material.DEAD_BUBBLE_CORAL_WALL_FAN, langConfig.getString("block.minecraft.dead_bubble_coral_wall_fan", "Dead Bubble Coral Wall Fan")));
-            itemNames.add(new ItemName(Material.DEAD_FIRE_CORAL_FAN, langConfig.getString("block.minecraft.dead_fire_coral_fan", "Dead Fire Coral Fan")));
-            itemNames.add(new ItemName(Material.DEAD_FIRE_CORAL_WALL_FAN, langConfig.getString("block.minecraft.dead_fire_coral_wall_fan", "Dead Fire Coral Wall Fan")));
-            itemNames.add(new ItemName(Material.DEAD_HORN_CORAL_FAN, langConfig.getString("block.minecraft.dead_horn_coral_fan", "Dead Horn Coral Fan")));
-            itemNames.add(new ItemName(Material.DEAD_HORN_CORAL_WALL_FAN, langConfig.getString("block.minecraft.dead_horn_coral_wall_fan", "Dead Horn Coral Wall Fan")));
-            itemNames.add(new ItemName(Material.DEAD_TUBE_CORAL_FAN, langConfig.getString("block.minecraft.dead_tube_coral_fan", "Dead Tube Coral Fan")));
-            itemNames.add(new ItemName(Material.DEAD_TUBE_CORAL_WALL_FAN, langConfig.getString("block.minecraft.dead_tube_coral_wall_fan", "Dead Tube Coral Wall Fan")));
-            itemNames.add(new ItemName(Material.DEEPSLATE, langConfig.getString("block.minecraft.deepslate", "Deepslate")));
-            itemNames.add(new ItemName(Material.DEEPSLATE_BRICK_SLAB, langConfig.getString("block.minecraft.deepslate_brick_slab", "Deepslate Brick Slab")));
-            itemNames.add(new ItemName(Material.DEEPSLATE_BRICK_STAIRS, langConfig.getString("block.minecraft.deepslate_brick_stairs", "Deepslate Brick Stairs")));
-            itemNames.add(new ItemName(Material.DEEPSLATE_BRICK_WALL, langConfig.getString("block.minecraft.deepslate_brick_wall", "Deepslate Brick Wall")));
-            itemNames.add(new ItemName(Material.DEEPSLATE_BRICKS, langConfig.getString("block.minecraft.deepslate_bricks", "Deepslate Bricks")));
-            itemNames.add(new ItemName(Material.DEEPSLATE_COAL_ORE, langConfig.getString("block.minecraft.deepslate_coal_ore", "Deepslate Coal Ore")));
-            itemNames.add(new ItemName(Material.DEEPSLATE_COPPER_ORE, langConfig.getString("block.minecraft.deepslate_copper_ore", "Deepslate Copper Ore")));
-            itemNames.add(new ItemName(Material.DEEPSLATE_DIAMOND_ORE, langConfig.getString("block.minecraft.deepslate_diamond_ore", "Deepslate Diamond Ore")));
-            itemNames.add(new ItemName(Material.DEEPSLATE_EMERALD_ORE, langConfig.getString("block.minecraft.deepslate_emerald_ore", "Deepslate Emerald Ore")));
-            itemNames.add(new ItemName(Material.DEEPSLATE_GOLD_ORE, langConfig.getString("block.minecraft.deepslate_gold_ore", "Deepslate Gold Ore")));
-            itemNames.add(new ItemName(Material.DEEPSLATE_IRON_ORE, langConfig.getString("block.minecraft.deepslate_iron_ore", "Deepslate Iron Ore")));
-            itemNames.add(new ItemName(Material.DEEPSLATE_LAPIS_ORE, langConfig.getString("block.minecraft.deepslate_lapis_ore", "Deepslate Lapis Lazuli Ore")));
-            itemNames.add(new ItemName(Material.DEEPSLATE_REDSTONE_ORE, langConfig.getString("block.minecraft.deepslate_redstone_ore", "Deepslate Redstone Ore")));
-            itemNames.add(new ItemName(Material.DEEPSLATE_TILE_SLAB, langConfig.getString("block.minecraft.deepslate_tile_slab", "Deepslate Tile Slab")));
-            itemNames.add(new ItemName(Material.DEEPSLATE_TILE_STAIRS, langConfig.getString("block.minecraft.deepslate_tile_stairs", "Deepslate Tile Stairs")));
-            itemNames.add(new ItemName(Material.DEEPSLATE_TILE_WALL, langConfig.getString("block.minecraft.deepslate_tile_wall", "Deepslate Tile Wall")));
-            itemNames.add(new ItemName(Material.DEEPSLATE_TILES, langConfig.getString("block.minecraft.deepslate_tiles", "Deepslate Tiles")));
-            itemNames.add(new ItemName(Material.DIRT_PATH, langConfig.getString("block.minecraft.dirt_path", "Dirt Path")));
-            itemNames.add(new ItemName(Material.DRIPSTONE_BLOCK, langConfig.getString("block.minecraft.dripstone_block", "Dripstone Block")));
-            itemNames.add(new ItemName(Material.EXPOSED_COPPER, langConfig.getString("block.minecraft.exposed_copper", "Exposed Copper")));
-            itemNames.add(new ItemName(Material.EXPOSED_CUT_COPPER, langConfig.getString("block.minecraft.exposed_cut_copper", "Exposed Cut Copper")));
-            itemNames.add(new ItemName(Material.EXPOSED_CUT_COPPER_SLAB, langConfig.getString("block.minecraft.exposed_cut_copper_slab", "Exposed Cut Copper Slab")));
-            itemNames.add(new ItemName(Material.EXPOSED_CUT_COPPER_STAIRS, langConfig.getString("block.minecraft.exposed_cut_copper_stairs", "Exposed Cut Copper Stairs")));
-            itemNames.add(new ItemName(Material.FIRE_CORAL_WALL_FAN, langConfig.getString("block.minecraft.fire_coral_wall_fan", "Fire Coral Wall Fan")));
-            itemNames.add(new ItemName(Material.FLOWERING_AZALEA, langConfig.getString("block.minecraft.flowering_azalea", "Flowering Azalea")));
-            itemNames.add(new ItemName(Material.FLOWERING_AZALEA_LEAVES, langConfig.getString("block.minecraft.flowering_azalea_leaves", "Flowering Azalea Leaves")));
-            itemNames.add(new ItemName(Material.GLOW_LICHEN, langConfig.getString("block.minecraft.glow_lichen", "Glow Lichen")));
-            itemNames.add(new ItemName(Material.GRAY_BANNER, langConfig.getString("block.minecraft.gray_banner", "Gray Banner")));
-            itemNames.add(new ItemName(Material.GRAY_CANDLE, langConfig.getString("block.minecraft.gray_candle", "Gray Candle")));
-            itemNames.add(new ItemName(Material.GRAY_CANDLE_CAKE, langConfig.getString("block.minecraft.gray_candle_cake", "Cake with Gray Candle")));
-            itemNames.add(new ItemName(Material.GREEN_BANNER, langConfig.getString("block.minecraft.green_banner", "Green Banner")));
-            itemNames.add(new ItemName(Material.GREEN_CANDLE, langConfig.getString("block.minecraft.green_candle", "Green Candle")));
-            itemNames.add(new ItemName(Material.GREEN_CANDLE_CAKE, langConfig.getString("block.minecraft.green_candle_cake", "Cake with Green Candle")));
-            itemNames.add(new ItemName(Material.HANGING_ROOTS, langConfig.getString("block.minecraft.hanging_roots", "Hanging Roots")));
-            itemNames.add(new ItemName(Material.HORN_CORAL_WALL_FAN, langConfig.getString("block.minecraft.horn_coral_wall_fan", "Horn Coral Wall Fan")));
-            itemNames.add(new ItemName(Material.INFESTED_DEEPSLATE, langConfig.getString("block.minecraft.infested_deepslate", "Infested Deepslate")));
-            itemNames.add(new ItemName(Material.LARGE_AMETHYST_BUD, langConfig.getString("block.minecraft.large_amethyst_bud", "Large Amethyst Bud")));
-            itemNames.add(new ItemName(Material.LAVA_CAULDRON, langConfig.getString("block.minecraft.lava_cauldron", "Lava Cauldron")));
-            itemNames.add(new ItemName(Material.LIGHT, langConfig.getString("block.minecraft.light", "Light")));
-            itemNames.add(new ItemName(Material.LIGHT_BLUE_BANNER, langConfig.getString("block.minecraft.light_blue_banner", "Light Blue Banner")));
-            itemNames.add(new ItemName(Material.LIGHT_BLUE_CANDLE, langConfig.getString("block.minecraft.light_blue_candle", "Light Blue Candle")));
-            itemNames.add(new ItemName(Material.LIGHT_BLUE_CANDLE_CAKE, langConfig.getString("block.minecraft.light_blue_candle_cake", "Cake with Light Blue Candle")));
-            itemNames.add(new ItemName(Material.LIGHT_GRAY_BANNER, langConfig.getString("block.minecraft.light_gray_banner", "Light Gray Banner")));
-            itemNames.add(new ItemName(Material.LIGHT_GRAY_CANDLE, langConfig.getString("block.minecraft.light_gray_candle", "Light Gray Candle")));
-            itemNames.add(new ItemName(Material.LIGHT_GRAY_CANDLE_CAKE, langConfig.getString("block.minecraft.light_gray_candle_cake", "Cake with Light Gray Candle")));
-            itemNames.add(new ItemName(Material.LIGHTNING_ROD, langConfig.getString("block.minecraft.lightning_rod", "Lightning Rod")));
-            itemNames.add(new ItemName(Material.LIME_BANNER, langConfig.getString("block.minecraft.lime_banner", "Lime Banner")));
-            itemNames.add(new ItemName(Material.LIME_CANDLE, langConfig.getString("block.minecraft.lime_candle", "Lime Candle")));
-            itemNames.add(new ItemName(Material.LIME_CANDLE_CAKE, langConfig.getString("block.minecraft.lime_candle_cake", "Cake with Lime Candle")));
-            itemNames.add(new ItemName(Material.MAGENTA_BANNER, langConfig.getString("block.minecraft.magenta_banner", "Magenta Banner")));
-            itemNames.add(new ItemName(Material.MAGENTA_CANDLE, langConfig.getString("block.minecraft.magenta_candle", "Magenta Candle")));
-            itemNames.add(new ItemName(Material.MAGENTA_CANDLE_CAKE, langConfig.getString("block.minecraft.magenta_candle_cake", "Cake with Magenta Candle")));
-            itemNames.add(new ItemName(Material.MEDIUM_AMETHYST_BUD, langConfig.getString("block.minecraft.medium_amethyst_bud", "Medium Amethyst Bud")));
-            itemNames.add(new ItemName(Material.MOSS_BLOCK, langConfig.getString("block.minecraft.moss_block", "Moss Block")));
-            itemNames.add(new ItemName(Material.MOSS_CARPET, langConfig.getString("block.minecraft.moss_carpet", "Moss Carpet")));
-            itemNames.add(new ItemName(Material.ORANGE_BANNER, langConfig.getString("block.minecraft.orange_banner", "Orange Banner")));
-            itemNames.add(new ItemName(Material.ORANGE_CANDLE, langConfig.getString("block.minecraft.orange_candle", "Orange Candle")));
-            itemNames.add(new ItemName(Material.ORANGE_CANDLE_CAKE, langConfig.getString("block.minecraft.orange_candle_cake", "Cake with Orange Candle")));
-            itemNames.add(new ItemName(Material.OXIDIZED_COPPER, langConfig.getString("block.minecraft.oxidized_copper", "Oxidized Copper")));
-            itemNames.add(new ItemName(Material.OXIDIZED_CUT_COPPER, langConfig.getString("block.minecraft.oxidized_cut_copper", "Oxidized Cut Copper")));
-            itemNames.add(new ItemName(Material.OXIDIZED_CUT_COPPER_SLAB, langConfig.getString("block.minecraft.oxidized_cut_copper_slab", "Oxidized Cut Copper Slab")));
-            itemNames.add(new ItemName(Material.OXIDIZED_CUT_COPPER_STAIRS, langConfig.getString("block.minecraft.oxidized_cut_copper_stairs", "Oxidized Cut Copper Stairs")));
-            itemNames.add(new ItemName(Material.PINK_BANNER, langConfig.getString("block.minecraft.pink_banner", "Pink Banner")));
-            itemNames.add(new ItemName(Material.PINK_CANDLE, langConfig.getString("block.minecraft.pink_candle", "Pink Candle")));
-            itemNames.add(new ItemName(Material.PINK_CANDLE_CAKE, langConfig.getString("block.minecraft.pink_candle_cake", "Cake with Pink Candle")));
-            itemNames.add(new ItemName(Material.POINTED_DRIPSTONE, langConfig.getString("block.minecraft.pointed_dripstone", "Pointed Dripstone")));
-            itemNames.add(new ItemName(Material.POLISHED_DEEPSLATE, langConfig.getString("block.minecraft.polished_deepslate", "Polished Deepslate")));
-            itemNames.add(new ItemName(Material.POLISHED_DEEPSLATE_SLAB, langConfig.getString("block.minecraft.polished_deepslate_slab", "Polished Deepslate Slab")));
-            itemNames.add(new ItemName(Material.POLISHED_DEEPSLATE_STAIRS, langConfig.getString("block.minecraft.polished_deepslate_stairs", "Polished Deepslate Stairs")));
-            itemNames.add(new ItemName(Material.POLISHED_DEEPSLATE_WALL, langConfig.getString("block.minecraft.polished_deepslate_wall", "Polished Deepslate Wall")));
-            itemNames.add(new ItemName(Material.POTTED_AZALEA_BUSH, langConfig.getString("block.minecraft.potted_azalea_bush", "Potted Azalea Bush")));
-            itemNames.add(new ItemName(Material.POTTED_FLOWERING_AZALEA_BUSH, langConfig.getString("block.minecraft.potted_flowering_azalea_bush", "Potted Flowering Azalea")));
-            itemNames.add(new ItemName(Material.POWDER_SNOW, langConfig.getString("block.minecraft.powder_snow", "Powder Snow")));
-            itemNames.add(new ItemName(Material.POWDER_SNOW_CAULDRON, langConfig.getString("block.minecraft.powder_snow_cauldron", "Powder Snow Cauldron")));
-            itemNames.add(new ItemName(Material.PURPLE_BANNER, langConfig.getString("block.minecraft.purple_banner", "Purple Banner")));
-            itemNames.add(new ItemName(Material.PURPLE_CANDLE, langConfig.getString("block.minecraft.purple_candle", "Purple Candle")));
-            itemNames.add(new ItemName(Material.PURPLE_CANDLE_CAKE, langConfig.getString("block.minecraft.purple_candle_cake", "Cake with Purple Candle")));
-            itemNames.add(new ItemName(Material.RAW_COPPER_BLOCK, langConfig.getString("block.minecraft.raw_copper_block", "Block of Raw Copper")));
-            itemNames.add(new ItemName(Material.RAW_GOLD_BLOCK, langConfig.getString("block.minecraft.raw_gold_block", "Block of Raw Gold")));
-            itemNames.add(new ItemName(Material.RAW_IRON_BLOCK, langConfig.getString("block.minecraft.raw_iron_block", "Block of Raw Iron")));
-            itemNames.add(new ItemName(Material.RED_BANNER, langConfig.getString("block.minecraft.red_banner", "Red Banner")));
-            itemNames.add(new ItemName(Material.RED_CANDLE, langConfig.getString("block.minecraft.red_candle", "Red Candle")));
-            itemNames.add(new ItemName(Material.RED_CANDLE_CAKE, langConfig.getString("block.minecraft.red_candle_cake", "Cake with Red Candle")));
-            itemNames.add(new ItemName(Material.ROOTED_DIRT, langConfig.getString("block.minecraft.rooted_dirt", "Rooted Dirt")));
-            itemNames.add(new ItemName(Material.SCULK_SENSOR, langConfig.getString("block.minecraft.sculk_sensor", "Sculk Sensor")));
-            itemNames.add(new ItemName(Material.SMALL_AMETHYST_BUD, langConfig.getString("block.minecraft.small_amethyst_bud", "Small Amethyst Bud")));
-            itemNames.add(new ItemName(Material.SMALL_DRIPLEAF, langConfig.getString("block.minecraft.small_dripleaf", "Small Dripleaf")));
-            itemNames.add(new ItemName(Material.SMOOTH_BASALT, langConfig.getString("block.minecraft.smooth_basalt", "Smooth Basalt")));
-            itemNames.add(new ItemName(Material.SPORE_BLOSSOM, langConfig.getString("block.minecraft.spore_blossom", "Spore Blossom")));
-            itemNames.add(new ItemName(Material.STONE_STAIRS, langConfig.getString("block.minecraft.stone_stairs", "Stone Stairs")));
-            itemNames.add(new ItemName(Material.TINTED_GLASS, langConfig.getString("block.minecraft.tinted_glass", "Tinted Glass")));
-            itemNames.add(new ItemName(Material.TUBE_CORAL_WALL_FAN, langConfig.getString("block.minecraft.tube_coral_wall_fan", "Tube Coral Wall Fan")));
-            itemNames.add(new ItemName(Material.TUFF, langConfig.getString("block.minecraft.tuff", "Tuff")));
-            itemNames.add(new ItemName(Material.WATER_CAULDRON, langConfig.getString("block.minecraft.water_cauldron", "Water Cauldron")));
-            itemNames.add(new ItemName(Material.WAXED_COPPER_BLOCK, langConfig.getString("block.minecraft.waxed_copper_block", "Waxed Block of Copper")));
-            itemNames.add(new ItemName(Material.WAXED_CUT_COPPER, langConfig.getString("block.minecraft.waxed_cut_copper", "Waxed Cut Copper")));
-            itemNames.add(new ItemName(Material.WAXED_CUT_COPPER_SLAB, langConfig.getString("block.minecraft.waxed_cut_copper_slab", "Waxed Cut Copper Slab")));
-            itemNames.add(new ItemName(Material.WAXED_CUT_COPPER_STAIRS, langConfig.getString("block.minecraft.waxed_cut_copper_stairs", "Waxed Cut Copper Stairs")));
-            itemNames.add(new ItemName(Material.WAXED_EXPOSED_COPPER, langConfig.getString("block.minecraft.waxed_exposed_copper", "Waxed Exposed Copper")));
-            itemNames.add(new ItemName(Material.WAXED_EXPOSED_CUT_COPPER, langConfig.getString("block.minecraft.waxed_exposed_cut_copper", "Waxed Exposed Cut Copper")));
-            itemNames.add(new ItemName(Material.WAXED_EXPOSED_CUT_COPPER_SLAB, langConfig.getString("block.minecraft.waxed_exposed_cut_copper_slab", "Waxed Exposed Cut Copper Slab")));
-            itemNames.add(new ItemName(Material.WAXED_EXPOSED_CUT_COPPER_STAIRS, langConfig.getString("block.minecraft.waxed_exposed_cut_copper_stairs", "Waxed Exposed Cut Copper Stairs")));
-            itemNames.add(new ItemName(Material.WAXED_OXIDIZED_COPPER, langConfig.getString("block.minecraft.waxed_oxidized_copper", "Waxed Oxidized Copper")));
-            itemNames.add(new ItemName(Material.WAXED_OXIDIZED_CUT_COPPER, langConfig.getString("block.minecraft.waxed_oxidized_cut_copper", "Waxed Oxidized Cut Copper")));
-            itemNames.add(new ItemName(Material.WAXED_OXIDIZED_CUT_COPPER_SLAB, langConfig.getString("block.minecraft.waxed_oxidized_cut_copper_slab", "Waxed Oxidized Cut Copper Slab")));
-            itemNames.add(new ItemName(Material.WAXED_OXIDIZED_CUT_COPPER_STAIRS, langConfig.getString("block.minecraft.waxed_oxidized_cut_copper_stairs", "Waxed Oxidized Cut Copper Stairs")));
-            itemNames.add(new ItemName(Material.WAXED_WEATHERED_COPPER, langConfig.getString("block.minecraft.waxed_weathered_copper", "Waxed Weathered Copper")));
-            itemNames.add(new ItemName(Material.WAXED_WEATHERED_CUT_COPPER, langConfig.getString("block.minecraft.waxed_weathered_cut_copper", "Waxed Weathered Cut Copper")));
-            itemNames.add(new ItemName(Material.WAXED_WEATHERED_CUT_COPPER_SLAB, langConfig.getString("block.minecraft.waxed_weathered_cut_copper_slab", "Waxed Weathered Cut Copper Slab")));
-            itemNames.add(new ItemName(Material.WAXED_WEATHERED_CUT_COPPER_STAIRS, langConfig.getString("block.minecraft.waxed_weathered_cut_copper_stairs", "Waxed Weathered Cut Copper Stairs")));
-            itemNames.add(new ItemName(Material.WEATHERED_COPPER, langConfig.getString("block.minecraft.weathered_copper", "Weathered Copper")));
-            itemNames.add(new ItemName(Material.WEATHERED_CUT_COPPER, langConfig.getString("block.minecraft.weathered_cut_copper", "Weathered Cut Copper")));
-            itemNames.add(new ItemName(Material.WEATHERED_CUT_COPPER_SLAB, langConfig.getString("block.minecraft.weathered_cut_copper_slab", "Weathered Cut Copper Slab")));
-            itemNames.add(new ItemName(Material.WEATHERED_CUT_COPPER_STAIRS, langConfig.getString("block.minecraft.weathered_cut_copper_stairs", "Weathered Cut Copper Stairs")));
-            itemNames.add(new ItemName(Material.WHITE_BANNER, langConfig.getString("block.minecraft.white_banner", "White Banner")));
-            itemNames.add(new ItemName(Material.WHITE_CANDLE, langConfig.getString("block.minecraft.white_candle", "White Candle")));
-            itemNames.add(new ItemName(Material.WHITE_CANDLE_CAKE, langConfig.getString("block.minecraft.white_candle_cake", "Cake with White Candle")));
-            itemNames.add(new ItemName(Material.YELLOW_BANNER, langConfig.getString("block.minecraft.yellow_banner", "Yellow Banner")));
-            itemNames.add(new ItemName(Material.YELLOW_CANDLE, langConfig.getString("block.minecraft.yellow_candle", "Yellow Candle")));
-            itemNames.add(new ItemName(Material.YELLOW_CANDLE_CAKE, langConfig.getString("block.minecraft.yellow_candle_cake", "Cake with Yellow Candle")));
-            itemNames.add(new ItemName(Material.AMETHYST_SHARD, langConfig.getString("item.minecraft.amethyst_shard", "Amethyst Shard")));
-            itemNames.add(new ItemName(Material.AXOLOTL_BUCKET, langConfig.getString("item.minecraft.axolotl_bucket", "Bucket of Axolotl")));
-            itemNames.add(new ItemName(Material.AXOLOTL_SPAWN_EGG, langConfig.getString("item.minecraft.axolotl_spawn_egg", "Axolotl Spawn Egg")));
-            itemNames.add(new ItemName(Material.BUNDLE, langConfig.getString("item.minecraft.bundle", "Bundle")));
-            itemNames.add(new ItemName(Material.COPPER_INGOT, langConfig.getString("item.minecraft.copper_ingot", "Copper Ingot")));
-            itemNames.add(new ItemName(Material.GLOW_BERRIES, langConfig.getString("item.minecraft.glow_berries", "Glow Berries")));
-            itemNames.add(new ItemName(Material.GLOW_INK_SAC, langConfig.getString("item.minecraft.glow_ink_sac", "Glow Ink Sac")));
-            itemNames.add(new ItemName(Material.GLOW_ITEM_FRAME, langConfig.getString("item.minecraft.glow_item_frame", "Glow Item Frame")));
-            itemNames.add(new ItemName(Material.GLOW_SQUID_SPAWN_EGG, langConfig.getString("item.minecraft.glow_squid_spawn_egg", "Glow Squid Spawn Egg")));
-            itemNames.add(new ItemName(Material.GOAT_SPAWN_EGG, langConfig.getString("item.minecraft.goat_spawn_egg", "Goat Spawn Egg")));
-            itemNames.add(new ItemName(Material.PIGLIN_BANNER_PATTERN, langConfig.getString("item.minecraft.piglin_banner_pattern", "Banner Pattern")));
-            itemNames.add(new ItemName(Material.POWDER_SNOW_BUCKET, langConfig.getString("item.minecraft.powder_snow_bucket", "Powder Snow Bucket")));
-            itemNames.add(new ItemName(Material.RAW_COPPER, langConfig.getString("item.minecraft.raw_copper", "Raw Copper")));
-            itemNames.add(new ItemName(Material.RAW_GOLD, langConfig.getString("item.minecraft.raw_gold", "Raw Gold")));
-            itemNames.add(new ItemName(Material.RAW_IRON, langConfig.getString("item.minecraft.raw_iron", "Raw Iron")));
-            itemNames.add(new ItemName(Material.SHIELD, langConfig.getString("item.minecraft.shield", "Shield")));
-            itemNames.add(new ItemName(Material.SPYGLASS, langConfig.getString("item.minecraft.spyglass", "Spyglass")));
-        } else {
-            itemNames.add(new ItemName(Material.valueOf("GRASS_PATH"), langConfig.getString("block.minecraft.grass_path", "Grass Path")));
-        }
+        // Item names that were renamed in later versions
+        itemNames.add(new ItemName(Material.valueOf("ZOMBIE_PIGMAN_SPAWN_EGG"), langConfig.getString("item.minecraft.zombie_pigman_spawn_egg", "Zombie Pigman Spawn Egg")));
+        itemNames.add(new ItemName(Material.valueOf("GRASS_PATH"), langConfig.getString("block.minecraft.grass_path", "Grass Path")));
 
         // Add Enchantment Names
         enchantmentNames.add(new EnchantmentName(Enchantment.DAMAGE_ALL, langConfig.getString("enchantment.minecraft.sharpness", "Sharpness")));
@@ -2293,11 +1994,6 @@ public class LanguageUtils {
         enchantmentNames.add(new EnchantmentName(Enchantment.IMPALING, langConfig.getString("enchantment.minecraft.impaling", "Impaling")));
         enchantmentNames.add(new EnchantmentName(Enchantment.RIPTIDE, langConfig.getString("enchantment.minecraft.riptide", "Riptide")));
         enchantmentNames.add(new EnchantmentName(Enchantment.CHANNELING, langConfig.getString("enchantment.minecraft.channeling", "Channeling")));
-
-        if (Utils.getMajorVersion() >= 17) {
-            // Add 1.17 enchantment name
-            enchantmentNames.add(new EnchantmentName(Enchantment.SOUL_SPEED, langConfig.getString("enchantment.minecraft.soul_speed", "Soul Speed")));
-        }
 
         if (Utils.getMajorVersion() >= 14) {
             // Add 1.14 enchantment names
@@ -2468,10 +2164,6 @@ public class LanguageUtils {
         musicDiscNames.add(new MusicDiscName(Material.MUSIC_DISC_11, langConfig.getString("item.minecraft.music_disc_11.desc", "C418 - 11")));
         musicDiscNames.add(new MusicDiscName(Material.MUSIC_DISC_WAIT, langConfig.getString("item.minecraft.music_disc_wait.desc", "C418 - wait")));
 
-        if (Utils.getMajorVersion() >= 16) {
-            musicDiscNames.add(new MusicDiscName(Material.MUSIC_DISC_PIGSTEP, langConfig.getString("item.minecraft.music_disc_pigstep.desc", "Lena Raine - Pigstep")));
-        }
-
         if (Utils.getMajorVersion() >= 14) {
             // Add Banner Pattern Names
             bannerPatternNames.add(new BannerPatternName(Material.CREEPER_BANNER_PATTERN, langConfig.getString("item.minecraft.creeper_banner_pattern.desc", "Creeper Charge")));
@@ -2479,10 +2171,6 @@ public class LanguageUtils {
             bannerPatternNames.add(new BannerPatternName(Material.FLOWER_BANNER_PATTERN, langConfig.getString("item.minecraft.flower_banner_pattern.desc", "Flower Charge")));
             bannerPatternNames.add(new BannerPatternName(Material.MOJANG_BANNER_PATTERN, langConfig.getString("item.minecraft.mojang_banner_pattern.desc", "Thing")));
             bannerPatternNames.add(new BannerPatternName(Material.GLOBE_BANNER_PATTERN, langConfig.getString("item.minecraft.globe_banner_pattern.desc", "Globe")));
-
-            if (Utils.getMajorVersion() >= 16) {
-                bannerPatternNames.add(new BannerPatternName(Material.PIGLIN_BANNER_PATTERN, langConfig.getString("item.minecraft.piglin_banner_pattern.desc", "Snout")));
-            }
         }
 
         // Add Book Generation Names
@@ -2588,6 +2276,17 @@ public class LanguageUtils {
         messages.add(new LocalizedMessage(Message.COMMAND_DESC_LIMITS, langConfig.getString("message.commandDescription.limits", "&a/%COMMAND% limits - View shop limits.")));
         messages.add(new LocalizedMessage(Message.COMMAND_DESC_OPEN, langConfig.getString("message.commandDescription.open", "&a/%COMMAND% open - Open a shop.")));
         messages.add(new LocalizedMessage(Message.COMMAND_DESC_CONFIG, langConfig.getString("message.commandDescription.config", "&a/%COMMAND% config <set|add|remove> <property> <value> - Change configuration values.")));
+        messages.add(new LocalizedMessage(Message.COMMAND_DESC_HISTORY, langConfig.getString("message.commandDescription.history", "&a/%COMMAND% history [player] [page] - View the transaction history.")));
+        messages.add(new LocalizedMessage(Message.NO_PERMISSION_HISTORY, langConfig.getString("message.noPermission.history", "&cYou don't have permission to view the transaction history.")));
+        messages.add(new LocalizedMessage(Message.NO_PERMISSION_HISTORY_OTHERS, langConfig.getString("message.noPermission.history-others", "&cYou don't have permission to view other players' transaction history.")));
+        messages.add(new LocalizedMessage(Message.HISTORY_HEADER, langConfig.getString("message.history.header", "&6--- Transaction history of &e%PLAYER% &6(page %PAGE%/%PAGES%) ---")));
+        messages.add(new LocalizedMessage(Message.HISTORY_BOUGHT, langConfig.getString("message.history.bought", "&7%DATE% &f%PLAYER% &abought &6%AMOUNT% x %ITEMNAME%&a for &6%PRICE%&a from &f%VENDOR%")));
+        messages.add(new LocalizedMessage(Message.HISTORY_SOLD, langConfig.getString("message.history.sold", "&7%DATE% &f%PLAYER% &csold &6%AMOUNT% x %ITEMNAME%&c for &6%PRICE%&c to &f%VENDOR%")));
+        messages.add(new LocalizedMessage(Message.HISTORY_FOOTER, langConfig.getString("message.history.footer", "&6Use &e/%COMMAND% history %PLAYER% %PAGE% &6to see the next page.")));
+        messages.add(new LocalizedMessage(Message.HISTORY_EMPTY, langConfig.getString("message.history.empty", "&cNo transactions found.")));
+        messages.add(new LocalizedMessage(Message.HISTORY_DISABLED, langConfig.getString("message.history.disabled", "&cThe transaction history is disabled (enable-economy-log).")));
+        messages.add(new LocalizedMessage(Message.HISTORY_INVALID_PAGE, langConfig.getString("message.history.invalid-page", "&cPage %PAGE% does not exist (%PAGES% pages).")));
+        messages.add(new LocalizedMessage(Message.HISTORY_PLAYER_NOT_FOUND, langConfig.getString("message.history.player-not-found", "&cPlayer %PLAYER% was not found.")));
         messages.add(new LocalizedMessage(Message.CHANGED_CONFIG_SET, langConfig.getString("message.config.set", "&6Changed &a%PROPERTY% &6to &a%VALUE%&6.")));
         messages.add(new LocalizedMessage(Message.CHANGED_CONFIG_REMOVED, langConfig.getString("message.config.removed", "&6Removed &a%VALUE% &6from &a%PROPERTY%&6.")));
         messages.add(new LocalizedMessage(Message.CHANGED_CONFIG_ADDED, langConfig.getString("message.config.added", "&6Added &a%VALUE% &6to &a%PROPERTY%&6.")));

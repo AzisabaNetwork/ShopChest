@@ -14,6 +14,7 @@ import org.bukkit.entity.Player;
 
 import de.epiceric.shopchest.ShopChest;
 import de.epiceric.shopchest.config.Config;
+import de.epiceric.shopchest.utils.Permissions;
 
 class ShopTabCompleter implements TabCompleter {
     private ShopChest plugin;
@@ -49,7 +50,8 @@ class ShopTabCompleter implements TabCompleter {
                     } else {
                         return configSubCommands;
                     }
-                } else if (args[0].equals("removeall")) {
+                } else if (args[0].equals("removeall")
+                        || (args[0].equals("history") && sender.hasPermission(Permissions.HISTORY_OTHER))) {
                     if (!args[1].equals("")) {
                         for (String name : playerNames) {
                             if (name.startsWith(args[1])) {

@@ -118,17 +118,12 @@ public class JsonBuilder {
     private ShopChest plugin;
 
     private final NMSClassResolver nmsClassResolver = new NMSClassResolver();
-    private Class<?> iChatBaseComponentClass = nmsClassResolver.resolveSilent("network.chat.IChatBaseComponent");
-    private Class<?> packetPlayOutChatClass = nmsClassResolver.resolveSilent("network.protocol.game.PacketPlayOutChat");
-    private Class<?> chatSerializerClass = nmsClassResolver.resolveSilent("ChatSerializer", "network.chat.IChatBaseComponent$ChatSerializer");
-    private Class<?> chatMessageTypeClass;
+    private Class<?> iChatBaseComponentClass = nmsClassResolver.resolveSilent("IChatBaseComponent");
+    private Class<?> packetPlayOutChatClass = nmsClassResolver.resolveSilent("PacketPlayOutChat");
+    private Class<?> chatSerializerClass = nmsClassResolver.resolveSilent("ChatSerializer", "IChatBaseComponent$ChatSerializer");
 
     public JsonBuilder(ShopChest plugin) {
         this.plugin = plugin;
-
-        if (Utils.getMajorVersion() >= 16) {
-            chatMessageTypeClass = nmsClassResolver.resolveSilent("network.chat.ChatMessageType");
-        }
 
         Class<?>[] requiredClasses = new Class<?>[] {
           iChatBaseComponentClass, packetPlayOutChatClass, chatSerializerClass
@@ -235,11 +230,7 @@ public class JsonBuilder {
     public void sendJson(Player p) {        
         try {
             Object iChatBaseComponent = chatSerializerClass.getMethod("a", String.class).invoke(null, toString());
-            Object packetPlayOutChat = Utils.getMajorVersion() < 16
-                ? packetPlayOutChatClass.getConstructor(iChatBaseComponentClass).newInstance(iChatBaseComponent)
-                : packetPlayOutChatClass.getConstructor(iChatBaseComponentClass, chatMessageTypeClass, UUID.class)
-                        .newInstance(iChatBaseComponent, (new FieldResolver(chatMessageTypeClass)).resolve("CHAT", "a").get(null), UUID.randomUUID());
-            
+            Object packetPlayOutChat = packetPlayOutChatClass.getConstructor(iChatBaseComponentClass).newInstance(iChatBaseComponent);
             Utils.sendPacket(plugin, packetPlayOutChat, p);
             plugin.debug("Sent JSON: " + toString());
         } catch (ReflectiveOperationException e) {

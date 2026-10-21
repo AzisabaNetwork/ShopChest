@@ -29,13 +29,13 @@ public class ShopItem {
 
     private final NMSClassResolver nmsClassResolver = new NMSClassResolver();
     private final OBCClassResolver obcClassResolver = new OBCClassResolver();
-    private final Class<?> packetPlayOutEntityDestroyClass = nmsClassResolver.resolveSilent("network.protocol.game.PacketPlayOutEntityDestroy");
-    private final Class<?> packetPlayOutEntityVelocityClass = nmsClassResolver.resolveSilent("network.protocol.game.PacketPlayOutEntityVelocity");
-    private final Class<?> packetPlayOutEntityMetadataClass = nmsClassResolver.resolveSilent("network.protocol.game.PacketPlayOutEntityMetadata");
-    private final Class<?> dataWatcherClass = nmsClassResolver.resolveSilent("network.syncher.DataWatcher");
-    private final Class<?> vec3dClass = nmsClassResolver.resolveSilent("world.phys.Vec3D");
+    private final Class<?> packetPlayOutEntityDestroyClass = nmsClassResolver.resolveSilent("PacketPlayOutEntityDestroy");
+    private final Class<?> packetPlayOutEntityVelocityClass = nmsClassResolver.resolveSilent("PacketPlayOutEntityVelocity");
+    private final Class<?> packetPlayOutEntityMetadataClass = nmsClassResolver.resolveSilent("PacketPlayOutEntityMetadata");
+    private final Class<?> dataWatcherClass = nmsClassResolver.resolveSilent("DataWatcher");
+    private final Class<?> vec3dClass = nmsClassResolver.resolveSilent("Vec3D");
     private final Class<?> craftItemStackClass = obcClassResolver.resolveSilent("inventory.CraftItemStack");
-    private final Class<?> nmsItemStackClass = nmsClassResolver.resolveSilent("world.item.ItemStack");
+    private final Class<?> nmsItemStackClass = nmsClassResolver.resolveSilent("ItemStack");
 
     public ShopItem(ShopChest plugin, ItemStack itemStack, Location location) {
         this.plugin = plugin;

@@ -35,6 +35,7 @@ import de.epiceric.shopchest.event.ShopBuySellEvent.Type;
 import de.epiceric.shopchest.shop.Shop;
 import de.epiceric.shopchest.shop.Shop.ShopType;
 import de.epiceric.shopchest.shop.ShopProduct;
+import de.epiceric.shopchest.shop.Transaction;
 import de.epiceric.shopchest.utils.Callback;
 import de.epiceric.shopchest.utils.Utils;
 
@@ -694,6 +695,70 @@ public abstract class Database {
                 callback.callSyncResult(null);
             }
         }
+    }
+
+    /**
+     * Get one page of the transactions a player was involved in, either as
+     * customer or as vendor. The most recent transactions come first.
+     *
+     * @param player   UUID of the player whose transactions to get
+     * @param offset   Number of transactions to skip
+     * @param limit    Maximum number of transactions to return
+     * @param callback Callback that - if succeeded - returns the {@link Transaction.Page}
+     */
+    public void getTransactions(final UUID player, final int offset, final int limit, final Callback<Transaction.Page> callback) {
+        final String where = " WHERE player_uuid = ? OR vendor_uuid = ?";
+        final String queryCount = "SELECT COUNT(*) FROM " + tableLogs + where;
+        final String queryPage = "SELECT time,player_name,product_name,amount,vendor_name,admin,world,x,y,z,price,type FROM "
+                + tableLogs + where + " ORDER BY time DESC, id DESC LIMIT ? OFFSET ?";
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                String uuid = player.toString();
+
+                try (Connection con = dataSource.getConnection();
+                        PreparedStatement psCount = con.prepareStatement(queryCount);
+                        PreparedStatement psPage = con.prepareStatement(queryPage)) {
+                    psCount.setString(1, uuid);
+                    psCount.setString(2, uuid);
+
+                    int total = 0;
+                    try (ResultSet rs = psCount.executeQuery()) {
+                        if (rs.next()) total = rs.getInt(1);
+                    }
+
+                    List<Transaction> transactions = new ArrayList<>();
+                    if (total > offset) {
+                        psPage.setString(1, uuid);
+                        psPage.setString(2, uuid);
+                        psPage.setInt(3, limit);
+                        psPage.setInt(4, offset);
+
+                        try (ResultSet rs = psPage.executeQuery()) {
+                            while (rs.next()) {
+                                transactions.add(new Transaction(rs.getLong("time"), rs.getString("player_name"),
+                                        rs.getString("product_name"), rs.getInt("amount"), rs.getString("vendor_name"),
+                                        rs.getBoolean("admin"), rs.getString("world"), rs.getInt("x"), rs.getInt("y"),
+                                        rs.getInt("z"), rs.getDouble("price"), Type.valueOf(rs.getString("type"))));
+                            }
+                        }
+                    }
+
+                    if (callback != null) {
+                        callback.callSyncResult(new Transaction.Page(transactions, total));
+                    }
+                } catch (SQLException ex) {
+                    if (callback != null) {
+                        callback.callSyncError(ex);
+                    }
+
+                    plugin.getLogger().severe("Failed to get transaction history from database");
+                    plugin.debug("Failed to get transaction history of player \"" + uuid + "\"");
+                    plugin.debug(ex);
+                }
+            }
+        }.runTaskAsynchronously(plugin);
     }
 
     /**

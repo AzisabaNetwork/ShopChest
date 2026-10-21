@@ -1,7 +1,9 @@
 package de.epiceric.shopchest.command;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -20,6 +22,7 @@ import org.bukkit.inventory.ItemStack;
 import de.epiceric.shopchest.ShopChest;
 import de.epiceric.shopchest.config.Config;
 import de.epiceric.shopchest.config.Placeholder;
+import de.epiceric.shopchest.event.ShopBuySellEvent;
 import de.epiceric.shopchest.event.ShopPreCreateEvent;
 import de.epiceric.shopchest.event.ShopPreInfoEvent;
 import de.epiceric.shopchest.event.ShopPreOpenEvent;
@@ -32,6 +35,7 @@ import de.epiceric.shopchest.language.Replacement;
 import de.epiceric.shopchest.shop.Shop;
 import de.epiceric.shopchest.shop.Shop.ShopType;
 import de.epiceric.shopchest.shop.ShopProduct;
+import de.epiceric.shopchest.shop.Transaction;
 import de.epiceric.shopchest.utils.Callback;
 import de.epiceric.shopchest.utils.ClickType;
 import de.epiceric.shopchest.utils.ClickType.CreateClickType;
@@ -43,6 +47,7 @@ import de.epiceric.shopchest.utils.UpdateChecker;
 import de.epiceric.shopchest.utils.Utils;
 
 class ShopCommandExecutor implements CommandExecutor {
+    private static final int HISTORY_PAGE_SIZE = 10;
 
     private ShopChest plugin;
     private ShopUtils shopUtils;
@@ -89,6 +94,8 @@ class ShopCommandExecutor implements CommandExecutor {
                 } else {
                     sender.sendMessage(LanguageUtils.getMessage(Message.NO_PERMISSION_CONFIG));
                 }
+            } else if (subCommand.getName().equalsIgnoreCase("history")) {
+                return history(sender, args);
             } else if (subCommand.getName().equalsIgnoreCase("removeall")) {
                 if (sender.hasPermission(Permissions.REMOVE_OTHER)) {
                     if (args.length >= 2) {
@@ -143,6 +150,141 @@ class ShopCommandExecutor implements CommandExecutor {
         }
 
         return false;
+    }
+
+    /**
+     * Shows a page of the transaction history of a player to the sender.
+     * Usage: {@code history [player] [page]}. The player may only be given if the sender
+     * is allowed to view other players' history; console senders must specify one.
+     * @param sender The command executor
+     * @param args Arguments of the entered command
+     * @return Whether the command was used correctly
+     */
+    private boolean history(CommandSender sender, String[] args) {
+        if (args.length > 3) {
+            return false;
+        }
+
+        String targetName = null;
+        String pageArg = null;
+        if (args.length == 3) {
+            targetName = args[1];
+            pageArg = args[2];
+        } else if (args.length == 2) {
+            if (isInteger(args[1])) {
+                pageArg = args[1];
+            } else {
+                targetName = args[1];
+            }
+        }
+
+        if (targetName == null && !(sender instanceof Player)) {
+            return false;
+        }
+
+        int page = 1;
+        if (pageArg != null) {
+            if (!isInteger(pageArg)) {
+                return false;
+            }
+            page = Integer.parseInt(pageArg);
+        }
+
+        OfflinePlayer target;
+        if (targetName == null || (sender instanceof Player && targetName.equalsIgnoreCase(sender.getName()))) {
+            if (!sender.hasPermission(Permissions.HISTORY)) {
+                sender.sendMessage(LanguageUtils.getMessage(Message.NO_PERMISSION_HISTORY));
+                return true;
+            }
+            target = (Player) sender;
+        } else {
+            if (!sender.hasPermission(Permissions.HISTORY_OTHER)) {
+                sender.sendMessage(LanguageUtils.getMessage(Message.NO_PERMISSION_HISTORY_OTHERS));
+                return true;
+            }
+            target = Bukkit.getOfflinePlayer(targetName);
+            if (!target.isOnline() && !target.hasPlayedBefore()) {
+                sender.sendMessage(LanguageUtils.getMessage(Message.HISTORY_PLAYER_NOT_FOUND,
+                        new Replacement(Placeholder.PLAYER, targetName)));
+                return true;
+            }
+        }
+
+        if (!Config.enableEconomyLog) {
+            sender.sendMessage(LanguageUtils.getMessage(Message.HISTORY_DISABLED));
+            return true;
+        }
+
+        final String playerName = target.getName() != null ? target.getName() : target.getUniqueId().toString();
+        final int requestedPage = page;
+        plugin.debug(sender.getName() + " is viewing the transaction history of " + playerName + " (page " + page + ")");
+
+        if (page < 1) {
+            sender.sendMessage(LanguageUtils.getMessage(Message.HISTORY_INVALID_PAGE,
+                    new Replacement(Placeholder.PAGE, String.valueOf(page)),
+                    new Replacement(Placeholder.PAGES, "1+")));
+            return true;
+        }
+
+        plugin.getShopDatabase().getTransactions(target.getUniqueId(), (page - 1) * HISTORY_PAGE_SIZE, HISTORY_PAGE_SIZE,
+                new Callback<Transaction.Page>(plugin) {
+            @Override
+            public void onResult(Transaction.Page result) {
+                if (result.getTotal() == 0) {
+                    sender.sendMessage(LanguageUtils.getMessage(Message.HISTORY_EMPTY));
+                    return;
+                }
+
+                int pages = (result.getTotal() + HISTORY_PAGE_SIZE - 1) / HISTORY_PAGE_SIZE;
+                if (requestedPage > pages) {
+                    sender.sendMessage(LanguageUtils.getMessage(Message.HISTORY_INVALID_PAGE,
+                            new Replacement(Placeholder.PAGE, String.valueOf(requestedPage)),
+                            new Replacement(Placeholder.PAGES, String.valueOf(pages))));
+                    return;
+                }
+
+                sender.sendMessage(LanguageUtils.getMessage(Message.HISTORY_HEADER,
+                        new Replacement(Placeholder.PLAYER, playerName),
+                        new Replacement(Placeholder.PAGE, String.valueOf(requestedPage)),
+                        new Replacement(Placeholder.PAGES, String.valueOf(pages))));
+
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                for (Transaction t : result.getTransactions()) {
+                    sender.sendMessage(LanguageUtils.getMessage(
+                            t.getType() == ShopBuySellEvent.Type.BUY ? Message.HISTORY_BOUGHT : Message.HISTORY_SOLD,
+                            new Replacement(Placeholder.DATE, dateFormat.format(new Date(t.getTime()))),
+                            new Replacement(Placeholder.PLAYER, t.getPlayerName()),
+                            new Replacement(Placeholder.AMOUNT, String.valueOf(t.getAmount())),
+                            new Replacement(Placeholder.ITEM_NAME, t.getProductName()),
+                            new Replacement(Placeholder.PRICE, String.valueOf(t.getPrice())),
+                            new Replacement(Placeholder.VENDOR, t.getVendorName())));
+                }
+
+                if (requestedPage < pages) {
+                    sender.sendMessage(LanguageUtils.getMessage(Message.HISTORY_FOOTER,
+                            new Replacement(Placeholder.COMMAND, Config.mainCommandName),
+                            new Replacement(Placeholder.PLAYER, playerName),
+                            new Replacement(Placeholder.PAGE, String.valueOf(requestedPage + 1))));
+                }
+            }
+
+            @Override
+            public void onError(Throwable throwable) {
+                sender.sendMessage(LanguageUtils.getMessage(Message.ERROR_OCCURRED,
+                        new Replacement(Placeholder.ERROR, "Failed to get transaction history")));
+            }
+        });
+
+        return true;
+    }
+
+    private static boolean isInteger(String s) {
+        try {
+            Integer.parseInt(s);
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     /**

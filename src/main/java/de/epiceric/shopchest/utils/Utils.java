@@ -1,6 +1,5 @@
 package de.epiceric.shopchest.utils;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -47,12 +46,12 @@ import de.epiceric.shopchest.shop.Shop;
 
 public class Utils {
     static NMSClassResolver nmsClassResolver = new NMSClassResolver();
-    static Class<?> entityClass = nmsClassResolver.resolveSilent("world.entity.Entity");
-    static Class<?> entityArmorStandClass = nmsClassResolver.resolveSilent("world.entity.decoration.EntityArmorStand");
-    static Class<?> entityItemClass = nmsClassResolver.resolveSilent("world.entity.item.EntityItem");
-    static Class<?> dataWatcherClass = nmsClassResolver.resolveSilent("network.syncher.DataWatcher");
-    static Class<?> dataWatcherObjectClass = nmsClassResolver.resolveSilent("network.syncher.DataWatcherObject");
-    static Class<?> chatSerializerClass = nmsClassResolver.resolveSilent("ChatSerializer", "network.chat.IChatBaseComponent$ChatSerializer");
+    static Class<?> entityClass = nmsClassResolver.resolveSilent("Entity");
+    static Class<?> entityArmorStandClass = nmsClassResolver.resolveSilent("EntityArmorStand");
+    static Class<?> entityItemClass = nmsClassResolver.resolveSilent("EntityItem");
+    static Class<?> dataWatcherClass = nmsClassResolver.resolveSilent("DataWatcher");
+    static Class<?> dataWatcherObjectClass = nmsClassResolver.resolveSilent("DataWatcherObject");
+    static Class<?> chatSerializerClass = nmsClassResolver.resolveSilent("ChatSerializer", "IChatBaseComponent$ChatSerializer");
 
     private Utils() {}
 
@@ -396,8 +395,6 @@ public class Utils {
                     dataWatcherObjectFieldNames = new String[] {"T", "AIR_TICKS", "ay", "ax", "az", "aA", "ITEM", "b"};
                 } else if ("v1_16_R2".equals(version) || "v1_16_R3".equals(version)) {
                     dataWatcherObjectFieldNames = new String[] {"S", "AIR_TICKS", "ar", "aq", "as", "at", "ITEM", "b"};
-                } else if ("v1_17_R1".equals(version)) {
-                    dataWatcherObjectFieldNames = new String[] {"Z", "aI", "aK", "aJ", "aL", "aM", "c", "bG"};
                 } else {
                     return null;
                 }
@@ -482,9 +479,8 @@ public class Utils {
      */
     public static Object createPacketSpawnEntity(ShopChest plugin, int id, UUID uuid, Location loc, EntityType type) {
         try {
-            Class<?> packetPlayOutSpawnEntityClass = nmsClassResolver.resolveSilent("network.protocol.game.PacketPlayOutSpawnEntity");
-            Class<?> entityTypesClass = nmsClassResolver.resolveSilent("world.entity.EntityTypes");
-            Class<?> vec3dClass = nmsClassResolver.resolveSilent("world.phys.Vec3D");
+            Class<?> packetPlayOutSpawnEntityClass = nmsClassResolver.resolveSilent("PacketPlayOutSpawnEntity");
+            Class<?> entityTypesClass = nmsClassResolver.resolveSilent("EntityTypes");
 
             boolean isPre9 = getMajorVersion() < 9;
             boolean isPre14 = getMajorVersion() < 14;
@@ -495,17 +491,6 @@ public class Utils {
                 y += 1.975;
             }
 
-            if (getMajorVersion() >= 17) {
-                // Empty packet constructor does not exist anymore in 1.17+
-                Constructor<?> c = packetPlayOutSpawnEntityClass.getConstructor(int.class, UUID.class, double.class, double.class, double.class,
-                        float.class, float.class, entityTypesClass, int.class, vec3dClass);
-
-                Object vec3d = vec3dClass.getField("a").get(null);
-                Object entityType = entityTypesClass.getField(type == EntityType.ARMOR_STAND ? "c" : "Q").get(null);
-
-                return c.newInstance(id, uuid, loc.getX(), y, loc.getZ(), 0f, 0f, entityType, 0, vec3d);
-            }
-            
             Object packet = packetPlayOutSpawnEntityClass.getConstructor().newInstance();
 
             Field[] fields = new Field[12];
@@ -574,7 +559,7 @@ public class Utils {
                 return false;
             }
 
-            Class<?> packetClass = nmsClassResolver.resolveSilent("network.protocol.Packet");
+            Class<?> packetClass = nmsClassResolver.resolveSilent("Packet");
             if (packetClass == null) {
                 plugin.debug("Failed to send packet: Could not find Packet class");
                 return false;

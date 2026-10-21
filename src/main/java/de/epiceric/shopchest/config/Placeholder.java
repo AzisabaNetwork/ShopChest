@@ -27,7 +27,11 @@ public enum Placeholder {
     CHEST_SPACE("%CHEST-SPACE%"),
     MAX_STACK("%MAX-STACK%"),
     COMMAND("%COMMAND%"),
-    DURABILITY("%DURABILITY%");
+    DURABILITY("%DURABILITY%"),
+    DATE("%DATE%"),
+    PRICE("%PRICE%"),
+    PAGE("%PAGE%"),
+    PAGES("%PAGES%");
 
     private String name;
 
