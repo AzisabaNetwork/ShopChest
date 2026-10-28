@@ -11,6 +11,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.Iterables;
 import com.google.gson.JsonPrimitive;
 
 import net.azisaba.townia.api.TowniaAPI;
@@ -31,8 +32,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -150,6 +153,11 @@ public class ShopInteractListener implements Listener {
     }
 
     private Map<UUID, Set<Integer>> needsConfirmation = new HashMap<>();
+
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent e) {
+        needsConfirmation.remove(e.getPlayer().getUniqueId());
+    }
 
     private void handleInteractEvent(PlayerInteractEvent e) {
         Block b = e.getClickedBlock();
@@ -476,7 +484,15 @@ public class ShopInteractListener implements Listener {
             }
         }
 
-        shop.create(true);
+        if (!shop.create(true)) {
+            // Previously a failed creation was still charged and saved to the database
+            if (creationPrice > 0) {
+                plugin.getEconomy().depositPlayer(executor, location.getWorld().getName(), creationPrice);
+            }
+            executor.sendMessage(LanguageUtils.getMessage(Message.ERROR_OCCURRED,
+                    new Replacement(Placeholder.ERROR, "Failed to create shop")));
+            return;
+        }
 
         plugin.debug("Shop created");
         shopUtils.addShop(shop, true);
@@ -570,7 +586,13 @@ public class ShopInteractListener implements Listener {
             return;
         }
 
-        executor.openInventory(shop.getInventoryHolder().getInventory());
+        InventoryHolder holder = shop.getInventoryHolder();
+        if (holder == null) {
+            executor.sendMessage(LanguageUtils.getMessage(Message.CHEST_NO_SHOP));
+            return;
+        }
+
+        executor.openInventory(holder.getInventory());
         plugin.debug("Opened shop (#" + shop.getID() + ")");
         if (message) executor.sendMessage(LanguageUtils.getMessage(Message.OPENED_SHOP,
                 new Replacement(Placeholder.VENDOR, shop.getVendor().getName())));
@@ -591,10 +613,15 @@ public class ShopInteractListener implements Listener {
             return;
         }
 
-        Chest c = (Chest) shop.getLocation().getBlock().getState();
+        InventoryHolder holder = shop.getInventoryHolder();
+        if (holder == null) {
+            executor.sendMessage(LanguageUtils.getMessage(Message.CHEST_NO_SHOP));
+            return;
+        }
+
         ItemStack itemStack = shop.getProduct().getItemStack();
-        int amount = Utils.getAmount(c.getInventory(), itemStack);
-        int space = Utils.getFreeSpaceForItem(c.getInventory(), itemStack);
+        int amount = Utils.getAmount(holder.getInventory(), itemStack);
+        int space = Utils.getFreeSpaceForItem(holder.getInventory(), itemStack);
 
         String vendorName = (shop.getVendor().getName() == null ?
                 shop.getVendor().getUniqueId().toString() : shop.getVendor().getName());
@@ -799,7 +826,7 @@ public class ShopInteractListener implements Listener {
                         } else {
                             plugin.debug("Economy transaction failed (r2): " + r2.errorMessage + " (#" + shop.getID() + ")");
                             executor.sendMessage(LanguageUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, r2.errorMessage)));
-                            econ.withdrawPlayer(shop.getVendor(), worldName, newPrice);
+                            // The vendor never received the money, so only refund the buyer
                             econ.depositPlayer(executor, worldName, newPrice);
                         }
                     } else {
@@ -837,7 +864,7 @@ public class ShopInteractListener implements Listener {
                 } else {
                     plugin.debug("Economy transaction failed (r): " + r.errorMessage + " (#" + shop.getID() + ")");
                     executor.sendMessage(LanguageUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, r.errorMessage)));
-                    econ.depositPlayer(executor, worldName, newPrice);
+                    // Nothing was withdrawn, so there is nothing to refund
                 }
             } else {
                 executor.sendMessage(LanguageUtils.getMessage(Message.NOT_ENOUGH_INVENTORY_SPACE));
@@ -973,8 +1000,8 @@ public class ShopInteractListener implements Listener {
                         } else {
                             plugin.debug("Economy transaction failed (r2): " + r2.errorMessage + " (#" + shop.getID() + ")");
                             executor.sendMessage(LanguageUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, r2.errorMessage)));
+                            // Nothing was withdrawn from the vendor, so only revert the seller's payout
                             econ.withdrawPlayer(executor, worldName, newPrice);
-                            econ.depositPlayer(shop.getVendor(), worldName, newPrice);
                         }
 
                     } else {
@@ -1012,7 +1039,7 @@ public class ShopInteractListener implements Listener {
                 } else {
                     plugin.debug("Economy transaction failed (r): " + r.errorMessage + " (#" + shop.getID() + ")");
                     executor.sendMessage(LanguageUtils.getMessage(Message.ERROR_OCCURRED, new Replacement(Placeholder.ERROR, r.errorMessage)));
-                    econ.withdrawPlayer(executor, worldName, newPrice);
+                    // Nothing was deposited, so there is nothing to revert
                 }
 
             } else {
@@ -1154,11 +1181,10 @@ public class ShopInteractListener implements Listener {
             out.writeUTF(player);
             out.writeUTF(message);
 
-            if (!plugin.getServer().getOnlinePlayers().isEmpty()) {
-                plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-                    Player p = plugin.getServer().getOnlinePlayers().iterator().next();
-                    p.sendPluginMessage(plugin, "BungeeCord", b.toByteArray());
-                });
+            // Any online player can carry the message; send it right away on the main thread
+            Player p = Iterables.getFirst(plugin.getServer().getOnlinePlayers(), null);
+            if (p != null) {
+                p.sendPluginMessage(plugin, "BungeeCord", b.toByteArray());
             }
         } catch (Exception e) {
             plugin.debug("Failed to send bungee message");

@@ -58,6 +58,8 @@ public class Shop {
     private final ShopType shopType;
 
     private boolean created;
+    // Prevents queueing the same recreation every tick while it is pending
+    private boolean entityCreationQueued;
     private int id;
     private Hologram hologram;
     private Location holoLocation;
@@ -139,7 +141,9 @@ public class Shop {
         // Holograms and item displays are Bukkit entities and must be created
         // on the server thread. Spread creation over several ticks so loading
         // a large number of shops cannot stall the server.
+        entityCreationQueued = true;
         plugin.getUpdater().queueEntityCreation(location.getWorld(), () -> {
+            entityCreationQueued = false;
             if (!created) return;
             if (hologram == null || !hologram.exists()) createHologram(preResult);
             if (item == null) createItem();
@@ -201,12 +205,14 @@ public class Shop {
         if (w == null || !w.isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
             return;
         }
-        if (areEntitiesValid()) {
+        if (entityCreationQueued || areEntitiesValid()) {
             return;
         }
         PreCreateResult preResult = preCreateHologram();
         if (preResult == null) return;
+        entityCreationQueued = true;
         plugin.getUpdater().queueEntityCreation(w, () -> {
+            entityCreationQueued = false;
             if (!created) return;
             if (!hasValidHologram()) {
                 if (hologram != null) {
@@ -269,17 +275,21 @@ public class Shop {
      * <p><b>Has to be called synchronously!</b></p>
      */
     public void updateHologramText() {
-        String[] lines = getHologramText(getInventoryHolder().getInventory());
+        // The hologram is missing while its chunk is unloaded or its creation is still queued
+        InventoryHolder holder = getInventoryHolder();
+        if (hologram == null || holder == null) return;
+
+        String[] lines = getHologramText(holder.getInventory());
         String[] currentLines = hologram.getLines();
 
-        int max = Math.max(lines.length, currentLines.length);
+        for (int i = 0; i < lines.length; i++) {
+            hologram.setLine(i, lines[i]);
+        }
 
-        for (int i = 0; i < max; i++) {
-            if (i < lines.length) {
-                hologram.setLine(i, lines[i]);
-            } else {
-                hologram.removeLine(i);
-            }
+        // Remove surplus lines from the end; removing by ascending index
+        // would shift the list and skip every other line.
+        for (int i = currentLines.length - 1; i >= lines.length; i--) {
+            hologram.removeLine(i);
         }
     }
 

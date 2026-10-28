@@ -414,7 +414,8 @@ public class Config {
 
         try {
             int intValue = Integer.parseInt(value);
-            list.remove(intValue);
+            // Box the value: list.remove(int) would remove by index instead
+            list.remove(Integer.valueOf(intValue));
 
             plugin.saveConfig();
             reload(false, false, false);

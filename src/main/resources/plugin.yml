@@ -10,6 +10,12 @@ softdepend: [WorldGuard, Townia, AuthMe, PlotSquared, uSkyBlock, ASkyBlock, Grie
 depend: [Vault, MythicMobs]
 api-version: '1.21'
 
+commands:
+  findshop:
+    description: Opens a GUI to find shops
+    usage: /<command> [page | search <keyword> | settings | config ...]
+    permission: shopchest.finder.use
+
 permissions:
   shopchest.*:
     description: Gives access to all ShopChest permissions.
@@ -31,6 +37,8 @@ permissions:
       shopchest.extend.other: true
       shopchest.extend.protected: true
       shopchest.external.bypass: true
+      shopchest.finder.use: true
+      shopchest.finder.admin: true
   shopchest.create:
     description: Allows you to create a shop.
     children:
@@ -90,4 +98,12 @@ permissions:
     default: op
   shopchest.external.bypass:
     description: Allows you to to use shops regions/plots that deny shop use.
+    default: op
+  shopchest.finder.use:
+    description: Allows you to search shops with /findshop.
+    default: true
+  shopchest.finder.admin:
+    description: Allows you to see and teleport to every shop in /findshop and to edit its material lists.
+    children:
+      shopchest.finder.use: true
     default: op

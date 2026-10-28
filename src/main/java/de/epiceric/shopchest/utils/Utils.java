@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -65,12 +66,22 @@ public class Utils {
             return false;
         }
 
+        // getItemMeta() copies the whole meta, so only fetch it when both can be books.
+        // This runs for every slot whenever stock or free space is counted.
+        if (itemStack1.getType() != itemStack2.getType() || !isBook(itemStack1.getType())) {
+            return itemStack1.isSimilar(itemStack2);
+        }
+
         ItemMeta itemMeta1 = itemStack1.getItemMeta();
         ItemMeta itemMeta2 = itemStack2.getItemMeta();
 
         if (itemMeta1 instanceof BookMeta && itemMeta2 instanceof BookMeta) {
-            BookMeta bookMeta1 = (BookMeta) itemStack1.getItemMeta();
-            BookMeta bookMeta2 = (BookMeta) itemStack2.getItemMeta();
+            // Work on copies: the arguments are often live inventory slots or the
+            // shop's product, which must not be modified by a comparison.
+            itemStack1 = itemStack1.clone();
+            itemStack2 = itemStack2.clone();
+            BookMeta bookMeta1 = (BookMeta) itemMeta1;
+            BookMeta bookMeta2 = (BookMeta) itemMeta2;
 
             if ((getMajorVersion() == 9 && getRevision() == 1) || getMajorVersion() == 8) {
                 CustomBookMeta.Generation generation1 = CustomBookMeta.getGeneration(itemStack1);
@@ -91,6 +102,10 @@ public class Utils {
         }
 
         return itemStack1.isSimilar(itemStack2);
+    }
+
+    private static boolean isBook(Material type) {
+        return type == Material.WRITTEN_BOOK || type == Material.WRITABLE_BOOK;
     }
 
     /**
@@ -233,18 +248,13 @@ public class Utils {
      * @return Whether a player has an axe in one of his hands
      */
     public static boolean hasAxeInHand(Player p) {
-        List<String> axes;
-        if (Utils.getMajorVersion() < 13)
-            axes = Arrays.asList("WOOD_AXE", "STONE_AXE", "IRON_AXE", "GOLD_AXE", "DIAMOND_AXE");
-        else
-            axes = Arrays.asList("WOODEN_AXE", "STONE_AXE", "IRON_AXE", "GOLDEN_AXE", "DIAMOND_AXE");
-
+        // The tag also covers netherite (and any future) axes
         ItemStack item = getItemInMainHand(p);
-        if (item == null || !axes.contains(item.getType().toString())) {
+        if (item == null || !Tag.ITEMS_AXES.isTagged(item.getType())) {
             item = getItemInOffHand(p);
         }
 
-        return item != null && axes.contains(item.getType().toString());
+        return item != null && Tag.ITEMS_AXES.isTagged(item.getType());
     }
 
     /**
@@ -657,28 +667,42 @@ public class Utils {
      * @return The current server version with revision number (e.g. v1_20_R3)
      */
     public static String getServerVersion() {
-        String mcVersion = Bukkit.getBukkitVersion().split("-")[0];
+        // Called in hot paths (inventory scans), so parse the version only once
+        if (serverVersion == null) {
+            String mcVersion = Bukkit.getBukkitVersion().split("-")[0];
 
-        return switch (mcVersion) {
-            case "1.20", "1.20.1" -> "v1_20_R1";
-            case "1.20.2" -> "v1_20_R2";
-            case "1.20.3", "1.20.4" -> "v1_20_R3";
-            default -> "v" + mcVersion.replace('.', '_');
-        };
+            String version = switch (mcVersion) {
+                case "1.20", "1.20.1" -> "v1_20_R1";
+                case "1.20.2" -> "v1_20_R2";
+                case "1.20.3", "1.20.4" -> "v1_20_R3";
+                default -> "v" + mcVersion.replace('.', '_');
+            };
+            majorVersion = Integer.parseInt(version.split("_")[1]);
+            revision = Integer.parseInt(version.substring(version.length() - 1));
+            // Publish last so other threads never see the numbers unset
+            serverVersion = version;
+        }
+        return serverVersion;
     }
+
+    private static volatile String serverVersion;
+    private static int majorVersion;
+    private static int revision;
 
     /**
      * @return The revision of the current server version (e.g. <i>2</i> for v1_9_R2, <i>1</i> for v1_10_R1)
      */
     public static int getRevision() {
-        return Integer.parseInt(getServerVersion().substring(getServerVersion().length() - 1));
+        getServerVersion();
+        return revision;
     }
 
     /**
      * @return The major version of the server (e.g. <i>9</i> for 1.9.2, <i>10</i> for 1.10)
      */
     public static int getMajorVersion() {
-        return Integer.parseInt(getServerVersion().split("_")[1]);
+        getServerVersion();
+        return majorVersion;
     }
 
     /**

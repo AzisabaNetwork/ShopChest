@@ -5,7 +5,9 @@ import java.util.Set;
 
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.BlockState;
 import org.bukkit.block.Chest;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Player;
@@ -167,16 +169,30 @@ public class ShopUpdateListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onChunkUnload(ChunkUnloadEvent e) {
-        Chunk chunk = e.getChunk();
-        for (Shop shop : plugin.getShopUtils().getShops()) {
+        for (Shop shop : getShopsInChunk(e.getChunk())) {
+            shop.removeHologram();
+            shop.removeItem();
+        }
+    }
+
+    /**
+     * Looks up the shops whose main location lies in the given chunk. Only the
+     * chunk's chests are checked, instead of every loaded shop on the server.
+     */
+    private Set<Shop> getShopsInChunk(Chunk chunk) {
+        Set<Shop> shops = new HashSet<>();
+        for (BlockState state : chunk.getTileEntities(
+                b -> b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST, false)) {
+            Shop shop = plugin.getShopUtils().getShop(state.getLocation());
+            if (shop == null) continue;
+
+            // The other half of a double chest shop may lie in a neighbouring chunk
             Location loc = shop.getLocation();
-            if (loc.getWorld().equals(chunk.getWorld())
-                    && (loc.getBlockX() >> 4) == chunk.getX()
-                    && (loc.getBlockZ() >> 4) == chunk.getZ()) {
-                shop.removeHologram();
-                shop.removeItem();
+            if ((loc.getBlockX() >> 4) == chunk.getX() && (loc.getBlockZ() >> 4) == chunk.getZ()) {
+                shops.add(shop);
             }
         }
+        return shops;
     }
 
     @EventHandler
@@ -184,13 +200,8 @@ public class ShopUpdateListener implements Listener {
         Chunk chunk = e.getChunk();
 
         // Restore entities for shops that are already loaded in memory
-        for (Shop shop : plugin.getShopUtils().getShops()) {
-            Location loc = shop.getLocation();
-            if (loc.getWorld().equals(chunk.getWorld())
-                    && (loc.getBlockX() >> 4) == chunk.getX()
-                    && (loc.getBlockZ() >> 4) == chunk.getZ()) {
-                shop.checkOrRecreateEntities();
-            }
+        for (Shop shop : getShopsInChunk(chunk)) {
+            shop.checkOrRecreateEntities();
         }
 
         if (!plugin.getShopDatabase().isInitialized()) {

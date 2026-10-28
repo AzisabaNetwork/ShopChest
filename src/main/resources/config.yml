@@ -195,6 +195,38 @@ towny-shop-plots:
   king:
     - "COMMERCIAL"
 
+# Shop search GUI (/findshop), formerly the ShopChestFinder plugin.
+# Settings of an existing plugins/ShopChestFinder folder are imported
+# automatically the first time this section is missing.
+shop-finder:
+
+  # Set whether /findshop is available.
+  enabled: true
+
+  # Interval in seconds in which the shop list is rebuilt from the database.
+  refresh-interval: 60
+
+  # Prices at or below this value are ignored, so display shops with a
+  # token price (e.g. 1) don't distort the minimum and average prices.
+  # Shops without any remaining price are not listed. Set to 0 to disable.
+  ignore-price-at-or-below: 1
+
+  # Materials that are grouped solely by their type in the GUI.
+  # Custom names, lore, enchantments and other data are ignored for them.
+  # (Shulker box contents and map IDs are always ignored.)
+  group-materials:
+    - ENCHANTED_BOOK
+    - POTION
+
+  # Materials that are never listed (e.g. all written books).
+  exclude-materials:
+    - WRITTEN_BOOK
+
+  # Materials that are not listed if they are plain vanilla items
+  # (i.e. without a custom display name or lore).
+  exclude-vanilla-materials:
+    - STICK
+
 # Configuration of the database, where everything is stored.
 # Shops are found in the table 'shopchest_shops', and logged economy
 # transactions are found in the table 'shopchest_economy_logs'

@@ -154,9 +154,15 @@ class ShopCommandExecutor implements CommandExecutor {
 
         sender.sendMessage(LanguageUtils.getMessage(Message.UPDATE_CHECKING));
 
-        UpdateChecker uc = new UpdateChecker(ShopChest.getInstance());
-        UpdateChecker.UpdateCheckerResult result = uc.check();
+        // The HTTP request must not block the server thread
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            UpdateChecker uc = new UpdateChecker(ShopChest.getInstance());
+            UpdateChecker.UpdateCheckerResult result = uc.check();
+            Bukkit.getScheduler().runTask(plugin, () -> handleUpdateResult(sender, uc, result));
+        });
+    }
 
+    private void handleUpdateResult(CommandSender sender, UpdateChecker uc, UpdateChecker.UpdateCheckerResult result) {
         if (result == UpdateChecker.UpdateCheckerResult.TRUE) {
             plugin.setLatestVersion(uc.getVersion());
             plugin.setDownloadLink(uc.getLink());
@@ -199,6 +205,7 @@ class ShopCommandExecutor implements CommandExecutor {
         plugin.getShopChestConfig().reload(false, true, true);
         plugin.getHologramFormat().reload();
         plugin.getUpdater().restart();
+        if (plugin.getShopFinder() != null) plugin.getShopFinder().reload();
 
         // Remove all shops
         for (Shop shop : shopUtils.getShops()) {
@@ -262,6 +269,13 @@ class ShopCommandExecutor implements CommandExecutor {
         } catch (NumberFormatException e) {
             p.sendMessage(LanguageUtils.getMessage(Message.AMOUNT_PRICE_NOT_NUMBER));
             plugin.debug(p.getName() + " has entered an invalid amount and/or prices");
+            return;
+        }
+
+        // parseDouble accepts "NaN" and "Infinity", which would break price calculations
+        if (!Double.isFinite(buyPrice) || !Double.isFinite(sellPrice)) {
+            p.sendMessage(LanguageUtils.getMessage(Message.AMOUNT_PRICE_NOT_NUMBER));
+            plugin.debug(p.getName() + " has entered a non-finite price");
             return;
         }
 

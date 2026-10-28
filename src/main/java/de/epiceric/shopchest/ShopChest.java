@@ -34,6 +34,7 @@ import de.epiceric.shopchest.config.HologramFormat;
 import de.epiceric.shopchest.event.ShopInitializedEvent;
 import de.epiceric.shopchest.external.WorldGuardShopFlag;
 import de.epiceric.shopchest.external.listeners.GriefPreventionListener;
+import de.epiceric.shopchest.finder.ShopFinder;
 import de.epiceric.shopchest.language.LanguageUtils;
 import de.epiceric.shopchest.listeners.BlockExplodeListener;
 import de.epiceric.shopchest.listeners.ChestProtectListener;
@@ -79,6 +80,7 @@ public class ShopChest extends JavaPlugin {
     private GriefPrevention griefPrevention;
     private ShopUpdater updater;
     private ExecutorService shopCreationThreadPool;
+    private ShopFinder shopFinder;
 
     /**
      * @return An instance of ShopChest
@@ -175,6 +177,9 @@ public class ShopChest extends JavaPlugin {
 
         initializeShops();
 
+        shopFinder = new ShopFinder(this);
+        shopFinder.enable();
+
         getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
 
     }
@@ -210,6 +215,10 @@ public class ShopChest extends JavaPlugin {
 
         if (shopCreationThreadPool != null) {
             shopCreationThreadPool.shutdown();
+        }
+
+        if (shopFinder != null) {
+            shopFinder.disable();
         }
 
         shopUtils.removeShops();
@@ -446,6 +455,13 @@ public class ShopChest extends JavaPlugin {
      */
     public ExecutorService getShopCreationThreadPool() {
         return shopCreationThreadPool;
+    }
+
+    /**
+     * @return The shop finder behind {@code /findshop}
+     */
+    public ShopFinder getShopFinder() {
+        return shopFinder;
     }
 
     public HologramFormat getHologramFormat() {

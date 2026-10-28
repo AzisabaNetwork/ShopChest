@@ -83,6 +83,9 @@ public class ArmorStandWrapper {
     }
 
     public void setCustomName(String customName) {
+        // Dynamic holograms are refreshed on every inventory change; skip
+        // re-sending entity metadata when the text did not change.
+        if (customName.equals(this.customName)) return;
         this.customName = customName;
         if (display != null && display.isValid()) {
             display.text(LEGACY_SERIALIZER.deserialize(customName));

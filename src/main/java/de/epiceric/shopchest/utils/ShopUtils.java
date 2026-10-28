@@ -291,7 +291,8 @@ public class ShopUtils {
      * @return The amount of a shops a player has (if {@link Config#excludeAdminShops} is true, admin shops won't be counted)
      */
     public int getShopAmount(OfflinePlayer p) {
-        return playerShopAmount.getOrDefault(p.getUniqueId(), new Counter()).get();
+        Counter counter = playerShopAmount.get(p.getUniqueId());
+        return counter == null ? 0 : counter.get();
     }
 
     /**
@@ -372,11 +373,13 @@ public class ShopUtils {
                         continue;
                     }
 
-                    int x = loc.getBlockX() / 16;
-                    int z = loc.getBlockZ() / 16;
-                    
+                    // Use floor division (>> 4): "/ 16" rounds towards zero and
+                    // checks the wrong chunk for negative coordinates.
+                    int x = loc.getBlockX() >> 4;
+                    int z = loc.getBlockZ() >> 4;
+
                     // Don't add shop if chunk is no longer loaded
-                    if (!loc.getWorld().isChunkLoaded(x, z)) {
+                    if (loc.getWorld() == null || !loc.getWorld().isChunkLoaded(x, z)) {
                         continue;
                     }
 
@@ -412,7 +415,8 @@ public class ShopUtils {
      * @param force Whether update should be forced even if player has not moved
      */
     public void updateShops(Player player, boolean force) {
-        if (!force && player.getLocation().equals(playerLocation.get(player.getUniqueId()))) {
+        Location current = player.getLocation();
+        if (!force && !hasMoved(playerLocation.get(player.getUniqueId()), current)) {
             // Player has not moved, so don't calculate shops again.
             return;
         }
@@ -423,7 +427,28 @@ public class ShopUtils {
             updateNearestShops(player);
         }
 
-        playerLocation.put(player.getUniqueId(), player.getLocation());
+        playerLocation.put(player.getUniqueId(), current);
+    }
+
+    /**
+     * Only the view direction matters when shops are shown by line of sight;
+     * otherwise head rotation alone cannot change which shops are in range.
+     */
+    private boolean hasMoved(Location last, Location current) {
+        if (last == null || last.getWorld() != current.getWorld()) return true;
+        if (last.getX() != current.getX() || last.getY() != current.getY() || last.getZ() != current.getZ()) return true;
+        return Config.onlyShowShopsInSight
+                && (last.getYaw() != current.getYaw() || last.getPitch() != current.getPitch());
+    }
+
+    /**
+     * Iterates every loaded shop once, without copying the backing map.
+     * Double chest shops are registered under two locations.
+     */
+    private Iterable<Shop> uniqueShops() {
+        Set<Shop> unique = Collections.newSetFromMap(new IdentityHashMap<>());
+        unique.addAll(shopLocationValues);
+        return unique;
     }
 
     /**
@@ -450,8 +475,15 @@ public class ShopUtils {
         Vector pDir = pLoc.getDirection().normalize();
 
         // Raycast with 0.2 block step to detect chest, floating item, or hologram text accurately
-        for (double d = 0; d <= maxDist; d += 0.2) {
-            Location loc = pLoc.clone().add(pDir.clone().multiply(d));
+        Location loc = pLoc.clone();
+        Vector step = pDir.clone().multiply(0.2);
+        int lastX = Integer.MIN_VALUE, lastY = Integer.MIN_VALUE, lastZ = Integer.MIN_VALUE;
+        for (double d = 0; d <= maxDist; d += 0.2, loc.add(step)) {
+            // Consecutive steps usually stay in the same block
+            if (loc.getBlockX() == lastX && loc.getBlockY() == lastY && loc.getBlockZ() == lastZ) continue;
+            lastX = loc.getBlockX();
+            lastY = loc.getBlockY();
+            lastZ = loc.getBlockZ();
 
             // Check chest block, 1 block below, and 2 blocks below (in case player looks at item or hologram text)
             Shop shop = getShop(loc);
@@ -474,11 +506,9 @@ public class ShopUtils {
             }
         }
 
-        Set<Shop> processed = Collections.newSetFromMap(new IdentityHashMap<>());
+        Location playerLocation = player.getLocation();
 
-        for (Shop shop : getShops()) {
-            if (!processed.add(shop)) continue;
-
+        for (Shop shop : uniqueShops()) {
             Location shopLocation = shop.getLocation();
             World shopWorld = shopLocation.getWorld();
 
@@ -497,7 +527,7 @@ public class ShopUtils {
             }
 
             // Display item based on distance
-            double distSquared = shopLocation.distanceSquared(player.getLocation());
+            double distSquared = shopLocation.distanceSquared(playerLocation);
             if (shop.hasItem()) {
                 if (distSquared <= itemDistSquared) {
                     shop.checkOrRecreateEntities();
@@ -522,11 +552,7 @@ public class ShopUtils {
         World playerWorld = playerLocation.getWorld();
         if (playerWorld == null) return;
 
-        Set<Shop> processed = Collections.newSetFromMap(new IdentityHashMap<>());
-
-        for (Shop shop : getShops()) {
-            if (!processed.add(shop)) continue;
-
+        for (Shop shop : uniqueShops()) {
             Location shopLocation = shop.getLocation();
             World shopWorld = shopLocation.getWorld();
 

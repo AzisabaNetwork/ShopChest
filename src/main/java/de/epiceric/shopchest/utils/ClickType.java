@@ -92,6 +92,7 @@ public class ClickType {
                 @Override
                 public void run() {
                     playerClickType.remove(uuid);
+                    playerTimers.remove(uuid);
                 }
             }.runTaskLater(ShopChest.getInstance(), 300));
         }

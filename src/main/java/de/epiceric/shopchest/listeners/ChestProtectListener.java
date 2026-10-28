@@ -42,8 +42,6 @@ public class ChestProtectListener implements Listener {
     private ShopChest plugin;
     private ShopUtils shopUtils;
 
-    private ArrayList<Location> isKnownAsNotAShop = new ArrayList<>();
-
     public ChestProtectListener(ShopChest plugin) {
         this.plugin = plugin;
         this.shopUtils = plugin.getShopUtils();
@@ -234,18 +232,14 @@ public class ChestProtectListener implements Listener {
 
             if (e.getSource().getHolder() instanceof DoubleChest) {
 
+                // No "not a shop" cache here: it was never invalidated, so hoppers
+                // could drain a double chest that became a shop later.
                 DoubleChest dc = (DoubleChest) e.getSource().getHolder();
-                if (isKnownAsNotAShop.contains(dc.getLocation())) {
-                    return;
-                }
-
                 Chest r = (Chest) dc.getRightSide();
                 Chest l = (Chest) dc.getLeftSide();
 
                 if (shopUtils.isShop(r.getLocation()) || shopUtils.isShop(l.getLocation())) {
                     e.setCancelled(true);
-                } else {
-                    isKnownAsNotAShop.add(dc.getLocation());
                 }
 
             } else if (e.getSource().getHolder() instanceof Chest) {

@@ -39,9 +39,10 @@ import de.epiceric.shopchest.utils.Callback;
 import de.epiceric.shopchest.utils.Utils;
 
 public abstract class Database {
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    // SimpleDateFormat is not thread-safe and every query runs on an async worker
+    private final ThreadLocal<SimpleDateFormat> dateFormat = ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
 
-    private boolean initialized;
+    private volatile boolean initialized;
 
     String tableShops;
     String tableLogs;
@@ -171,7 +172,7 @@ public abstract class Database {
                         long time = 0L;
 
                         try {
-                            time = dateFormat.parse(timestamp).getTime();
+                            time = dateFormat.get().parse(timestamp).getTime();
                         } catch (ParseException e) {
                             plugin.debug("Failed to parse timestamp '" + timestamp + "': Time is set to 0");
                             plugin.debug(e);
@@ -262,14 +263,14 @@ public abstract class Database {
                 try {
                     dataSource = getDataSource();
                 } catch (Exception e) {
-                    callback.onError(e);
+                    if (callback != null) callback.callSyncError(e);
                     plugin.debug(e);
                     return;
                 }
 
                 if (dataSource == null) {
                     Exception e = new IllegalStateException("Data source is null");
-                    callback.onError(e);
+                    if (callback != null) callback.callSyncError(e);
                     plugin.debug(e);
                     return;
                 }
@@ -422,27 +423,8 @@ public abstract class Database {
 
                     Set<Shop> result = new HashSet<>();
                     while (rs.next()) {
-                        int id = rs.getInt("id");
-
-                        plugin.debug("Getting Shop... (#" + id + ")");
-
-                        int x = rs.getInt("x");
-                        int y = rs.getInt("y");
-                        int z = rs.getInt("z");
-
-                        World world = plugin.getServer().getWorld(rs.getString("world"));
-                        Location location = new Location(world, x, y, z);
-                        OfflinePlayer vendor = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("vendor")));
-                        ItemStack itemStack = Utils.decode(rs.getString("product"));
-                        int amount = rs.getInt("amount");
-                        ShopProduct product = new ShopProduct(itemStack, amount);
-                        double buyPrice = rs.getDouble("buyprice");
-                        double sellPrice = rs.getDouble("sellprice");
-                        ShopType shopType = ShopType.valueOf(rs.getString("shoptype"));
-
-                        plugin.debug("Initializing new shop... (#" + id + ")");
-
-                        result.add(new Shop(id, plugin, vendor, product, location, buyPrice, sellPrice, shopType));
+                        Shop shop = readShop(rs);
+                        if (shop != null) result.add(shop);
                     }
 
                     if (callback != null) {
@@ -473,7 +455,8 @@ public abstract class Database {
         int parts = (int) Math.ceil(chunks.length / (double) splitSize);
         Chunk[][] splitChunks = new Chunk[parts][];
         for (int i = 0; i < parts; i++) {
-            int size = i < parts - 1 ? splitSize : chunks.length % splitSize;
+            // "chunks.length % splitSize" is 0 for exact multiples and dropped the last package
+            int size = Math.min(splitSize, chunks.length - i * splitSize);
             Chunk[] tmp = new Chunk[size];
             System.arraycopy(chunks, i * splitSize, tmp, 0, size);
             splitChunks[i] = tmp;
@@ -490,23 +473,19 @@ public abstract class Database {
                     // Map chunks by world
                     Map<String, Set<Chunk>> chunksByWorld = new HashMap<>();
                     for (Chunk chunk : newChunks) {
-                        String world = chunk.getWorld().getName();
-                        Set<Chunk> chunksForWorld = chunksByWorld.getOrDefault(world, new HashSet<>());
-                        chunksForWorld.add(chunk);
-                        chunksByWorld.put(world, chunksForWorld);
+                        chunksByWorld.computeIfAbsent(chunk.getWorld().getName(), k -> new HashSet<>()).add(chunk);
                     }
     
                     // Create query dynamically
-                    String query = "SELECT * FROM " + tableShops + " WHERE ";
-                    for (String world : chunksByWorld.keySet()) {
-                        query += "(world = ? AND (";
-                        int chunkNum = chunksByWorld.get(world).size();
-                        for (int i = 0; i < chunkNum; i++) {
-                            query += "((x BETWEEN ? AND ?) AND (z BETWEEN ? AND ?)) OR ";
+                    StringBuilder queryBuilder = new StringBuilder("SELECT * FROM ").append(tableShops).append(" WHERE ");
+                    for (Set<Chunk> worldChunks : chunksByWorld.values()) {
+                        queryBuilder.append("(world = ? AND (");
+                        for (int i = 0; i < worldChunks.size(); i++) {
+                            queryBuilder.append("((x BETWEEN ? AND ?) AND (z BETWEEN ? AND ?)) OR ");
                         }
-                        query += "1=0)) OR ";
+                        queryBuilder.append("1=0)) OR ");
                     }
-                    query += "1=0";
+                    String query = queryBuilder.append("1=0").toString();
     
                     try (Connection con = dataSource.getConnection();
                             PreparedStatement ps = con.prepareStatement(query)) {
@@ -525,27 +504,8 @@ public abstract class Database {
     
                         ResultSet rs = ps.executeQuery();
                         while (rs.next()) {
-                            int id = rs.getInt("id");
-    
-                            plugin.debug("Getting Shop... (#" + id + ")");
-    
-                            int x = rs.getInt("x");
-                            int y = rs.getInt("y");
-                            int z = rs.getInt("z");
-    
-                            World world = plugin.getServer().getWorld(rs.getString("world"));
-                            Location location = new Location(world, x, y, z);
-                            OfflinePlayer vendor = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("vendor")));
-                            ItemStack itemStack = Utils.decode(rs.getString("product"));
-                            int amount = rs.getInt("amount");
-                            ShopProduct product = new ShopProduct(itemStack, amount);
-                            double buyPrice = rs.getDouble("buyprice");
-                            double sellPrice = rs.getDouble("sellprice");
-                            ShopType shopType = ShopType.valueOf(rs.getString("shoptype"));
-    
-                            plugin.debug("Initializing new shop... (#" + id + ")");
-    
-                            shops.add(new Shop(id, plugin, vendor, product, location, buyPrice, sellPrice, shopType));
+                            Shop shop = readShop(rs);
+                            if (shop != null) shops.add(shop);
                         }
                     } catch (SQLException ex) {
                         if (callback != null) {
@@ -565,6 +525,77 @@ public abstract class Database {
                 }
             };
         }.runTaskAsynchronously(plugin);
+    }
+
+    /**
+     * Get all shops stored in the database, including shops in unloaded chunks
+     * and worlds. The returned shops are not created (no hologram or item).
+     *
+     * @param callback Callback that returns all shops if succeeded
+     */
+    public void getAllShops(final Callback<Collection<Shop>> callback) {
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                try (Connection con = dataSource.getConnection();
+                        Statement s = con.createStatement()) {
+                    ResultSet rs = s.executeQuery("SELECT * FROM " + tableShops);
+
+                    List<Shop> result = new ArrayList<>();
+                    while (rs.next()) {
+                        Shop shop = readShop(rs);
+                        if (shop != null) result.add(shop);
+                    }
+
+                    if (callback != null) {
+                        callback.callSyncResult(Collections.unmodifiableCollection(result));
+                    }
+                } catch (SQLException | RuntimeException ex) {
+                    // RuntimeException: the data source is briefly null while /shop reload reconnects
+                    if (callback != null) {
+                        callback.callSyncError(ex);
+                    }
+
+                    plugin.getLogger().severe("Failed to get all shops from database");
+                    plugin.debug("Failed to get all shops from database");
+                    plugin.debug(ex);
+                }
+            }
+        }.runTaskAsynchronously(plugin);
+    }
+
+    /**
+     * Reads the shop at the result set's cursor.
+     *
+     * @return The shop, or {@code null} if its product cannot be decoded
+     */
+    private Shop readShop(ResultSet rs) throws SQLException {
+        int id = rs.getInt("id");
+
+        plugin.debug("Getting Shop... (#" + id + ")");
+
+        int x = rs.getInt("x");
+        int y = rs.getInt("y");
+        int z = rs.getInt("z");
+
+        World world = plugin.getServer().getWorld(rs.getString("world"));
+        Location location = new Location(world, x, y, z);
+        OfflinePlayer vendor = Bukkit.getOfflinePlayer(UUID.fromString(rs.getString("vendor")));
+        ItemStack itemStack = Utils.decode(rs.getString("product"));
+        if (itemStack == null) {
+            // A single corrupt row must not abort loading every other shop
+            plugin.getLogger().warning("Skipping shop #" + id + ": failed to decode product");
+            return null;
+        }
+        int amount = rs.getInt("amount");
+        ShopProduct product = new ShopProduct(itemStack, amount);
+        double buyPrice = rs.getDouble("buyprice");
+        double sellPrice = rs.getDouble("sellprice");
+        ShopType shopType = ShopType.valueOf(rs.getString("shoptype"));
+
+        plugin.debug("Initializing new shop... (#" + id + ")");
+
+        return new Shop(id, plugin, vendor, product, location, buyPrice, sellPrice, shopType);
     }
 
     /**
@@ -657,7 +688,7 @@ public abstract class Database {
                         long millis = System.currentTimeMillis();
 
                         ps.setInt(1, shop.getID());
-                        ps.setString(2, dateFormat.format(millis));
+                        ps.setString(2, dateFormat.get().format(millis));
                         ps.setLong(3, millis);
                         ps.setString(4, executor.getName());
                         ps.setString(5, executor.getUniqueId().toString());
@@ -748,13 +779,14 @@ public abstract class Database {
             public void run() {
                 double revenue = 0;
 
+                // Filter by time in SQL instead of reading the vendor's whole history
                 try (Connection con = dataSource.getConnection();
-                        PreparedStatement ps = con.prepareStatement("SELECT * FROM " + tableLogs + " WHERE vendor_uuid = ?")) {
+                        PreparedStatement ps = con.prepareStatement("SELECT price,type FROM " + tableLogs + " WHERE vendor_uuid = ? AND time > ?")) {
                     ps.setString(1, player.getUniqueId().toString());
+                    ps.setLong(2, logoutTime);
                     ResultSet rs = ps.executeQuery();
 
                     while (rs.next()) {
-                        long timestamp = rs.getLong("time");
                         double singleRevenue = rs.getDouble("price");
                         ShopBuySellEvent.Type type = ShopBuySellEvent.Type.valueOf(rs.getString("type"));
 
@@ -762,9 +794,7 @@ public abstract class Database {
                             singleRevenue = -singleRevenue;
                         }
 
-                        if (timestamp > logoutTime) {
-                            revenue += singleRevenue;
-                        }
+                        revenue += singleRevenue;
                     }
 
                     if (callback != null) {
@@ -834,14 +864,11 @@ public abstract class Database {
                     ps.setString(1, player.getUniqueId().toString());
                     ResultSet rs = ps.executeQuery();
 
-                    if (rs.next()) {
-                        if (callback != null) {
-                            callback.callSyncResult(rs.getLong("time"));
-                        }
-                    }
+                    // Previously the callback fired twice (with the time, then with -1)
+                    long time = rs.next() ? rs.getLong("time") : -1L;
 
                     if (callback != null) {
-                        callback.callSyncResult(-1L);
+                        callback.callSyncResult(time);
                     }
                 } catch (SQLException ex) {
                     if (callback != null) {
