@@ -1,8 +1,10 @@
 package de.epiceric.shopchest.listeners;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -45,20 +47,21 @@ public class ShopUpdateListener implements Listener {
 
         Location loc = null;
 
-        if (e.getSource().getHolder() instanceof Chest) {
-            loc =  ((Chest) e.getSource().getHolder()).getLocation();
-        } else if (e.getSource().getHolder() instanceof DoubleChest) {
-            loc =  ((DoubleChest) e.getSource().getHolder()).getLocation();
-        } else if (e.getDestination().getHolder() instanceof Chest) {
-            loc =  ((Chest) e.getDestination().getHolder()).getLocation();
-        } else if (e.getDestination().getHolder() instanceof DoubleChest) {
-            loc =  ((DoubleChest) e.getDestination().getHolder()).getLocation();
+        if (e.getSource().getHolder(false) instanceof Chest) {
+            loc =  ((Chest) e.getSource().getHolder(false)).getLocation();
+        } else if (e.getSource().getHolder(false) instanceof DoubleChest) {
+            loc =  ((DoubleChest) e.getSource().getHolder(false)).getLocation();
+        } else if (e.getDestination().getHolder(false) instanceof Chest) {
+            loc =  ((Chest) e.getDestination().getHolder(false)).getLocation();
+        } else if (e.getDestination().getHolder(false) instanceof DoubleChest) {
+            loc =  ((DoubleChest) e.getDestination().getHolder(false)).getLocation();
         }
 
         if (loc != null) {
             Shop shop = plugin.getShopUtils().getShop(loc);
             if (shop != null && plugin.getHologramFormat().isDynamic()) {
-                shop.updateHologramText();
+                // Hoppers move items every few ticks; coalesce into one update per tick
+                plugin.getUpdater().queueHologramUpdate(shop);
             }
         }
     }
@@ -85,16 +88,8 @@ public class ShopUpdateListener implements Listener {
         new BukkitRunnable(){
             @Override
             public void run() {
-                for (Shop shop : plugin.getShopUtils().getShops()) {
-                    if (shop.hasItem()) {
-                        shop.getItem().resetVisible(e.getPlayer());
-                    }
-                    if (shop.hasHologram()) {
-                        shop.getHologram().resetVisible(e.getPlayer());
-                    }
-                }
-        
-                plugin.getShopUtils().resetPlayerLocation(e.getPlayer());
+                // Only the shops shown to this player need to be reset
+                plugin.getShopUtils().forgetPlayer(e.getPlayer());
             }
         }.runTaskLater(plugin, 1L);
     }
@@ -102,14 +97,7 @@ public class ShopUpdateListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerChangedWorld(PlayerChangedWorldEvent e) {
         final Player p = e.getPlayer();
-        World from = e.getFrom();
-        for (Shop shop : plugin.getShopUtils().getShops()) {
-            if (shop.getLocation().getWorld().equals(from)) {
-                if (shop.hasItem()) shop.getItem().resetVisible(p);
-                if (shop.hasHologram()) shop.getHologram().resetVisible(p);
-            }
-        }
-        plugin.getShopUtils().resetPlayerLocation(p);
+        plugin.getShopUtils().forgetPlayer(p);
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -123,11 +111,7 @@ public class ShopUpdateListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerRespawn(PlayerRespawnEvent e) {
         final Player p = e.getPlayer();
-        for (Shop shop : plugin.getShopUtils().getShops()) {
-            if (shop.hasItem()) shop.getItem().resetVisible(p);
-            if (shop.hasHologram()) shop.getHologram().resetVisible(p);
-        }
-        plugin.getShopUtils().resetPlayerLocation(p);
+        plugin.getShopUtils().forgetPlayer(p);
         new BukkitRunnable() {
             @Override
             public void run() {
@@ -145,9 +129,10 @@ public class ShopUpdateListener implements Listener {
         if (to == null) return;
         final Player p = e.getPlayer();
 
+        // Compare block coordinates; getChunk() may load the target chunk synchronously
         if (!from.getWorld().equals(to.getWorld())
-                || from.getChunk().getX() != to.getChunk().getX()
-                || from.getChunk().getZ() != to.getChunk().getZ()) {
+                || (from.getBlockX() >> 4) != (to.getBlockX() >> 4)
+                || (from.getBlockZ() >> 4) != (to.getBlockZ() >> 4)) {
             plugin.getShopUtils().resetPlayerLocation(p);
             new BukkitRunnable() {
                 @Override
@@ -157,6 +142,11 @@ public class ShopUpdateListener implements Listener {
                     }
                 }
             }.runTaskLater(plugin, 5L);
+        } else {
+            // Same chunk (e.g. rotation only): no PlayerMoveEvent follows, so update next tick
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                if (p.isOnline()) plugin.getShopUtils().updateShops(p, true);
+            });
         }
     }
 
@@ -179,20 +169,34 @@ public class ShopUpdateListener implements Listener {
      * Looks up the shops whose main location lies in the given chunk. Only the
      * chunk's chests are checked, instead of every loaded shop on the server.
      */
-    private Set<Shop> getShopsInChunk(Chunk chunk) {
-        Set<Shop> shops = new HashSet<>();
-        for (BlockState state : chunk.getTileEntities(
-                b -> b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST, false)) {
-            Shop shop = plugin.getShopUtils().getShop(state.getLocation());
-            if (shop == null) continue;
+    private Collection<Shop> getShopsInChunk(Chunk chunk) {
+        // Uses the chunk index of ShopUtils instead of scanning the chunk's tile entities
+        return plugin.getShopUtils().getShopsInChunk(chunk);
+    }
 
-            // The other half of a double chest shop may lie in a neighbouring chunk
-            Location loc = shop.getLocation();
-            if ((loc.getBlockX() >> 4) == chunk.getX() && (loc.getBlockZ() >> 4) == chunk.getZ()) {
-                shops.add(shop);
+    /**
+     * Removes shop entities that no loaded shop owns any more, e.g. entities that
+     * were in an unloading chunk and came back with it, or leftovers of a crash.
+     */
+    @EventHandler
+    public void onEntitiesLoad(org.bukkit.event.world.EntitiesLoadEvent e) {
+        org.bukkit.NamespacedKey key = plugin.getShopEntityKey();
+        java.util.Set<java.util.UUID> owned = null;
+        for (org.bukkit.entity.Entity entity : e.getEntities()) {
+            if (!entity.getPersistentDataContainer().has(key, org.bukkit.persistence.PersistentDataType.BYTE)) continue;
+            if (owned == null) {
+                owned = new java.util.HashSet<>();
+                for (Shop shop : getShopsInChunk(e.getChunk())) {
+                    if (shop.hasHologram()) {
+                        for (de.epiceric.shopchest.nms.ArmorStandWrapper w : shop.getHologram().getArmorStandWrappers()) {
+                            owned.add(w.getUuid());
+                        }
+                    }
+                    if (shop.hasItem() && shop.getItem().getEntityUuid() != null) owned.add(shop.getItem().getEntityUuid());
+                }
             }
+            if (!owned.contains(entity.getUniqueId())) entity.remove();
         }
-        return shops;
     }
 
     @EventHandler
@@ -224,7 +228,7 @@ public class ShopUpdateListener implements Listener {
                             }
                             plugin.debug("Loaded " + result + " shops in " + chunkCount + " chunks");
                         }
-            
+
                         @Override
                         public void onError(Throwable throwable) {
                             // Database connection probably failed => disable plugin to prevent more errors

@@ -50,8 +50,8 @@ public class ChestProtectListener implements Listener {
     private void remove(final Shop shop, final Block b, final Player p) {
         if (shop.getInventoryHolder() instanceof DoubleChest) {
             DoubleChest dc = (DoubleChest) shop.getInventoryHolder();
-            final Chest l = (Chest) dc.getLeftSide();
-            final Chest r = (Chest) dc.getRightSide();
+            final Chest l = (Chest) dc.getLeftSide(false);
+            final Chest r = (Chest) dc.getRightSide(false);
 
             Location loc = (b.getLocation().equals(l.getLocation()) ? r.getLocation() : l.getLocation());
             final Shop newShop = new Shop(shop.getID(), plugin, shop.getVendor(), shop.getProduct(), loc, shop.getBuyPrice(), shop.getSellPrice(), shop.getShopType());
@@ -145,14 +145,14 @@ public class ChestProtectListener implements Listener {
         // has not been updated yet in this event (for 1.13+)
 
         if (Utils.getMajorVersion() < 13) {
-            InventoryHolder ih = c.getInventory().getHolder();
+            InventoryHolder ih = c.getInventory().getHolder(false);
             if (!(ih instanceof DoubleChest)) {
                 return;
             }
 
             DoubleChest dc = (DoubleChest) ih;
-            Chest l = (Chest) dc.getLeftSide();
-            Chest r = (Chest) dc.getRightSide();
+            Chest l = (Chest) dc.getLeftSide(false);
+            Chest r = (Chest) dc.getRightSide(false);
 
             if (b.getLocation().equals(l.getLocation())) {
                 b2 = r.getBlock();
@@ -230,20 +230,20 @@ public class ChestProtectListener implements Listener {
     public void onItemMove(InventoryMoveItemEvent e) {
         if ((e.getSource().getType().equals(InventoryType.CHEST)) && (!e.getInitiator().getType().equals(InventoryType.PLAYER))) {
 
-            if (e.getSource().getHolder() instanceof DoubleChest) {
+            if (e.getSource().getHolder(false) instanceof DoubleChest) {
 
                 // No "not a shop" cache here: it was never invalidated, so hoppers
                 // could drain a double chest that became a shop later.
-                DoubleChest dc = (DoubleChest) e.getSource().getHolder();
-                Chest r = (Chest) dc.getRightSide();
-                Chest l = (Chest) dc.getLeftSide();
+                DoubleChest dc = (DoubleChest) e.getSource().getHolder(false);
+                Chest r = (Chest) dc.getRightSide(false);
+                Chest l = (Chest) dc.getLeftSide(false);
 
                 if (shopUtils.isShop(r.getLocation()) || shopUtils.isShop(l.getLocation())) {
                     e.setCancelled(true);
                 }
 
-            } else if (e.getSource().getHolder() instanceof Chest) {
-                Chest c = (Chest) e.getSource().getHolder();
+            } else if (e.getSource().getHolder(false) instanceof Chest) {
+                Chest c = (Chest) e.getSource().getHolder(false);
 
                 if (shopUtils.isShop(c.getLocation())) e.setCancelled(true);
             }

@@ -38,6 +38,34 @@ public class ShopUtils {
     private final Map<UUID, Location> playerLocation = new ConcurrentHashMap<>();
     private final Map<Location, Shop> shopLocation = new ConcurrentHashMap<>();
     private final Collection<Shop> shopLocationValues = Collections.unmodifiableCollection(shopLocation.values());
+
+    // Spatial index: world UID -> chunk key -> shops whose main location is in that chunk.
+    // Lets visibility updates look only at nearby shops instead of every loaded shop.
+    private final Map<UUID, Map<Long, Set<Shop>>> shopsByChunk = new HashMap<>();
+    // Shops whose hologram or item is currently shown to a player, so they can be
+    // hidden again once out of range without scanning all shops.
+    private final Map<UUID, Set<Shop>> trackedShops = new HashMap<>();
+    // Last visibility update per player, used to throttle PlayerMoveEvent driven updates
+    private final Map<UUID, Long> lastUpdateNanos = new HashMap<>();
+    private static final long UPDATE_INTERVAL_NANOS = 100_000_000L; // 2 ticks
+    private final Set<UUID> throttledPlayers = new HashSet<>();
+
+    /**
+     * Runs the updates skipped by the throttle. Called every tick by {@link ShopUpdater}.
+     */
+    public void flushThrottledUpdates() {
+        if (throttledPlayers.isEmpty()) return;
+        long now = System.nanoTime();
+        java.util.Iterator<UUID> it = throttledPlayers.iterator();
+        while (it.hasNext()) {
+            UUID uuid = it.next();
+            Long last = lastUpdateNanos.get(uuid);
+            if (last != null && now - last < UPDATE_INTERVAL_NANOS) continue;
+            it.remove();
+            Player player = Bukkit.getPlayer(uuid);
+            if (player != null) updateShops(player);
+        }
+    }
     private final ShopChest plugin;
 
     public ShopUtils(ShopChest plugin) {
@@ -101,8 +129,8 @@ public class ShopUtils {
 
         if (ih instanceof DoubleChest) {
             DoubleChest dc = (DoubleChest) ih;
-            Chest r = (Chest) dc.getRightSide();
-            Chest l = (Chest) dc.getLeftSide();
+            Chest r = (Chest) dc.getRightSide(false);
+            Chest l = (Chest) dc.getLeftSide(false);
 
             plugin.debug("Added shop as double chest. (#" + shop.getID() + ")");
 
@@ -113,6 +141,7 @@ public class ShopUtils {
 
             shopLocation.put(shop.getLocation(), shop);
         }
+        indexShop(shop);
 
         if (addToDatabase) {
             if (shop.getShopType() != ShopType.ADMIN) {
@@ -146,6 +175,8 @@ public class ShopUtils {
             shop.removeHologram();
         });
         shopLocation.clear();
+        shopsByChunk.clear();
+        trackedShops.clear();
     }
 
     /** Remove a shop. May not work properly if double chest doesn't exist!
@@ -162,8 +193,8 @@ public class ShopUtils {
 
             if (ih instanceof DoubleChest) {
                 DoubleChest dc = (DoubleChest) ih;
-                Chest r = (Chest) dc.getRightSide();
-                Chest l = (Chest) dc.getLeftSide();
+                Chest r = (Chest) dc.getRightSide(false);
+                Chest l = (Chest) dc.getLeftSide(false);
 
                 shopLocation.remove(r.getLocation());
                 shopLocation.remove(l.getLocation());
@@ -174,6 +205,7 @@ public class ShopUtils {
             shop.removeItem();
             shop.removeHologram();
         }
+        unindexShop(shop);
 
         if (removeFromDatabase) {
             if (shop.getShopType() != ShopType.ADMIN) {
@@ -215,6 +247,7 @@ public class ShopUtils {
 
         toRemove.forEach((loc, shop) -> {
             shopLocation.remove(loc);
+            unindexShop(shop);
 
             shop.removeItem();
             shop.removeHologram();
@@ -401,6 +434,77 @@ public class ShopUtils {
         });
     }
 
+    private static long chunkKey(int chunkX, int chunkZ) {
+        return ((long) chunkX << 32) | (chunkZ & 0xFFFFFFFFL);
+    }
+
+    private void indexShop(Shop shop) {
+        Location loc = shop.getLocation();
+        if (loc.getWorld() == null) return;
+        shopsByChunk.computeIfAbsent(loc.getWorld().getUID(), k -> new HashMap<>())
+                .computeIfAbsent(chunkKey(loc.getBlockX() >> 4, loc.getBlockZ() >> 4),
+                        k -> Collections.newSetFromMap(new IdentityHashMap<>()))
+                .add(shop);
+    }
+
+    private void unindexShop(Shop shop) {
+        Location loc = shop.getLocation();
+        if (loc.getWorld() == null) return;
+        Map<Long, Set<Shop>> world = shopsByChunk.get(loc.getWorld().getUID());
+        if (world == null) return;
+        long key = chunkKey(loc.getBlockX() >> 4, loc.getBlockZ() >> 4);
+        Set<Shop> set = world.get(key);
+        if (set == null) return;
+        set.remove(shop);
+        if (set.isEmpty()) world.remove(key);
+        if (world.isEmpty()) shopsByChunk.remove(loc.getWorld().getUID());
+    }
+
+    /**
+     * Get the loaded shops whose main chest lies in the given chunk
+     * @param chunk Chunk
+     * @return Copy of the shops in that chunk (empty if none)
+     */
+    public Collection<Shop> getShopsInChunk(Chunk chunk) {
+        Map<Long, Set<Shop>> world = shopsByChunk.get(chunk.getWorld().getUID());
+        if (world == null) return Collections.emptyList();
+        Set<Shop> set = world.get(chunkKey(chunk.getX(), chunk.getZ()));
+        return set == null ? Collections.emptyList() : new ArrayList<>(set);
+    }
+
+    private Set<Shop> getNearbyShops(Location center, double range) {
+        Set<Shop> result = Collections.newSetFromMap(new IdentityHashMap<>());
+        if (center.getWorld() == null) return result;
+        Map<Long, Set<Shop>> world = shopsByChunk.get(center.getWorld().getUID());
+        if (world == null) return result;
+        int radius = (int) Math.ceil(range / 16.0) + 1;
+        int cx = center.getBlockX() >> 4;
+        int cz = center.getBlockZ() >> 4;
+        for (int x = cx - radius; x <= cx + radius; x++) {
+            for (int z = cz - radius; z <= cz + radius; z++) {
+                Set<Shop> set = world.get(chunkKey(x, z));
+                if (set != null) result.addAll(set);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Hides every shop entity currently shown to the player and forgets the
+     * player's state. Used on quit, world change and respawn.
+     * @param player Player
+     */
+    public void forgetPlayer(Player player) {
+        Set<Shop> tracked = trackedShops.remove(player.getUniqueId());
+        if (tracked != null) {
+            for (Shop shop : tracked) {
+                if (shop.hasItem()) shop.getItem().resetVisible(player);
+                if (shop.hasHologram()) shop.getHologram().resetVisible(player);
+            }
+        }
+        resetPlayerLocation(player);
+    }
+
     /**
      * Update hologram and item of all shops for a player
      * @param player Player to show the updates
@@ -416,10 +520,22 @@ public class ShopUtils {
      */
     public void updateShops(Player player, boolean force) {
         Location current = player.getLocation();
-        if (!force && !hasMoved(playerLocation.get(player.getUniqueId()), current)) {
-            // Player has not moved, so don't calculate shops again.
-            return;
+        long now = System.nanoTime();
+        if (!force) {
+            // PlayerMoveEvent fires up to 20 times a second per player; a few
+            // updates per second are enough for holograms and items.
+            Long last = lastUpdateNanos.get(player.getUniqueId());
+            if (last != null && now - last < UPDATE_INTERVAL_NANOS) {
+                // Don't lose the final position/rotation: update again shortly
+                throttledPlayers.add(player.getUniqueId());
+                return;
+            }
+            if (!hasMoved(playerLocation.get(player.getUniqueId()), current)) {
+                // Player has not moved, so don't calculate shops again.
+                return;
+            }
         }
+        lastUpdateNanos.put(player.getUniqueId(), now);
 
         if (Config.onlyShowShopsInSight) {
             updateVisibleShops(player);
@@ -442,16 +558,6 @@ public class ShopUtils {
     }
 
     /**
-     * Iterates every loaded shop once, without copying the backing map.
-     * Double chest shops are registered under two locations.
-     */
-    private Iterable<Shop> uniqueShops() {
-        Set<Shop> unique = Collections.newSetFromMap(new IdentityHashMap<>());
-        unique.addAll(shopLocationValues);
-        return unique;
-    }
-
-    /**
      * Remove a saved location of a player to force a recalculation
      * of whether the hologram should be visible.
      * This should only be called when really needed
@@ -459,6 +565,8 @@ public class ShopUtils {
      */
     public void resetPlayerLocation(Player player) {
         playerLocation.remove(player.getUniqueId());
+        throttledPlayers.remove(player.getUniqueId());
+        lastUpdateNanos.remove(player.getUniqueId());
     }
 
     private void updateVisibleShops(Player player) {
@@ -507,31 +615,24 @@ public class ShopUtils {
         }
 
         Location playerLocation = player.getLocation();
+        Set<Shop> nearby = getNearbyShops(playerLocation, Math.max(maxDist, Config.maximalItemDistance));
+        if (nearestShop != null) nearby.add(nearestShop);
+        Set<Shop> nowShown = Collections.newSetFromMap(new IdentityHashMap<>());
 
-        for (Shop shop : uniqueShops()) {
-            Location shopLocation = shop.getLocation();
-            World shopWorld = shopLocation.getWorld();
-
-            if (shopWorld == null || !shopWorld.equals(playerWorld)) {
-                if (shop.hasHologram()) {
-                    shop.getHologram().hidePlayer(player);
-                }
-                if (shop.hasItem()) {
-                    shop.getItem().hidePlayer(player);
-                }
-                continue;
-            }
-
+        for (Shop shop : nearby) {
             if (!shop.equals(nearestShop) && shop.hasHologram()) {
                 shop.getHologram().hidePlayer(player);
             }
 
             // Display item based on distance
-            double distSquared = shopLocation.distanceSquared(playerLocation);
+            double distSquared = shop.getLocation().distanceSquared(playerLocation);
+            if (distSquared <= itemDistSquared) {
+                shop.checkOrRecreateEntities();
+            }
             if (shop.hasItem()) {
                 if (distSquared <= itemDistSquared) {
-                    shop.checkOrRecreateEntities();
                     shop.getItem().showPlayer(player);
+                    nowShown.add(shop);
                 } else {
                     shop.getItem().hidePlayer(player);
                 }
@@ -541,7 +642,10 @@ public class ShopUtils {
         if (nearestShop != null && nearestShop.hasHologram()) {
             nearestShop.checkOrRecreateEntities();
             nearestShop.getHologram().showPlayer(player);
+            nowShown.add(nearestShop);
         }
+
+        hideOutOfRange(player, nearby, nowShown);
     }
 
     private void updateNearestShops(Player p) {
@@ -552,26 +656,20 @@ public class ShopUtils {
         World playerWorld = playerLocation.getWorld();
         if (playerWorld == null) return;
 
-        for (Shop shop : uniqueShops()) {
-            Location shopLocation = shop.getLocation();
-            World shopWorld = shopLocation.getWorld();
+        Set<Shop> nearby = getNearbyShops(playerLocation, Math.max(Config.maximalDistance, Config.maximalItemDistance));
+        Set<Shop> nowShown = Collections.newSetFromMap(new IdentityHashMap<>());
 
-            if (shopWorld == null || !shopWorld.equals(playerWorld)) {
-                if (shop.hasHologram()) {
-                    shop.getHologram().hidePlayer(p);
-                }
-                if (shop.hasItem()) {
-                    shop.getItem().hidePlayer(p);
-                }
-                continue;
+        for (Shop shop : nearby) {
+            double distSqr = shop.getLocation().distanceSquared(playerLocation);
+
+            if (distSqr <= holoDistSqr || distSqr <= itemDistSqr) {
+                shop.checkOrRecreateEntities();
             }
-
-            double distSqr = shopLocation.distanceSquared(playerLocation);
 
             if (shop.hasHologram()) {
                 if (distSqr <= holoDistSqr) {
-                    shop.checkOrRecreateEntities();
                     shop.getHologram().showPlayer(p);
+                    nowShown.add(shop);
                 } else {
                     shop.getHologram().hidePlayer(p);
                 }
@@ -579,12 +677,27 @@ public class ShopUtils {
 
             if (shop.hasItem()) {
                 if (distSqr <= itemDistSqr) {
-                    shop.checkOrRecreateEntities();
                     shop.getItem().showPlayer(p);
+                    nowShown.add(shop);
                 } else {
                     shop.getItem().hidePlayer(p);
                 }
             }
+        }
+
+        hideOutOfRange(p, nearby, nowShown);
+    }
+
+    /**
+     * Hides shops that were shown to the player before but are no longer nearby.
+     */
+    private void hideOutOfRange(Player player, Set<Shop> nearby, Set<Shop> nowShown) {
+        Set<Shop> previous = trackedShops.put(player.getUniqueId(), nowShown);
+        if (previous == null) return;
+        for (Shop shop : previous) {
+            if (nowShown.contains(shop) || nearby.contains(shop)) continue;
+            if (shop.hasHologram()) shop.getHologram().hidePlayer(player);
+            if (shop.hasItem()) shop.getItem().hidePlayer(player);
         }
     }
 }

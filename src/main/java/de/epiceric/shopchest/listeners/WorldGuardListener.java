@@ -77,8 +77,8 @@ public class WorldGuardListener implements Listener {
             } else if (event.getOriginalEvent() instanceof InventoryOpenEvent) {
                 InventoryOpenEvent orig = (InventoryOpenEvent) event.getOriginalEvent();
 
-                if (orig.getInventory().getHolder() instanceof Chest) {
-                    if (isAllowed(player, ((Chest) orig.getInventory().getHolder()).getLocation())) {
+                if (orig.getInventory().getHolder(false) instanceof Chest) {
+                    if (isAllowed(player, ((Chest) orig.getInventory().getHolder(false)).getLocation())) {
                         event.setResult(Result.ALLOW);
                     }
                 }

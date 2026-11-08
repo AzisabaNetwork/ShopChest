@@ -90,26 +90,22 @@ public class ShopInteractListener implements Listener {
 
         Inventory chestInv = e.getInventory();
 
-        if (!(chestInv.getHolder() instanceof Chest || chestInv.getHolder() instanceof DoubleChest)) {
+        if (!(chestInv.getHolder(false) instanceof Chest || chestInv.getHolder(false) instanceof DoubleChest)) {
             return;
         }
 
         Location loc = null;
-        if (chestInv.getHolder() instanceof Chest) {
-            loc = ((Chest) chestInv.getHolder()).getLocation();
-        } else if (chestInv.getHolder() instanceof DoubleChest) {
-            loc = ((DoubleChest) chestInv.getHolder()).getLocation();
+        if (chestInv.getHolder(false) instanceof Chest) {
+            loc = ((Chest) chestInv.getHolder(false)).getLocation();
+        } else if (chestInv.getHolder(false) instanceof DoubleChest) {
+            loc = ((DoubleChest) chestInv.getHolder(false)).getLocation();
         }
 
         final Shop shop = plugin.getShopUtils().getShop(loc);
         if (shop == null) return;
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                shop.updateHologramText();
-            }
-        }.runTaskLater(plugin, 1L);
+        // Runs next tick (after the click is applied); repeated clicks in one tick are merged
+        plugin.getUpdater().queueHologramUpdate(shop);
     }
 
     @EventHandler(priority = EventPriority.HIGH)

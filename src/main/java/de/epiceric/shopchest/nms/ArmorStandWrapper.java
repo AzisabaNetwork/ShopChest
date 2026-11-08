@@ -47,13 +47,14 @@ public class ArmorStandWrapper {
             textDisplay.setDefaultBackground(false);
             textDisplay.setPersistent(false);
             textDisplay.setInvulnerable(true);
+            // Hologram visibility is managed per player by Hologram. Hidden by
+            // default, so nobody (incl. players joining later) sees it until shown,
+            // and hiding from a player it was never shown to is a no-op.
+            textDisplay.setVisibleByDefault(false);
+            // Marker used to remove orphaned displays (see ShopUpdateListener#onEntitiesLoad)
+            textDisplay.getPersistentDataContainer().set(plugin.getShopEntityKey(),
+                    org.bukkit.persistence.PersistentDataType.BYTE, (byte) 1);
         });
-
-        // Hologram visibility is managed per player by Hologram, so newly
-        // created displays must not flash to players outside its view range.
-        for (Player player : location.getWorld().getPlayers()) {
-            player.hideEntity(plugin, display);
-        }
     }
 
     public boolean isValid() {
@@ -62,13 +63,15 @@ public class ArmorStandWrapper {
 
     public void setVisible(Player player, boolean visible) {
         if (display == null || !display.isValid()) return;
-        if (!display.getWorld().equals(player.getWorld())) return;
 
         if (visible) {
+            if (!display.getWorld().equals(player.getWorld())) return;
             if (!player.canSee(display)) {
                 player.showEntity(plugin, display);
             }
         } else {
+            // Also hide across worlds: otherwise the per-player "shown" state
+            // would survive a world change and the display would reappear on return.
             if (player.canSee(display)) {
                 player.hideEntity(plugin, display);
             }
@@ -93,7 +96,8 @@ public class ArmorStandWrapper {
     }
 
     public void remove() {
-        if (display != null && display.isValid()) {
+        // Also remove invalid (e.g. chunk being unloaded) displays; otherwise they come back on reload
+        if (display != null && !display.isDead()) {
             display.remove();
         }
     }

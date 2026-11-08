@@ -11,8 +11,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.shop.Shop;
 
 public class ShopUpdater {
+
+    private final Set<Shop> pendingHologramUpdates = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
     private static final int SHOPS_CREATED_PER_TICK = 2;
 
     private static class EntityCreation {
@@ -25,7 +28,7 @@ public class ShopUpdater {
         }
     }
 
-    
+
     private final ShopChest plugin;
     private final Queue<EntityCreation> entityCreations = new ConcurrentLinkedQueue<>();
     private boolean running;
@@ -72,7 +75,7 @@ public class ShopUpdater {
 
     /**
      * Queue a task to update shops for the given player
-     * 
+     *
      * @param player Player to show updates
      */
     public void updateShops(Player player) {
@@ -81,7 +84,7 @@ public class ShopUpdater {
 
     /**
      * Queue a task to update shops for players in the given world
-     * 
+     *
      * @param world World in whose players to show updates
      */
     public void updateShops(World world) {
@@ -120,11 +123,30 @@ public class ShopUpdater {
      * Queue Bukkit entity creation so loading many shops does not stall one
      * server tick. The supplied runnable is always invoked on the main thread.
      */
+    /**
+     * Queue a hologram text update for the next tick. Multiple requests for the
+     * same shop within one tick result in a single update.
+     * @param shop Shop whose hologram text should be refreshed
+     */
+    public void queueHologramUpdate(Shop shop) {
+        if (pendingHologramUpdates.add(shop) && pendingHologramUpdates.size() == 1) {
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                Shop[] shops = pendingHologramUpdates.toArray(new Shop[0]);
+                pendingHologramUpdates.clear();
+                for (Shop s : shops) {
+                    if (s.isCreated()) s.updateHologramText();
+                }
+            });
+        }
+    }
+
     public void queueEntityCreation(World world, Runnable runnable) {
         entityCreations.add(new EntityCreation(world, runnable));
     }
 
     private void processEntityCreations() {
+        plugin.getShopUtils().flushThrottledUpdates();
+
         Set<World> updatedWorlds = new HashSet<>();
 
         for (int i = 0; i < SHOPS_CREATED_PER_TICK; i++) {

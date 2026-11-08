@@ -322,8 +322,8 @@ public class Utils {
         InventoryHolder ih = shop.getInventoryHolder();
         if (ih instanceof DoubleChest) {
             DoubleChest dc = (DoubleChest) ih;
-            chestLocations.add(((Chest) dc.getLeftSide()).getLocation());
-            chestLocations.add(((Chest) dc.getRightSide()).getLocation());
+            chestLocations.add(((Chest) dc.getLeftSide(false)).getLocation());
+            chestLocations.add(((Chest) dc.getRightSide(false)).getLocation());
         } else {
             chestLocations.add(shop.getLocation());
         }

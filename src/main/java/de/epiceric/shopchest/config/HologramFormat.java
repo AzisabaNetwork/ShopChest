@@ -25,6 +25,9 @@ public class HologramFormat {
     // e.g.: "STONE" == "DIAMOND_SWORD"
     private static final Pattern SIMPLE_STRING_CONDITION = Pattern.compile("^\"([^\"]*)\" ([=!]=) \"([^\"]*)\"$");
 
+    private static final Pattern PLACEHOLDER_SCRIPT = Pattern.compile("\\{([^}]+)}");
+
+    private volatile Boolean dynamic;
     private ShopChest plugin;
     private File configFile;
     private YamlConfiguration config;
@@ -71,12 +74,22 @@ public class HologramFormat {
 
     public void reload() {
         config = YamlConfiguration.loadConfiguration(configFile);
+        dynamic = null;
     }
 
     /**
      * @return Whether the hologram text has to change dynamically without reloading
      */
     public boolean isDynamic() {
+        // Called for every hopper transfer; the result only changes on reload
+        Boolean cached = dynamic;
+        if (cached != null) return cached;
+        boolean result = computeDynamic();
+        dynamic = result;
+        return result;
+    }
+
+    private boolean computeDynamic() {
         int count = getLineCount();
         for (int i = 0; i < count; i++) {
             ConfigurationSection options = config.getConfigurationSection("lines." + i + ".options");
@@ -107,7 +120,7 @@ public class HologramFormat {
         return config.getConfigurationSection("lines").getKeys(false).size();
     }
 
-    /** 
+    /**
      * @return Configuration of the "hologram-format.yml" file
      */
     public YamlConfiguration getConfig() {
@@ -153,7 +166,7 @@ public class HologramFormat {
      * @return Result of the condition
      */
     public String evalPlaceholder(String string, Map<Placeholder, Object> values) {
-        Matcher matcher = Pattern.compile("\\{([^}]+)}").matcher(string);
+        Matcher matcher = PLACEHOLDER_SCRIPT.matcher(string);
         String newString = string;
 
         while (matcher.find()) {

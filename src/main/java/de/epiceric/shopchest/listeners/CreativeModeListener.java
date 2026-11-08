@@ -99,8 +99,8 @@ public class CreativeModeListener implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onInventoryMove(InventoryMoveItemEvent e) {
         // Cancel any inventory movement if SelectClickType is set
-        if (e.getSource().getHolder() instanceof Player) {
-            Player p = (Player) e.getSource().getHolder();
+        if (e.getSource().getHolder(false) instanceof Player) {
+            Player p = (Player) e.getSource().getHolder(false);
 
             ClickType clickType = ClickType.getPlayerClickType(p);
             if (clickType instanceof SelectClickType)

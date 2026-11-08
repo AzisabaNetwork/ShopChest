@@ -36,11 +36,16 @@ public class ShopItem {
             // save files so chunk unloads and restarts do not leave orphan item entities.
             entity.setUnlimitedLifetime(true);
             entity.setPersistent(false);
+            // Hidden by default; visibility is managed per player (see Hologram)
+            entity.setVisibleByDefault(false);
+            // Marker used to remove orphaned items (see ShopUpdateListener#onEntitiesLoad)
+            entity.getPersistentDataContainer().set(plugin.getShopEntityKey(),
+                    org.bukkit.persistence.PersistentDataType.BYTE, (byte) 1);
         });
+    }
 
-        for (Player player : location.getWorld().getPlayers()) {
-            player.hideEntity(plugin, item);
-        }
+    public UUID getEntityUuid() {
+        return item == null ? null : item.getUniqueId();
     }
 
     public boolean isValid() {
@@ -61,9 +66,9 @@ public class ShopItem {
 
     public void setVisible(Player player, boolean visible) {
         if (item == null || !item.isValid()) return;
-        if (!item.getWorld().equals(player.getWorld())) return;
 
         if (visible) {
+            if (!item.getWorld().equals(player.getWorld())) return;
             if (!player.canSee(item)) {
                 player.showEntity(plugin, item);
             }
@@ -79,7 +84,8 @@ public class ShopItem {
     }
 
     public void showPlayer(Player player, boolean force) {
-        viewers.add(player.getUniqueId());
+        // Already shown: skip the per-entity canSee() lookups
+        if (!viewers.add(player.getUniqueId()) && !force) return;
         setVisible(player, true);
     }
 
@@ -88,23 +94,28 @@ public class ShopItem {
     }
 
     public void hidePlayer(Player player, boolean force) {
-        viewers.remove(player.getUniqueId());
+        // Entities are hidden by default, so a player it was never shown to
+        // needs no work. This used to run for every shop on every move.
+        if (!viewers.remove(player.getUniqueId()) && !force) return;
         setVisible(player, false);
     }
 
     public void resetVisible(Player player) {
-        viewers.remove(player.getUniqueId());
+        if (viewers.remove(player.getUniqueId()) && player.isOnline()) {
+            setVisible(player, false);
+        }
     }
 
     public void remove() {
         viewers.clear();
-        if (item != null && item.isValid()) {
+        // Also remove invalid (e.g. chunk being unloaded) items; otherwise they come back on reload
+        if (item != null && !item.isDead()) {
             item.remove();
         }
     }
 
     public void resetForPlayer(Player player) {
-        hidePlayer(player);
-        showPlayer(player);
+        hidePlayer(player, true);
+        showPlayer(player, true);
     }
 }

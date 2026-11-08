@@ -343,6 +343,16 @@ public class ShopChest extends JavaPlugin {
         }.runTaskAsynchronously(this);
     }
 
+    /**
+     * @return Key of the persistent data marker put on every hologram/item entity of a shop
+     */
+    public org.bukkit.NamespacedKey getShopEntityKey() {
+        if (shopEntityKey == null) shopEntityKey = new org.bukkit.NamespacedKey(this, "shop_entity");
+        return shopEntityKey;
+    }
+
+    private org.bukkit.NamespacedKey shopEntityKey;
+
     private void registerListeners() {
         debug("Registering listeners...");
         getServer().getPluginManager().registerEvents(new ShopUpdateListener(this), this);
@@ -497,7 +507,13 @@ public class ShopChest extends JavaPlugin {
      * @return Whether Townia's public service API is available
      */
     public boolean hasTownia() {
-        return Config.enableTownyIntegration && TowniaAPI.get() != null;
+        if (!Config.enableTownyIntegration || !Bukkit.getPluginManager().isPluginEnabled("Townia")) return false;
+        try {
+            return TowniaAPI.get() != null;
+        } catch (NoClassDefFoundError e) {
+            // Townia is a soft dependency; its API classes are absent when it is not installed
+            return false;
+        }
     }
 
     /**

@@ -96,7 +96,8 @@ public class Hologram {
      * @param force Whether to force showing the hologram
      */
     public void showPlayer(Player p, boolean force) {
-        viewers.add(p.getUniqueId());
+        // Already shown: skip the per-entity canSee() lookups
+        if (!viewers.add(p.getUniqueId()) && !force) return;
         togglePlayer(p, true);
     }
 
@@ -112,7 +113,9 @@ public class Hologram {
      * @param force Whether to force hiding the hologram
      */
     public void hidePlayer(Player p, boolean force) {
-        viewers.remove(p.getUniqueId());
+        // Entities are hidden by default, so a player it was never shown to
+        // needs no work. This used to run for every shop on every move.
+        if (!viewers.remove(p.getUniqueId()) && !force) return;
         togglePlayer(p, false);
     }
 
@@ -139,7 +142,9 @@ public class Hologram {
      * @param p Player whose visibility status will be reset
      */
     public void resetVisible(Player p) {
-        viewers.remove(p.getUniqueId());
+        if (viewers.remove(p.getUniqueId()) && p.isOnline()) {
+            togglePlayer(p, false);
+        }
     }
 
     private void togglePlayer(Player p, boolean visible) {

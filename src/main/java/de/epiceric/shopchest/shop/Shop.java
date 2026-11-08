@@ -232,7 +232,7 @@ public class Shop {
     }
 
     /**
-     * Runs everything that needs to be called synchronously in order 
+     * Runs everything that needs to be called synchronously in order
      * to prepare creating the hologram.
      */
     private PreCreateResult preCreateHologram() {
@@ -247,8 +247,8 @@ public class Shop {
 
         if (ih instanceof DoubleChest) {
             DoubleChest dc = (DoubleChest) ih;
-            Chest r = (Chest) dc.getRightSide();
-            Chest l = (Chest) dc.getLeftSide();
+            Chest r = (Chest) dc.getRightSide(false);
+            Chest l = (Chest) dc.getLeftSide(false);
 
             chests[0] = r;
             chests[1] = l;
@@ -298,6 +298,10 @@ public class Shop {
 
         ItemStack itemStack = getProduct().getItemStack();
 
+        // Counting scans the whole chest inventory; do it once instead of twice each
+        int stock = Utils.getAmount(inventory, itemStack);
+        int chestSpace = Utils.getFreeSpaceForItem(inventory, itemStack);
+
         Map<HologramFormat.Requirement, Object> requirements = new EnumMap<>(HologramFormat.Requirement.class);
         requirements.put(HologramFormat.Requirement.VENDOR, getVendor().getName());
         requirements.put(HologramFormat.Requirement.AMOUNT, getProduct().getAmount());
@@ -313,9 +317,9 @@ public class Shop {
         requirements.put(HologramFormat.Requirement.IS_BANNER_PATTERN, ItemUtils.isBannerPattern(itemStack));
         requirements.put(HologramFormat.Requirement.ADMIN_SHOP, getShopType() == ShopType.ADMIN);
         requirements.put(HologramFormat.Requirement.NORMAL_SHOP, getShopType() == ShopType.NORMAL);
-        requirements.put(HologramFormat.Requirement.IN_STOCK, Utils.getAmount(inventory, itemStack));
+        requirements.put(HologramFormat.Requirement.IN_STOCK, stock);
         requirements.put(HologramFormat.Requirement.MAX_STACK, itemStack.getMaxStackSize());
-        requirements.put(HologramFormat.Requirement.CHEST_SPACE, Utils.getFreeSpaceForItem(inventory, itemStack));
+        requirements.put(HologramFormat.Requirement.CHEST_SPACE, chestSpace);
         requirements.put(HologramFormat.Requirement.DURABILITY, itemStack.getDurability());
 
         Map<Placeholder, Object> placeholders = new EnumMap<>(Placeholder.class);
@@ -329,9 +333,9 @@ public class Shop {
         placeholders.put(Placeholder.MUSIC_TITLE, LanguageUtils.getMusicDiscName(itemStack.getType()));
         placeholders.put(Placeholder.BANNER_PATTERN_NAME, LanguageUtils.getBannerPatternName(itemStack.getType()));
         placeholders.put(Placeholder.GENERATION, LanguageUtils.getBookGenerationName(itemStack));
-        placeholders.put(Placeholder.STOCK, Utils.getAmount(inventory, itemStack));
+        placeholders.put(Placeholder.STOCK, stock);
         placeholders.put(Placeholder.MAX_STACK, itemStack.getMaxStackSize());
-        placeholders.put(Placeholder.CHEST_SPACE, Utils.getFreeSpaceForItem(inventory, itemStack));
+        placeholders.put(Placeholder.CHEST_SPACE, chestSpace);
         placeholders.put(Placeholder.DURABILITY, itemStack.getDurability());
 
         int lineCount = plugin.getHologramFormat().getLineCount();
@@ -520,8 +524,8 @@ public class Shop {
         Block b = getLocation().getBlock();
 
         if (b.getType() == Material.CHEST || b.getType() == Material.TRAPPED_CHEST) {
-            Chest chest = (Chest) b.getState();
-            return chest.getInventory().getHolder();
+            Chest chest = (Chest) b.getState(false);
+            return chest.getInventory().getHolder(false);
         }
 
         return null;
