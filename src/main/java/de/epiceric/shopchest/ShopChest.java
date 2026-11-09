@@ -58,6 +58,7 @@ import de.epiceric.shopchest.utils.ShopUtils;
 import de.epiceric.shopchest.utils.UpdateChecker;
 import de.epiceric.shopchest.utils.UpdateChecker.UpdateCheckerResult;
 import de.epiceric.shopchest.utils.Utils;
+import de.epiceric.shopchest.utils.legacy.LegacyItemMigrator;
 import me.ryanhamshire.GriefPrevention.GriefPrevention;
 import net.milkbowl.vault.economy.Economy;
 import net.azisaba.townia.api.TowniaAPI;
@@ -68,6 +69,7 @@ public class ShopChest extends JavaPlugin {
 
     private Config config;
     private HologramFormat hologramFormat;
+    private LegacyItemMigrator legacyItemMigrator;
     private ShopCommand shopCommand;
     private Economy econ = null;
     private Database database;
@@ -152,6 +154,7 @@ public class ShopChest extends JavaPlugin {
         }
 
         shopUtils = new ShopUtils(this);
+        legacyItemMigrator = new LegacyItemMigrator(this);
         saveResource("item_names.txt", true);
         LanguageUtils.load();
 
@@ -404,6 +407,9 @@ public class ShopChest extends JavaPlugin {
                     }
                 });
 
+                // Fix products saved on 1.15.2, including shops in chunks that are not loaded
+                if (Config.migrateLegacyItems) legacyItemMigrator.migrateDatabase();
+
                 shopUtils.loadShops(loadedChunks, new Callback<Integer>(ShopChest.this) {
                     @Override
                     public void onResult(Integer result) {
@@ -485,6 +491,13 @@ public class ShopChest extends JavaPlugin {
     /**
      * @return The {@link ShopUpdater} that schedules hologram and item updates
      */
+    /**
+     * @return Migrates shop products saved on 1.15.2 / MythicMobs 4
+     */
+    public LegacyItemMigrator getLegacyItemMigrator() {
+        return legacyItemMigrator;
+    }
+
     public ShopUpdater getUpdater() {
         return updater;
     }

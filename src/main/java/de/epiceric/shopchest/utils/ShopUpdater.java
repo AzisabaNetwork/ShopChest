@@ -134,7 +134,12 @@ public class ShopUpdater {
                 Shop[] shops = pendingHologramUpdates.toArray(new Shop[0]);
                 pendingHologramUpdates.clear();
                 for (Shop s : shops) {
-                    if (s.isCreated()) s.updateHologramText();
+                    try {
+                        if (s.isCreated()) s.updateHologramText();
+                    } catch (RuntimeException e) {
+                        plugin.getLogger().warning("Failed to update the hologram of shop #" + s.getID() + ": " + e);
+                        plugin.debug(e);
+                    }
                 }
             });
         }
@@ -155,7 +160,13 @@ public class ShopUpdater {
                 break;
             }
 
-            creation.runnable.run();
+            try {
+                creation.runnable.run();
+            } catch (RuntimeException e) {
+                // One broken shop must not stop the remaining creations of this tick
+                plugin.getLogger().warning("Failed to create shop entities: " + e);
+                plugin.debug(e);
+            }
             updatedWorlds.add(creation.world);
         }
 

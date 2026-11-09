@@ -124,6 +124,17 @@ public class Config {
     /**
      * Whether prices may contain decimals
      **/
+    /**
+     * Whether shop products saved on 1.15.2 / MythicMobs 4 get their MythicMobs ID back when loaded
+     **/
+    public static boolean migrateLegacyItems;
+
+    /**
+     * Whether items with the same MythicMobs ID count as the shop's product even if other
+     * item data differs (e.g. products and items migrated from 1.15.2 by different paths)
+     **/
+    public static boolean matchMythicItemsById;
+
     public static boolean allowDecimalsInPrice;
 
     /**
@@ -474,6 +485,8 @@ public class Config {
         maximumPrices = (plugin.getConfig().getConfigurationSection("maximum-prices") == null) ? new HashSet<String>() : plugin.getConfig().getConfigurationSection("maximum-prices").getKeys(true);
         allowDecimalsInPrice = plugin.getConfig().getBoolean("allow-decimals-in-price");
         allowBrokenItems = plugin.getConfig().getBoolean("allow-broken-items");
+        migrateLegacyItems = plugin.getConfig().getBoolean("migrate-legacy-items", true);
+        matchMythicItemsById = plugin.getConfig().getBoolean("match-mythic-items-by-id", true);
         autoCalculateItemAmount = (allowDecimalsInPrice && plugin.getConfig().getBoolean("auto-calculate-item-amount"));
         creativeSelectItem = plugin.getConfig().getBoolean("creative-select-item");
         blacklist = (plugin.getConfig().getStringList("blacklist") == null) ? new ArrayList<String>() : plugin.getConfig().getStringList("blacklist");

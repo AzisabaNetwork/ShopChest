@@ -397,6 +397,7 @@ public class ShopUtils {
             @Override
             public void onResult(Collection<Shop> result) {
                 Collection<Shop> loadedShops = new HashSet<>();
+                Map<Integer, String> migratedProducts = new HashMap<>();
 
                 for (Shop shop : result) {
                     Location loc = shop.getLocation();
@@ -416,11 +417,19 @@ public class ShopUtils {
                         continue;
                     }
 
+                    // Products saved on 1.15.2 may have lost their MythicMobs ID
+                    if (Config.migrateLegacyItems && shop.hasId()
+                            && plugin.getLegacyItemMigrator().migrate(shop.getProduct().getItemStack())) {
+                        migratedProducts.put(shop.getID(), Utils.encode(shop.getProduct().getItemStack()));
+                    }
+
                     if (shop.create(true)) {
                         addShop(shop, false);
                         loadedShops.add(shop);
                     }
                 }
+
+                plugin.getShopDatabase().updateProducts(migratedProducts);
 
                 if (callback != null) callback.onResult(loadedShops.size());
 

@@ -60,6 +60,8 @@ public class Shop {
     private boolean created;
     // Prevents queueing the same recreation every tick while it is pending
     private boolean entityCreationQueued;
+    // Set when creating the entities threw; stops retrying (and logging) every tick
+    private boolean entityCreationFailed;
     private int id;
     private Hologram hologram;
     private Location holoLocation;
@@ -145,8 +147,12 @@ public class Shop {
         plugin.getUpdater().queueEntityCreation(location.getWorld(), () -> {
             entityCreationQueued = false;
             if (!created) return;
-            if (hologram == null || !hologram.exists()) createHologram(preResult);
-            if (item == null) createItem();
+            try {
+                if (hologram == null || !hologram.exists()) createHologram(preResult);
+                if (item == null) createItem();
+            } catch (RuntimeException e) {
+                onEntityCreationFailed(e);
+            }
         });
 
         created = true;
@@ -205,7 +211,7 @@ public class Shop {
         if (w == null || !w.isChunkLoaded(location.getBlockX() >> 4, location.getBlockZ() >> 4)) {
             return;
         }
-        if (entityCreationQueued || areEntitiesValid()) {
+        if (entityCreationQueued || entityCreationFailed || areEntitiesValid()) {
             return;
         }
         PreCreateResult preResult = preCreateHologram();
@@ -214,21 +220,34 @@ public class Shop {
         plugin.getUpdater().queueEntityCreation(w, () -> {
             entityCreationQueued = false;
             if (!created) return;
-            if (!hasValidHologram()) {
-                if (hologram != null) {
-                    hologram.remove();
-                    hologram = null;
+            try {
+                if (!hasValidHologram()) {
+                    if (hologram != null) {
+                        hologram.remove();
+                        hologram = null;
+                    }
+                    createHologram(preResult);
                 }
-                createHologram(preResult);
-            }
-            if (!hasValidItem()) {
-                if (item != null) {
-                    item.remove();
-                    item = null;
+                if (!hasValidItem()) {
+                    if (item != null) {
+                        item.remove();
+                        item = null;
+                    }
+                    createItem();
                 }
-                createItem();
+            } catch (RuntimeException e) {
+                onEntityCreationFailed(e);
             }
         });
+    }
+
+    private void onEntityCreationFailed(RuntimeException e) {
+        entityCreationFailed = true;
+        World world = location.getWorld();
+        plugin.getLogger().warning("Failed to create the hologram/item of shop #" + id + " at "
+                + (world == null ? "?" : world.getName()) + " " + location.getBlockX() + "," + location.getBlockY()
+                + "," + location.getBlockZ() + " (not retried until the shop is reloaded): " + e);
+        plugin.debug(e);
     }
 
     /**

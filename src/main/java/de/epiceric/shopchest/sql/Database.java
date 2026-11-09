@@ -599,8 +599,39 @@ public abstract class Database {
     }
 
     /**
+     * Rewrites the products of existing shops. Uses UPDATE (not REPLACE) so a shop that was
+     * removed in the meantime is not brought back.
+     *
+     * @param products Encoded products ({@link Utils#encode(ItemStack)}) by shop ID
+     */
+    public void updateProducts(final Map<Integer, String> products) {
+        if (products.isEmpty()) return;
+        final Map<Integer, String> copy = new HashMap<>(products);
+        final String query = "UPDATE " + tableShops + " SET product = ? WHERE id = ?";
+
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                try (Connection con = dataSource.getConnection();
+                        PreparedStatement ps = con.prepareStatement(query)) {
+                    for (Map.Entry<Integer, String> entry : copy.entrySet()) {
+                        ps.setString(1, entry.getValue());
+                        ps.setInt(2, entry.getKey());
+                        ps.addBatch();
+                    }
+                    ps.executeBatch();
+                    plugin.debug("Updated the products of " + copy.size() + " shops");
+                } catch (SQLException | RuntimeException ex) {
+                    plugin.getLogger().severe("Failed to update shop products in database");
+                    plugin.debug(ex);
+                }
+            }
+        }.runTaskAsynchronously(plugin);
+    }
+
+    /**
      * Adds a shop to the database
-     * 
+     *
      * @param shop     Shop to add
      * @param callback Callback that - if succeeded - returns the ID the shop was
      *                 given (as {@code int})

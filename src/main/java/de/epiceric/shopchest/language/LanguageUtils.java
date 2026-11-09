@@ -53,6 +53,26 @@ public class LanguageUtils {
         return typeName.startsWith("STRONG_") ? PotionType.valueOf(typeName.substring("STRONG_".length())) : potionType;
     }
 
+    /**
+     * @return The name of the head's owner, or {@code null} if the head has no named owner
+     *         (e.g. a texture-only head)
+     */
+    private static String getSkullOwnerName(SkullMeta meta) {
+        try {
+            com.destroystokyo.paper.profile.PlayerProfile profile = meta.getPlayerProfile();
+            if (profile != null && profile.getName() != null && !profile.getName().isEmpty()) {
+                return profile.getName();
+            }
+            org.bukkit.OfflinePlayer owner = meta.getOwningPlayer();
+            if (owner != null && owner.getName() != null && !owner.getName().isEmpty()) {
+                return owner.getName();
+            }
+        } catch (RuntimeException ignored) {
+            // A malformed legacy profile must not break item names
+        }
+        return null;
+    }
+
     private static boolean isUpgradedPotion(PotionMeta meta) {
         PotionType potionType = meta.getBasePotionType();
         return potionType != null && potionType.name().startsWith("STRONG_");
@@ -2624,12 +2644,11 @@ public class LanguageUtils {
             } else if (meta instanceof BookMeta && ((BookMeta) meta).hasTitle()) {
                 return ((BookMeta) meta).getTitle();
             } else if (meta instanceof SkullMeta) {
-                if (((SkullMeta) meta).hasOwner()) {
-                    if (Utils.getMajorVersion() >= 13) {
-                        return String.format(langConfig.getString("block.minecraft.player_head.named", "%s's Head"), ((SkullMeta) meta).getOwningPlayer().getName());
-                    } else {
-                        return String.format(langConfig.getString("item.skull.player.name", "%s's Head"), ((SkullMeta) meta).getOwner());
-                    }
+                // Heads migrated from 1.15 (e.g. MythicMobs heads) often carry only a texture:
+                // hasOwner() is true but there is no owning player or name.
+                String ownerName = getSkullOwnerName((SkullMeta) meta);
+                if (ownerName != null) {
+                    return String.format(langConfig.getString("block.minecraft.player_head.named", "%s's Head"), ownerName);
                 }
             }
         }

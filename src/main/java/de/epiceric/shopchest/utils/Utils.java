@@ -36,6 +36,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 
 import de.epiceric.shopchest.ShopChest;
+import de.epiceric.shopchest.config.Config;
 import de.epiceric.shopchest.config.Placeholder;
 import de.epiceric.shopchest.language.LanguageUtils;
 import de.epiceric.shopchest.language.Message;
@@ -68,8 +69,11 @@ public class Utils {
 
         // getItemMeta() copies the whole meta, so only fetch it when both can be books.
         // This runs for every slot whenever stock or free space is counted.
-        if (itemStack1.getType() != itemStack2.getType() || !isBook(itemStack1.getType())) {
-            return itemStack1.isSimilar(itemStack2);
+        if (itemStack1.getType() != itemStack2.getType()) {
+            return false;
+        }
+        if (!isBook(itemStack1.getType())) {
+            return itemStack1.isSimilar(itemStack2) || isSameMythicItem(itemStack1, itemStack2);
         }
 
         ItemMeta itemMeta1 = itemStack1.getItemMeta();
@@ -102,6 +106,38 @@ public class Utils {
         }
 
         return itemStack1.isSimilar(itemStack2);
+    }
+
+    private static final org.bukkit.NamespacedKey MYTHIC_TYPE = new org.bukkit.NamespacedKey("mythicmobs", "type");
+
+    /**
+     * Items saved on 1.15.2 reach 1.21 by different routes (world data fixer vs. Bukkit's
+     * serialized ItemStack in the shop database), so a shop's product and the same item in a
+     * chest often differ in some component. Two items of the same type with the same MythicMobs
+     * ID, enchantments and durability are treated as the same product.
+     */
+    private static boolean isSameMythicItem(ItemStack itemStack1, ItemStack itemStack2) {
+        if (!Config.matchMythicItemsById || !itemStack1.hasItemMeta() || !itemStack2.hasItemMeta()) {
+            return false;
+        }
+        ItemMeta meta1 = itemStack1.getItemMeta();
+        ItemMeta meta2 = itemStack2.getItemMeta();
+        String id1 = meta1.getPersistentDataContainer().get(MYTHIC_TYPE, org.bukkit.persistence.PersistentDataType.STRING);
+        if (id1 == null || id1.trim().isEmpty()) return false;
+        String id2 = meta2.getPersistentDataContainer().get(MYTHIC_TYPE, org.bukkit.persistence.PersistentDataType.STRING);
+        if (!id1.equals(id2)) return false;
+
+        if (!meta1.getEnchants().equals(meta2.getEnchants())) return false;
+        if (meta1 instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta && meta2 instanceof org.bukkit.inventory.meta.EnchantmentStorageMeta
+                && !((org.bukkit.inventory.meta.EnchantmentStorageMeta) meta1).getStoredEnchants()
+                        .equals(((org.bukkit.inventory.meta.EnchantmentStorageMeta) meta2).getStoredEnchants())) {
+            return false;
+        }
+        if (meta1 instanceof org.bukkit.inventory.meta.Damageable && meta2 instanceof org.bukkit.inventory.meta.Damageable
+                && ((org.bukkit.inventory.meta.Damageable) meta1).getDamage() != ((org.bukkit.inventory.meta.Damageable) meta2).getDamage()) {
+            return false;
+        }
+        return true;
     }
 
     private static boolean isBook(Material type) {

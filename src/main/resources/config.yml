@@ -105,6 +105,18 @@ allow-decimals-in-price: true
 # Set whether players should be allowed to sell/buy broken items.
 allow-broken-items: false
 
+# Set whether shop products saved on 1.15.2 (MythicMobs 4) get their MythicMobs ID
+# (mythicmobs:type) back, the same way MythicItemIdCompat fixes inventories.
+# Products that lost the old MYTHIC_TYPE tag are matched against the 1.15.2 Items in
+# plugins/MythicItemIdCompat/legacy-mythic-items/, and its excluded-mmids are respected.
+# Runs over every shop on startup and when shops are loaded.
+migrate-legacy-items: true
+
+# Set whether an item with the same MythicMobs ID (and the same enchantments and
+# durability) counts as the shop's product even if other item data differs.
+# Products and items migrated from 1.15.2 by different routes rarely match exactly.
+match-mythic-items-by-id: true
+
 # Set whether the level of a potion or tipped arrow (if upgraded) should be
 # appended to the item name. If set to true, the level ("II") will be
 # displayed after the item name, but only if the item does not have a

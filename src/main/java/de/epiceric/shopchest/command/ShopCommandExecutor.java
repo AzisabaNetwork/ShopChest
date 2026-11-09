@@ -205,6 +205,7 @@ class ShopCommandExecutor implements CommandExecutor {
         plugin.getShopChestConfig().reload(false, true, true);
         plugin.getHologramFormat().reload();
         plugin.getUpdater().restart();
+        plugin.getLegacyItemMigrator().reload();
         if (plugin.getShopFinder() != null) plugin.getShopFinder().reload();
 
         // Remove all shops
